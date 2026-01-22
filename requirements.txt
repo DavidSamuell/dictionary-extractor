@@ -1,0 +1,6 @@
+litellm
+python-docx
+Pillow
+pydantic
+python-dotenv
+pandas

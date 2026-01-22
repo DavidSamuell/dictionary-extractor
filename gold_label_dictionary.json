@@ -1,0 +1,306 @@
+[
+  {
+    "headword_phrase": "aácek, orácek",
+    "entry_type": "word",
+    "pos": "сущ.",
+    "translation_ru": "молодой человек, юноша, парень",
+    "literal_meaning": "",
+    "grammar_notes": ""
+  },
+  {
+    "headword_phrase": "aacew-matálьn",
+    "entry_type": "word",
+    "pos": "сущ.",
+    "translation_ru": "шурин; деверь",
+    "literal_meaning": "",
+    "grammar_notes": ""
+  },
+  {
+    "headword_phrase": "aaŋkátьrkьn",
+    "entry_type": "word",
+    "pos": "гл.",
+    "translation_ru": "растворяется, распарывается, распахивается",
+    "literal_meaning": "",
+    "grammar_notes": "прош. II gaaŋkátlen"
+  },
+  {
+    "headword_phrase": "áaŋkь",
+    "entry_type": "word",
+    "pos": "нар.",
+    "translation_ru": "настежь, приоткрывшись, распахнувшись",
+    "literal_meaning": "",
+    "grammar_notes": ""
+  },
+  {
+    "headword_phrase": "áaŋkь válьn",
+    "entry_type": "word",
+    "pos": "прил.",
+    "translation_ru": "распахнутый, раскрытый",
+    "literal_meaning": "",
+    "grammar_notes": ""
+  },
+  {
+    "headword_phrase": "aaŋk-éгьn",
+    "entry_type": "word",
+    "pos": "сущ.",
+    "translation_ru": "кафтан",
+    "literal_meaning": "распахнутая одежда",
+    "grammar_notes": ""
+  },
+  {
+    "headword_phrase": "aátgьг, также aátir",
+    "entry_type": "word",
+    "pos": "сущ.",
+    "translation_ru": "ручей",
+    "literal_meaning": "",
+    "grammar_notes": ""
+  },
+  {
+    "headword_phrase": "ácəq",
+    "entry_type": "word",
+    "pos": "сущ.",
+    "translation_ru": "утка-савка, морянка (Anas fuligula)",
+    "literal_meaning": "",
+    "grammar_notes": ""
+  },
+  {
+    "headword_phrase": "ácьŋ",
+    "entry_type": "word",
+    "pos": "сущ.",
+    "translation_ru": "долг",
+    "literal_meaning": "",
+    "grammar_notes": ""
+  },
+  {
+    "headword_phrase": "acь́ŋьlьn",
+    "entry_type": "word",
+    "pos": "сущ.",
+    "translation_ru": "должник",
+    "literal_meaning": "",
+    "grammar_notes": ""
+  },
+  {
+    "headword_phrase": "racьŋáurkьnen",
+    "entry_type": "word",
+    "pos": "гл.",
+    "translation_ru": "дает в долг; требует долг",
+    "literal_meaning": "",
+    "grammar_notes": ""
+  },
+  {
+    "headword_phrase": "acь́ŋьrkьn",
+    "entry_type": "word",
+    "pos": "гл.",
+    "translation_ru": "кличет его",
+    "literal_meaning": "",
+    "grammar_notes": ""
+  },
+  {
+    "headword_phrase": "acgémbra, также acgémbraŋ-eur",
+    "entry_type": "word",
+    "pos": "союз",
+    "translation_ru": "при том же, поелику; к сожалению, к несчастью",
+    "literal_meaning": "",
+    "grammar_notes": ""
+  },
+  {
+    "headword_phrase": "И.B.acgémbra réen æjgulǽtkæ rússьmil",
+    "entry_type": "phrase",
+    "pos": "",
+    "translation_ru": "к сожалению, я еще не умею (говорить) по-русски",
+    "literal_meaning": "",
+    "grammar_notes": ""
+  },
+  {
+    "headword_phrase": "acgьta",
+    "entry_type": "word",
+    "pos": "нар.",
+    "translation_ru": "рядом",
+    "literal_meaning": "",
+    "grammar_notes": ""
+  },
+  {
+    "headword_phrase": "ac-úkwьn",
+    "entry_type": "word",
+    "pos": "сущ.",
+    "translation_ru": "кремень",
+    "literal_meaning": "жирный камень",
+    "grammar_notes": "см. æc/ac"
+  },
+  {
+    "headword_phrase": "ac-úkwьn mátьcьn",
+    "entry_type": "word",
+    "pos": "сущ.",
+    "translation_ru": "курок для кремня (в кремневом ружье)",
+    "literal_meaning": "",
+    "grammar_notes": ""
+  },
+  {
+    "headword_phrase": "alewlékь(ŋ)",
+    "entry_type": "word",
+    "pos": "нар.",
+    "translation_ru": "гуськом, друг за другом",
+    "literal_meaning": "",
+    "grammar_notes": ""
+  },
+  {
+    "headword_phrase": "alewlékь válьn",
+    "entry_type": "word",
+    "pos": "прил.",
+    "translation_ru": "гуськом расположенный, гуськом идущий",
+    "literal_meaning": "",
+    "grammar_notes": ""
+  },
+  {
+    "headword_phrase": "álьm",
+    "entry_type": "word",
+    "pos": "сущ.",
+    "translation_ru": "лишняя, запасная вещь (в двойном комплекте)",
+    "literal_meaning": "",
+    "grammar_notes": ""
+  },
+  {
+    "headword_phrase": "alьm-érьn",
+    "entry_type": "word",
+    "pos": "сущ.",
+    "translation_ru": "запасная одежда",
+    "literal_meaning": "",
+    "grammar_notes": ""
+  },
+  {
+    "headword_phrase": "alьm-ŋélgьn",
+    "entry_type": "word",
+    "pos": "сущ.",
+    "translation_ru": "запасной ремень",
+    "literal_meaning": "",
+    "grammar_notes": ""
+  },
+  {
+    "headword_phrase": "alьmátьrkьпen",
+    "entry_type": "word",
+    "pos": "гл.",
+    "translation_ru": "сдваивает, приставляя рядом",
+    "literal_meaning": "",
+    "grammar_notes": ""
+  },
+  {
+    "headword_phrase": "ácьm-ьttьm",
+    "entry_type": "word",
+    "pos": "сущ.",
+    "translation_ru": "малоберцовая кость голени, также лучевая кость руки",
+    "literal_meaning": "двойная кость",
+    "grammar_notes": "см. lьm"
+  },
+  {
+    "headword_phrase": "álьmь(ŋ)",
+    "entry_type": "word",
+    "pos": "союз",
+    "translation_ru": "положим, что...",
+    "literal_meaning": "",
+    "grammar_notes": ""
+  },
+  {
+    "headword_phrase": "álьmь tikwæп, ékwurgam aálomkəlen",
+    "entry_type": "phrase",
+    "pos": "",
+    "translation_ru": "положим, я сказал, но он не слушает",
+    "literal_meaning": "",
+    "grammar_notes": ""
+  },
+  {
+    "headword_phrase": "álьmŋə!",
+    "entry_type": "phrase",
+    "pos": "",
+    "translation_ru": "вот как!",
+    "literal_meaning": "",
+    "grammar_notes": ""
+  },
+  {
+    "headword_phrase": "álьŋ",
+    "entry_type": "word",
+    "pos": "нар.",
+    "translation_ru": "очень, весьма",
+    "literal_meaning": "",
+    "grammar_notes": ""
+  },
+  {
+    "headword_phrase": "álьŋ-atqə(ŋ)",
+    "entry_type": "word",
+    "pos": "нар.",
+    "translation_ru": "весьма худо",
+    "literal_meaning": "",
+    "grammar_notes": ""
+  },
+  {
+    "headword_phrase": "álьŋ-tārken ŋǽlvьl",
+    "entry_type": "phrase",
+    "pos": "",
+    "translation_ru": "очень малое стадо",
+    "literal_meaning": "",
+    "grammar_notes": ""
+  },
+  {
+    "headword_phrase": "ālgáttь",
+    "entry_type": "word",
+    "pos": "сущ.",
+    "translation_ru": "топор",
+    "literal_meaning": "",
+    "grammar_notes": "отпр. пад. ālgatgájрь"
+  },
+  {
+    "headword_phrase": "ālgátgarkьn",
+    "entry_type": "word",
+    "pos": "гл.",
+    "translation_ru": "рубит",
+    "literal_meaning": "",
+    "grammar_notes": ""
+  },
+  {
+    "headword_phrase": "ālgatgatkórkьn",
+    "entry_type": "word",
+    "pos": "гл.",
+    "translation_ru": "делает топором что-нибудь",
+    "literal_meaning": "",
+    "grammar_notes": ""
+  },
+  {
+    "headword_phrase": "ālgatgaj-pójgьn",
+    "entry_type": "word",
+    "pos": "сущ.",
+    "translation_ru": "топорище",
+    "literal_meaning": "",
+    "grammar_notes": ""
+  },
+  {
+    "headword_phrase": "álрьnŋьn",
+    "entry_type": "word",
+    "pos": "сущ.",
+    "translation_ru": "заплата на подошве",
+    "literal_meaning": "",
+    "grammar_notes": ""
+  },
+  {
+    "headword_phrase": "alрь́nŋьrkьnen",
+    "entry_type": "word",
+    "pos": "гл.",
+    "translation_ru": "кладет заплату на подошву обуви",
+    "literal_meaning": "",
+    "grammar_notes": ""
+  },
+  {
+    "headword_phrase": "И.B. alрь́nŋьlgьn",
+    "entry_type": "word",
+    "pos": "сущ.",
+    "translation_ru": "камбала",
+    "literal_meaning": "",
+    "grammar_notes": ""
+  },
+  {
+    "headword_phrase": "alva",
+    "entry_type": "word",
+    "pos": "",
+    "translation_ru": "",
+    "literal_meaning": "",
+    "grammar_notes": "см. ælvæ"
+  }
+]

@@ -7,6 +7,7 @@ import json
 import os
 import base64
 import csv
+import argparse
 from pathlib import Path
 from typing import List, Optional
 from dataclasses import dataclass
@@ -76,7 +77,7 @@ def extract_dictionary_entries(
     image_path: str,
     docx_path: Optional[str] = None,
     page_number: int = 1,
-    model: str = "gemini/gemini-2.0-flash-exp",
+    model: str = "openrouter/qwen/qwen3-vl-30b-a3b-thinking",
 ) -> DictionaryPage:
     """
     Extract dictionary entries from an image using LLM
@@ -168,18 +169,39 @@ def extract_dictionary_entries(
     ]
 
     # Make the API call
-    # Note: Using Gemini 2.0 Flash to avoid the extended thinking issue in 2.5 Pro
-    print(f"Calling Gemini API with model: {model}...")
+    print(f"Calling LLM API with model: {model}...")
 
-    # Configure API call with thinking mode disabled for Gemini
+    # Determine API key based on model provider
+    api_key = None
+    if "openrouter" in model.lower():
+        api_key = os.getenv("OPEN_ROUTER_API_KEY")
+    elif "gemini" in model.lower() or "google" in model.lower():
+        api_key = os.getenv("GEMINI_API_KEY")
+    elif "claude" in model.lower() or "anthropic" in model.lower():
+        api_key = os.getenv("ANTHROPIC_API_KEY")
+    elif "gpt" in model.lower() or "openai" in model.lower():
+        api_key = os.getenv("OPENAI_API_KEY")
+
+    if not api_key:
+        print(
+            f"Warning: No API key found for model {model}. Relying on environment variables."
+        )
+
+    # Configure API call
     api_params = {
         "model": model,
         "messages": messages,
         "temperature": 0.1,  # Lower temperature for more consistent extraction
+        "max_tokens": 64000,  # Reasonable limit for dictionary page extraction
     }
 
+    # Only add api_key if we found one
+    if api_key:
+        api_params["api_key"] = api_key
+
+    # For Qwen3 Next thinking models, the thinking is built into the model
     # For Gemini 2.5 models, try to disable extended thinking
-    if "2.5" in model:
+    if "2.5" in model and "gemini" in model.lower():
         api_params["extra_body"] = {
             "generationConfig": {"thinking": {"thinkingConfig": {"mode": "DISABLED"}}}
         }
@@ -304,36 +326,116 @@ def main():
     """
     Main function to extract dictionary entries from the test image
     """
-    MODEL = "gemini/gemini-2.5-pro"
-
-    # Define paths
-    image_path = (
-        "/Users/davidsamuel/Documents/Github/dictionary-extractor/test-dict-page.png"
+    # Set up argument parser
+    parser = argparse.ArgumentParser(
+        description="Extract dictionary entries from images using LLM",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  # Basic usage with just image
+  python extract_dictionary.py -i page1.png -o output.tsv
+  
+  # With OCR text reference
+  python extract_dictionary.py -i page1.png -d page1.docx -o output.tsv
+  
+  # With specific model
+  python extract_dictionary.py -i page1.png -o output.tsv -m gemini/gemini-2.5-pro
+  
+  # With page number for tracking
+  python extract_dictionary.py -i page1.png -o output.tsv -p 1
+  
+  # Append to existing TSV
+  python extract_dictionary.py -i page2.png -o output.tsv -a
+        """,
     )
-    docx_path = "/Users/davidsamuel/Documents/Github/dictionary-extractor/extracted-dict-page.docx"
-    output_tsv = "/Users/davidsamuel/Documents/Github/dictionary-extractor/extracted_dictionary.tsv"
 
-    # Check if files exist
-    if not Path(image_path).exists():
+    parser.add_argument(
+        "-i",
+        "--image",
+        type=str,
+        required=True,
+        help="Path to the dictionary page image (PNG, JPG, etc.)",
+    )
+
+    parser.add_argument(
+        "-o", "--output", type=str, required=True, help="Path to the output TSV file"
+    )
+
+    parser.add_argument(
+        "-d",
+        "--docx",
+        type=str,
+        default=None,
+        help="Optional path to extracted text in DOCX format (for OCR reference)",
+    )
+
+    parser.add_argument(
+        "-m",
+        "--model",
+        type=str,
+        default="openrouter/qwen/qwen3-vl-30b-a3b-thinking",
+        help="LLM model to use (default: openrouter/qwen/qwen3-vl-30b-a3b-thinking)",
+    )
+
+    parser.add_argument(
+        "-p",
+        "--page",
+        type=int,
+        default=1,
+        help="Page number for tracking (default: 1)",
+    )
+
+    parser.add_argument(
+        "-a",
+        "--append",
+        action="store_true",
+        help="Append to existing TSV file instead of overwriting",
+    )
+
+    parser.add_argument(
+        "--json", action="store_true", help="Also save output in JSON format"
+    )
+
+    args = parser.parse_args()
+
+    # Validate paths
+    image_path = Path(args.image)
+    if not image_path.exists():
         print(f"Error: Image file not found at {image_path}")
-        return
+        return 1
+
+    output_path = Path(args.output)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    docx_path = args.docx
+    if docx_path:
+        docx_path = Path(docx_path)
+        if not docx_path.exists():
+            print(f"Warning: DOCX file not found at {docx_path}, proceeding without it")
+            docx_path = None
 
     print(f"Extracting dictionary entries from: {image_path}")
-    if Path(docx_path).exists():
+    if docx_path:
         print(f"Using extracted text from: {docx_path}")
-    print(f"Using model: {MODEL}")
+    print(f"Using model: {args.model}")
+    print(f"Page number: {args.page}")
+    print(f"Output: {output_path}")
+    print(f"Mode: {'Append' if args.append else 'Overwrite'}")
     print("-" * 60)
 
     try:
         # Extract entries
         dictionary_page = extract_dictionary_entries(
-            image_path=image_path, docx_path=docx_path, page_number=1, model=MODEL
+            image_path=str(image_path),
+            docx_path=str(docx_path) if docx_path else None,
+            page_number=args.page,
+            model=args.model,
         )
 
         print(f"Successfully extracted {len(dictionary_page.entries)} entries")
 
         # Save to TSV
-        save_to_tsv(dictionary_page, output_tsv)
+        save_to_tsv(dictionary_page, str(output_path), append=args.append)
 
         # Print first few entries as preview
         print("\nFirst 5 entries extracted:")
@@ -350,22 +452,26 @@ def main():
                 f"{i+1}. {entry.headword_phrase} ({entry.pos}) [{entry.entry_type}]: {translation_preview}{literal}"
             )
 
-        # Also save as JSON for debugging
-        json_output = output_tsv.replace(".tsv", ".json")
-        with open(json_output, "w", encoding="utf-8") as f:
-            json.dump(
-                [entry.model_dump() for entry in dictionary_page.entries],
-                f,
-                ensure_ascii=False,
-                indent=2,
-            )
-        print(f"\nAlso saved JSON format to: {json_output}")
+        # Save as JSON if requested
+        if args.json:
+            json_output = output_path.with_suffix(".json")
+            with open(json_output, "w", encoding="utf-8") as f:
+                json.dump(
+                    [entry.model_dump() for entry in dictionary_page.entries],
+                    f,
+                    ensure_ascii=False,
+                    indent=2,
+                )
+            print(f"\nAlso saved JSON format to: {json_output}")
+
+        return 0
 
     except Exception as e:
         print(f"Error during extraction: {str(e)}")
         import traceback
 
         traceback.print_exc()
+        return 1
 
 
 if __name__ == "__main__":

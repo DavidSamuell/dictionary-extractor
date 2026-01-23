@@ -5,6 +5,7 @@ Compares extracted TSV results with ground truth
 
 import csv
 import json
+import argparse
 from pathlib import Path
 from typing import List, Dict, Tuple, Set
 from dataclasses import dataclass
@@ -141,6 +142,13 @@ class DetailedErrorAnalyzer:
         deletion_chars = Counter()  # deleted_char: count
         insertion_chars = Counter()  # inserted_char: count
 
+        # Track word-level context for character errors
+        substitution_word_examples = defaultdict(
+            list
+        )  # (char1, char2): [(gt_word, ext_word)]
+        deletion_word_examples = defaultdict(list)  # char: [(gt_word, ext_word)]
+        insertion_word_examples = defaultdict(list)  # char: [(gt_word, ext_word)]
+
         # Word-level statistics
         total_words = 0
         total_word_substitutions = 0
@@ -181,14 +189,25 @@ class DetailedErrorAnalyzer:
                         total_substitutions += 1
                         field_stats[field]["subs"] += 1
                         substitution_pairs[(char1, char2)] += 1
+                        # Store word example (limit to 3 examples per character pair)
+                        if len(substitution_word_examples[(char1, char2)]) < 3:
+                            substitution_word_examples[(char1, char2)].append(
+                                (gt_text, ext_text)
+                            )
                     elif op_type == "deletion":
                         total_deletions += 1
                         field_stats[field]["dels"] += 1
                         deletion_chars[char1] += 1
+                        # Store word example
+                        if len(deletion_word_examples[char1]) < 3:
+                            deletion_word_examples[char1].append((gt_text, ext_text))
                     elif op_type == "insertion":
                         total_insertions += 1
                         field_stats[field]["ins"] += 1
                         insertion_chars[char2] += 1
+                        # Store word example
+                        if len(insertion_word_examples[char2]) < 3:
+                            insertion_word_examples[char2].append((gt_text, ext_text))
 
                 # Word-level analysis
                 gt_words = gt_text.split()
@@ -236,16 +255,19 @@ class DetailedErrorAnalyzer:
                 "count": total_substitutions,
                 "rate": total_substitutions / total_chars if total_chars > 0 else 0,
                 "most_common": substitution_pairs.most_common(30),
+                "word_examples": dict(substitution_word_examples),
             },
             "deletions": {
                 "count": total_deletions,
                 "rate": total_deletions / total_chars if total_chars > 0 else 0,
                 "most_common": deletion_chars.most_common(30),
+                "word_examples": dict(deletion_word_examples),
             },
             "insertions": {
                 "count": total_insertions,
                 "rate": total_insertions / total_chars if total_chars > 0 else 0,
                 "most_common": insertion_chars.most_common(30),
+                "word_examples": dict(insertion_word_examples),
             },
             "word_errors": {
                 "substitutions": total_word_substitutions,
@@ -319,6 +341,11 @@ class DetailedErrorAnalyzer:
                 report.append(
                     f"{display:<35} {count:<10} {pct_subs:>6.2f}%       {pct_total:>6.2f}%"
                 )
+                # Add word examples
+                if (orig, wrong) in subs["word_examples"]:
+                    examples = subs["word_examples"][(orig, wrong)]
+                    for gt_word, ext_word in examples:  # Show all examples
+                        report.append(f"    Example: {gt_word} → {ext_word}")
         else:
             report.append("No substitutions found.")
         report.append("")
@@ -346,6 +373,11 @@ class DetailedErrorAnalyzer:
                 report.append(
                     f"{char_repr:<35} {count:<10} {pct_dels:>6.2f}%       {pct_total:>6.2f}%"
                 )
+                # Add word examples
+                if char in dels["word_examples"]:
+                    examples = dels["word_examples"][char]
+                    for gt_word, ext_word in examples:  # Show all examples
+                        report.append(f"    Example: {gt_word} → {ext_word}")
         else:
             report.append("No deletions found.")
         report.append("")
@@ -373,6 +405,11 @@ class DetailedErrorAnalyzer:
                 report.append(
                     f"{char_repr:<35} {count:<10} {pct_ins:>6.2f}%       {pct_total:>6.2f}%"
                 )
+                # Add word examples
+                if char in ins["word_examples"]:
+                    examples = ins["word_examples"][char]
+                    for gt_word, ext_word in examples:  # Show all examples
+                        report.append(f"    Example: {gt_word} → {ext_word}")
         else:
             report.append("No insertions found.")
         report.append("")
@@ -420,7 +457,17 @@ class DetailedErrorAnalyzer:
                     "count": error_stats["substitutions"]["count"],
                     "rate": error_stats["substitutions"]["rate"],
                     "most_common": [
-                        {"from": orig, "to": wrong, "count": count}
+                        {
+                            "from": orig,
+                            "to": wrong,
+                            "count": count,
+                            "examples": [
+                                {"ground_truth": gt, "extracted": ext}
+                                for gt, ext in error_stats["substitutions"][
+                                    "word_examples"
+                                ].get((orig, wrong), [])
+                            ],
+                        }
                         for (orig, wrong), count in error_stats["substitutions"][
                             "most_common"
                         ]
@@ -430,7 +477,16 @@ class DetailedErrorAnalyzer:
                     "count": error_stats["deletions"]["count"],
                     "rate": error_stats["deletions"]["rate"],
                     "most_common": [
-                        {"character": char, "count": count}
+                        {
+                            "character": char,
+                            "count": count,
+                            "examples": [
+                                {"ground_truth": gt, "extracted": ext}
+                                for gt, ext in error_stats["deletions"][
+                                    "word_examples"
+                                ].get(char, [])
+                            ],
+                        }
                         for char, count in error_stats["deletions"]["most_common"]
                     ],
                 },
@@ -438,7 +494,16 @@ class DetailedErrorAnalyzer:
                     "count": error_stats["insertions"]["count"],
                     "rate": error_stats["insertions"]["rate"],
                     "most_common": [
-                        {"character": char, "count": count}
+                        {
+                            "character": char,
+                            "count": count,
+                            "examples": [
+                                {"ground_truth": gt, "extracted": ext}
+                                for gt, ext in error_stats["insertions"][
+                                    "word_examples"
+                                ].get(char, [])
+                            ],
+                        }
                         for char, count in error_stats["insertions"]["most_common"]
                     ],
                 },
@@ -852,65 +917,134 @@ def main():
     """
     Main function to run the evaluation
     """
-    # Paths
-    extracted_tsv = "/Users/davidsamuel/Documents/Github/dictionary-extractor/outputs/extracted_dictionary.tsv"
-    ground_truth_tsv = "/Users/davidsamuel/Documents/Github/dictionary-extractor/outputs/gold_label_dictionary.tsv"
-    report_path = "/Users/davidsamuel/Documents/Github/dictionary-extractor/outputs/evaluation_report.txt"
-    char_error_report_path = "/Users/davidsamuel/Documents/Github/dictionary-extractor/outputs/character_error_report.txt"
+    # Set up argument parser
+    parser = argparse.ArgumentParser(
+        description="Evaluate dictionary extraction results against ground truth",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  # Basic evaluation
+  python evaluate_extraction.py -e extracted.tsv -g ground_truth.tsv
+  
+  # With custom output directory
+  python evaluate_extraction.py -e extracted.tsv -g ground_truth.tsv -o results/
+  
+  # With custom similarity threshold
+  python evaluate_extraction.py -e extracted.tsv -g ground_truth.tsv -t 0.90
+  
+  # Disable character-level error analysis
+  python evaluate_extraction.py -e extracted.tsv -g ground_truth.tsv --no-char-analysis
+        """,
+    )
 
-    # Check if ground truth exists
-    if not Path(ground_truth_tsv).exists():
-        print(f"Ground truth file not found at {ground_truth_tsv}")
-        print("Creating a sample ground truth file for demonstration...")
-        create_sample_ground_truth()
-        print(
-            "\nPlease create a proper ground truth file with actual dictionary entries"
-        )
-        print(f"and save it as: {ground_truth_tsv}")
-        return
+    parser.add_argument(
+        "-e",
+        "--extracted",
+        type=str,
+        required=True,
+        help="Path to the extracted TSV file",
+    )
 
-    # Check if extracted file exists
-    if not Path(extracted_tsv).exists():
-        print(f"Extracted TSV file not found at {extracted_tsv}")
-        print(
-            "Please run extract_dictionary.py first to generate the extracted TSV file"
-        )
-        return
+    parser.add_argument(
+        "-g",
+        "--ground-truth",
+        type=str,
+        required=True,
+        help="Path to the ground truth TSV file",
+    )
+
+    parser.add_argument(
+        "-o",
+        "--output-dir",
+        type=str,
+        default=None,
+        help="Output directory for reports (default: same as extracted file)",
+    )
+
+    parser.add_argument(
+        "-t",
+        "--threshold",
+        type=float,
+        default=0.85,
+        help="Similarity threshold for partial matches (default: 0.85)",
+    )
+
+    parser.add_argument(
+        "--no-char-analysis",
+        action="store_true",
+        help="Skip character-level error analysis",
+    )
+
+    args = parser.parse_args()
+
+    # Validate paths
+    extracted_path = Path(args.extracted)
+    if not extracted_path.exists():
+        print(f"Error: Extracted TSV file not found at {extracted_path}")
+        return 1
+
+    ground_truth_path = Path(args.ground_truth)
+    if not ground_truth_path.exists():
+        print(f"Error: Ground truth TSV file not found at {ground_truth_path}")
+        print("\nPlease create a ground truth file with actual dictionary entries")
+        return 1
+
+    # Determine output directory
+    if args.output_dir:
+        output_dir = Path(args.output_dir)
+        output_dir.mkdir(parents=True, exist_ok=True)
+    else:
+        output_dir = extracted_path.parent
+
+    # Generate output paths
+    report_path = output_dir / "evaluation_report.txt"
+    char_error_report_path = output_dir / "character_error_report.txt"
 
     # Create evaluator and run evaluation
-    evaluator = DictionaryEvaluator(similarity_threshold=0.85)
+    evaluator = DictionaryEvaluator(similarity_threshold=args.threshold)
 
     print(f"Evaluating extraction results...")
-    print(f"Ground truth: {ground_truth_tsv}")
-    print(f"Extracted: {extracted_tsv}")
+    print(f"Ground truth: {ground_truth_path}")
+    print(f"Extracted: {extracted_path}")
+    print(f"Similarity threshold: {args.threshold}")
+    print(f"Output directory: {output_dir}")
     print("-" * 60)
 
-    metrics = evaluator.evaluate(ground_truth_tsv, extracted_tsv)
-    evaluator.generate_report(metrics, report_path)
+    metrics = evaluator.evaluate(str(ground_truth_path), str(extracted_path))
+    evaluator.generate_report(metrics, str(report_path))
 
     # Run detailed character-level error analysis
-    print("\n" + "=" * 60)
-    print("Running detailed character-level error analysis...")
-    print("=" * 60)
+    if not args.no_char_analysis:
+        print("\n" + "=" * 60)
+        print("Running detailed character-level error analysis...")
+        print("=" * 60)
 
-    # Create matched pairs for detailed analysis
-    ground_truth = evaluator.load_tsv(ground_truth_tsv)
-    extracted = evaluator.load_tsv(extracted_tsv)
+        # Create matched pairs for detailed analysis
+        ground_truth = evaluator.load_tsv(str(ground_truth_path))
+        extracted = evaluator.load_tsv(str(extracted_path))
 
-    # Get matched pairs from the evaluator's stored results
-    matched_pairs = [
-        (match["ground_truth"], match["extracted"])
-        for match in evaluator.matched_entries
-    ]
+        # Get matched pairs from the evaluator's stored results
+        matched_pairs = [
+            (match["ground_truth"], match["extracted"])
+            for match in evaluator.matched_entries
+        ]
 
-    if matched_pairs:
-        error_analyzer = DetailedErrorAnalyzer()
-        error_stats = error_analyzer.calculate_cer_wer(
-            ground_truth, extracted, matched_pairs
-        )
-        error_analyzer.generate_detailed_report(error_stats, char_error_report_path)
+        if matched_pairs:
+            error_analyzer = DetailedErrorAnalyzer()
+            error_stats = error_analyzer.calculate_cer_wer(
+                ground_truth, extracted, matched_pairs
+            )
+            error_analyzer.generate_detailed_report(
+                error_stats, str(char_error_report_path)
+            )
+        else:
+            print(
+                "\nNo matched entries found. Skipping character-level error analysis."
+            )
     else:
-        print("\nNo matched entries found. Skipping character-level error analysis.")
+        print("\nSkipping character-level error analysis (--no-char-analysis flag)")
+
+    return 0
 
 
 if __name__ == "__main__":

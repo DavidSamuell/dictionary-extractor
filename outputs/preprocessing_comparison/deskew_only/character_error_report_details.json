@@ -1,0 +1,340 @@
+{
+  "cer": 0.03268945022288262,
+  "wer": 0.13366336633663367,
+  "total_chars": 1346,
+  "total_words": 202,
+  "total_char_errors": 44,
+  "total_word_errors": 27,
+  "substitutions": {
+    "count": 34,
+    "rate": 0.02526002971768202,
+    "most_common": [
+      {
+        "from": "k",
+        "to": "к",
+        "count": 13,
+        "examples": [
+          {
+            "ground_truth": "áaŋkь",
+            "extracted": "áaŋкь"
+          },
+          {
+            "ground_truth": "áaŋkь válьn",
+            "extracted": "áapкь válьn"
+          },
+          {
+            "ground_truth": "aaŋk-éгьn",
+            "extracted": "aaŋк-éтьn"
+          }
+        ]
+      },
+      {
+        "from": "b",
+        "to": "ь",
+        "count": 3,
+        "examples": [
+          {
+            "ground_truth": "acgémbra, также acgémbraŋ-eur",
+            "extracted": "acgémьra, также acgémьran-eur"
+          },
+          {
+            "ground_truth": "acgémbra, также acgémbraŋ-eur",
+            "extracted": "acgémьra, также acgémьran-eur"
+          },
+          {
+            "ground_truth": "И.B.acgémbra réen æjgulǽtkæ rússьmil",
+            "extracted": "H.B.acgémьra réen æjgulǽtkæ rússьmil"
+          }
+        ]
+      },
+      {
+        "from": "р",
+        "to": "p",
+        "count": 3,
+        "examples": [
+          {
+            "ground_truth": "álрьnŋьn",
+            "extracted": "álpьnŋьn"
+          },
+          {
+            "ground_truth": "alрь́nŋьrkьnen",
+            "extracted": "alpьnŋьrкьnen"
+          },
+          {
+            "ground_truth": "И.B. alрь́nŋьlgьn",
+            "extracted": "H.B. alpьnŋьlgьn"
+          }
+        ]
+      },
+      {
+        "from": "ŋ",
+        "to": "p",
+        "count": 2,
+        "examples": [
+          {
+            "ground_truth": "áaŋkь válьn",
+            "extracted": "áapкь válьn"
+          },
+          {
+            "ground_truth": "alьm-ŋélgьn",
+            "extracted": "alьm-pélgьn"
+          }
+        ]
+      },
+      {
+        "from": "И",
+        "to": "H",
+        "count": 2,
+        "examples": [
+          {
+            "ground_truth": "И.B.acgémbra réen æjgulǽtkæ rússьmil",
+            "extracted": "H.B.acgémьra réen æjgulǽtkæ rússьmil"
+          },
+          {
+            "ground_truth": "И.B. alрь́nŋьlgьn",
+            "extracted": "H.B. alpьnŋьlgьn"
+          }
+        ]
+      },
+      {
+        "from": "ə",
+        "to": "a",
+        "count": 2,
+        "examples": [
+          {
+            "ground_truth": "álьmь tikwæп, ékwurgam aálomkəlen",
+            "extracted": "álьmь tikwæul, éкwurgam aálomкalen"
+          },
+          {
+            "ground_truth": "álьŋ-atqə(ŋ)",
+            "extracted": "álьŋ-atqa(ŋ)"
+          }
+        ]
+      },
+      {
+        "from": "г",
+        "to": "т",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "aaŋk-éгьn",
+            "extracted": "aaŋк-éтьn"
+          }
+        ]
+      },
+      {
+        "from": "a",
+        "to": "á",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "acь́ŋьlьn",
+            "extracted": "ácьŋуьlьn"
+          }
+        ]
+      },
+      {
+        "from": "́",
+        "to": "ŋ",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "acь́ŋьlьn",
+            "extracted": "ácьŋуьlьn"
+          }
+        ]
+      },
+      {
+        "from": "ŋ",
+        "to": "у",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "acь́ŋьlьn",
+            "extracted": "ácьŋуьlьn"
+          }
+        ]
+      },
+      {
+        "from": "ŋ",
+        "to": "n",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "acgémbra, также acgémbraŋ-eur",
+            "extracted": "acgémьra, также acgémьran-eur"
+          }
+        ]
+      },
+      {
+        "from": "п",
+        "to": "n",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "alьmátьrkьпen",
+            "extracted": "alьmátьrкьnen"
+          }
+        ]
+      },
+      {
+        "from": "п",
+        "to": "l",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "álьmь tikwæп, ékwurgam aálomkəlen",
+            "extracted": "álьmь tikwæul, éкwurgam aálomкalen"
+          }
+        ]
+      },
+      {
+        "from": "ə",
+        "to": "ә",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "álьmŋə!",
+            "extracted": "álьmŋә!"
+          }
+        ]
+      },
+      {
+        "from": "ŋ",
+        "to": "y",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "álьŋ-tārken ŋǽlvьl",
+            "extracted": "álьŋ-tārken yǽlvьl"
+          }
+        ]
+      }
+    ]
+  },
+  "deletions": {
+    "count": 4,
+    "rate": 0.0029717682020802376,
+    "most_common": [
+      {
+        "character": "́",
+        "count": 3,
+        "examples": [
+          {
+            "ground_truth": "acь́ŋьrkьn",
+            "extracted": "acьŋьrкьn"
+          },
+          {
+            "ground_truth": "alрь́nŋьrkьnen",
+            "extracted": "alpьnŋьrкьnen"
+          },
+          {
+            "ground_truth": "И.B. alрь́nŋьlgьn",
+            "extracted": "H.B. alpьnŋьlgьn"
+          }
+        ]
+      },
+      {
+        "character": "г",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "aátgьг, также aátir",
+            "extracted": "aátgь, также aátir"
+          }
+        ]
+      }
+    ]
+  },
+  "insertions": {
+    "count": 6,
+    "rate": 0.004457652303120356,
+    "most_common": [
+      {
+        "character": "a",
+        "count": 2,
+        "examples": [
+          {
+            "ground_truth": "см. ælvæ",
+            "extracted": "см. ælvæ/alva"
+          },
+          {
+            "ground_truth": "см. ælvæ",
+            "extracted": "см. ælvæ/alva"
+          }
+        ]
+      },
+      {
+        "character": "u",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "álьmь tikwæп, ékwurgam aálomkəlen",
+            "extracted": "álьmь tikwæul, éкwurgam aálomкalen"
+          }
+        ]
+      },
+      {
+        "character": "/",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "см. ælvæ",
+            "extracted": "см. ælvæ/alva"
+          }
+        ]
+      },
+      {
+        "character": "l",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "см. ælvæ",
+            "extracted": "см. ælvæ/alva"
+          }
+        ]
+      },
+      {
+        "character": "v",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "см. ælvæ",
+            "extracted": "см. ælvæ/alva"
+          }
+        ]
+      }
+    ]
+  },
+  "word_errors": {
+    "substitutions": 27,
+    "deletions": 0,
+    "insertions": 0
+  },
+  "field_stats": {
+    "Headword_Phrase": {
+      "chars": 443,
+      "subs": 34,
+      "dels": 4,
+      "ins": 1
+    },
+    "POS": {
+      "chars": 120,
+      "subs": 0,
+      "dels": 0,
+      "ins": 0
+    },
+    "Translation_RU": {
+      "chars": 738,
+      "subs": 0,
+      "dels": 0,
+      "ins": 0
+    },
+    "Grammar_Notes": {
+      "chars": 45,
+      "subs": 0,
+      "dels": 0,
+      "ins": 5
+    }
+  }
+}

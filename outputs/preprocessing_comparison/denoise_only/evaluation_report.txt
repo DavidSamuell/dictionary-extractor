@@ -1,0 +1,38 @@
+============================================================
+DICTIONARY EXTRACTION EVALUATION REPORT
+============================================================
+
+SUMMARY STATISTICS:
+----------------------------------------
+Total entries in ground truth: 38
+Total entries extracted: 38
+Exact matches: 17
+Partial matches: 20
+Missing entries: 1
+Extra entries: 1
+
+PERFORMANCE METRICS:
+----------------------------------------
+Overall F1 Score: 0.974
+Precision: 0.974
+Recall: 0.974
+
+FIELD-LEVEL ACCURACY:
+----------------------------------------
+Headword accuracy: 0.933
+Grammatical info accuracy: 1.000
+Definition accuracy: 1.000
+
+MISSING ENTRIES (First 10):
+----------------------------------------
+1. aaŋk-éгьn (сущ.)
+
+EXTRA ENTRIES (First 10):
+----------------------------------------
+1. aaŋк-éтъp (сущ.)
+
+LOW-SCORING MATCHES (First 5):
+----------------------------------------
+1. Ground Truth: aaŋkátьrkьn
+   Extracted: aapkátsrкьn
+   Score: 0.864

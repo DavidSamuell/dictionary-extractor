@@ -1,0 +1,1089 @@
+[
+  {
+    "entry_id": "L000",
+    "lines": [
+      {
+        "bbox": {
+          "x_min": 282.0,
+          "y_min": 3.0,
+          "x_max": 308.0,
+          "y_max": 33.0
+        },
+        "text": "а",
+        "confidence": 0.9393739104270935,
+        "column": "L"
+      },
+      {
+        "bbox": {
+          "x_min": 0.0,
+          "y_min": 33.0,
+          "x_max": 27.0,
+          "y_max": 55.0
+        },
+        "text": "еk",
+        "confidence": 0.6018223762512207,
+        "column": "L"
+      },
+      {
+        "bbox": {
+          "x_min": 0.0,
+          "y_min": 52.0,
+          "x_max": 284.0,
+          "y_max": 81.0
+        },
+        "text": "Aacek, ofacek cyu. Mo.odoh ye.",
+        "confidence": 0.8574278950691223,
+        "column": "L"
+      },
+      {
+        "bbox": {
+          "x_min": 22.0,
+          "y_min": 72.0,
+          "x_max": 219.0,
+          "y_max": 97.0
+        },
+        "text": "Jobek, ohoш, napehь",
+        "confidence": 0.8137903213500977,
+        "column": "L"
+      },
+      {
+        "bbox": {
+          "x_min": 0.0,
+          "y_min": 87.0,
+          "x_max": 285.0,
+          "y_max": 119.0
+        },
+        "text": "aacew-matalbn Cu. myph lI de-",
+        "confidence": 0.8568683862686157,
+        "column": "L"
+      },
+      {
+        "bbox": {
+          "x_min": 20.0,
+          "y_min": 107.0,
+          "x_max": 69.0,
+          "y_max": 132.0
+        },
+        "text": "верь",
+        "confidence": 0.9783191084861755,
+        "column": "L"
+      }
+    ],
+    "bbox": {
+      "x_min": 0.0,
+      "y_min": 3.0,
+      "x_max": 308.0,
+      "y_max": 132.0
+    },
+    "column": "L"
+  },
+  {
+    "entry_id": "L001",
+    "lines": [
+      {
+        "bbox": {
+          "x_min": 0.0,
+          "y_min": 143.0,
+          "x_max": 286.0,
+          "y_max": 171.0
+        },
+        "text": "ankatbikbn en. pacTBopяetca.",
+        "confidence": 0.7948012948036194,
+        "column": "L"
+      },
+      {
+        "bbox": {
+          "x_min": 19.0,
+          "y_min": 165.0,
+          "x_max": 285.0,
+          "y_max": 188.0
+        },
+        "text": "Pасnаpыаercя, Dаcпаxhbieтcя",
+        "confidence": 0.786893367767334,
+        "column": "L"
+      },
+      {
+        "bbox": {
+          "x_min": 20.0,
+          "y_min": 180.0,
+          "x_max": 207.0,
+          "y_max": 206.0
+        },
+        "text": "pow. II gaaykatlen",
+        "confidence": 0.8989846706390381,
+        "column": "L"
+      },
+      {
+        "bbox": {
+          "x_min": 0.0,
+          "y_min": 199.0,
+          "x_max": 284.0,
+          "y_max": 226.0
+        },
+        "text": "Jaykь Hap. Hacteжb, pиorkpbb.",
+        "confidence": 0.7504845857620239,
+        "column": "L"
+      },
+      {
+        "bbox": {
+          "x_min": 20.0,
+          "y_min": 219.0,
+          "x_max": 216.0,
+          "y_max": 243.0
+        },
+        "text": "шась, pаcпахнувшись",
+        "confidence": 0.8076736330986023,
+        "column": "L"
+      },
+      {
+        "bbox": {
+          "x_min": 0.0,
+          "y_min": 236.0,
+          "x_max": 284.0,
+          "y_max": 261.0
+        },
+        "text": "аpkь vabn punpacиaxhyTый,",
+        "confidence": 0.756347119808197,
+        "column": "L"
+      },
+      {
+        "bbox": {
+          "x_min": 21.0,
+          "y_min": 256.0,
+          "x_max": 119.0,
+          "y_max": 277.0
+        },
+        "text": "раскрыты",
+        "confidence": 0.8848772644996643,
+        "column": "L"
+      },
+      {
+        "bbox": {
+          "x_min": 0.0,
+          "y_min": 273.0,
+          "x_max": 283.0,
+          "y_max": 295.0
+        },
+        "text": "agkerbnlcyu kadTah6yKB..Dac.",
+        "confidence": 0.8189339637756348,
+        "column": "L"
+      },
+      {
+        "bbox": {
+          "x_min": 21.0,
+          "y_min": 292.0,
+          "x_max": 175.0,
+          "y_max": 315.0
+        },
+        "text": "пахнутаяодежда",
+        "confidence": 0.9731146693229675,
+        "column": "L"
+      },
+      {
+        "bbox": {
+          "x_min": 0.0,
+          "y_min": 311.0,
+          "x_max": 32.0,
+          "y_max": 330.0
+        },
+        "text": "ь",
+        "confidence": 0.9626578092575073,
+        "column": "L"
+      },
+      {
+        "bbox": {
+          "x_min": 0.0,
+          "y_min": 327.0,
+          "x_max": 282.0,
+          "y_max": 350.0
+        },
+        "text": "Jatgbi, Takke aattr cyuy. pyyet",
+        "confidence": 0.872179388999939,
+        "column": "L"
+      },
+      {
+        "bbox": {
+          "x_min": 301.0,
+          "y_min": 344.0,
+          "x_max": 351.0,
+          "y_max": 367.0
+        },
+        "text": "аlђт",
+        "confidence": 0.9037156105041504,
+        "column": "L"
+      },
+      {
+        "bbox": {
+          "x_min": 0.0,
+          "y_min": 366.0,
+          "x_max": 280.0,
+          "y_max": 386.0
+        },
+        "text": "Ceg c'u. yTKa-tabka, MOpAHka",
+        "confidence": 0.8626035451889038,
+        "column": "L"
+      },
+      {
+        "bbox": {
+          "x_min": 18.0,
+          "y_min": 382.0,
+          "x_max": 147.0,
+          "y_max": 405.0
+        },
+        "text": "Anas fuligula",
+        "confidence": 0.9371046423912048,
+        "column": "L"
+      }
+    ],
+    "bbox": {
+      "x_min": 0.0,
+      "y_min": 143.0,
+      "x_max": 351.0,
+      "y_max": 405.0
+    },
+    "column": "L"
+  },
+  {
+    "entry_id": "L002",
+    "lines": [
+      {
+        "bbox": {
+          "x_min": 0.0,
+          "y_min": 417.0,
+          "x_max": 138.0,
+          "y_max": 441.0
+        },
+        "text": "cь cyw. дoar",
+        "confidence": 0.6652653217315674,
+        "column": "L"
+      },
+      {
+        "bbox": {
+          "x_min": 0.0,
+          "y_min": 435.0,
+          "x_max": 204.0,
+          "y_max": 458.0
+        },
+        "text": "сыьпсуцдолжник",
+        "confidence": 0.8731920123100281,
+        "column": "L"
+      },
+      {
+        "bbox": {
+          "x_min": 0.0,
+          "y_min": 452.0,
+          "x_max": 274.0,
+          "y_max": 476.0
+        },
+        "text": "Acbpaurkbnen eа. daeT B doлr !",
+        "confidence": 0.8519946932792664,
+        "column": "L"
+      },
+      {
+        "bbox": {
+          "x_min": 298.0,
+          "y_min": 453.0,
+          "x_max": 348.0,
+          "y_max": 480.0
+        },
+        "text": "ађр",
+        "confidence": 0.9012308120727539,
+        "column": "L"
+      },
+      {
+        "bbox": {
+          "x_min": 21.0,
+          "y_min": 472.0,
+          "x_max": 137.0,
+          "y_max": 494.0
+        },
+        "text": "Tpeбyet долг",
+        "confidence": 0.8194827437400818,
+        "column": "L"
+      },
+      {
+        "bbox": {
+          "x_min": 0.0,
+          "y_min": 496.0,
+          "x_max": 7.0,
+          "y_max": 507.0
+        },
+        "text": "г",
+        "confidence": 0.4221048951148987,
+        "column": "L"
+      },
+      {
+        "bbox": {
+          "x_min": 0.0,
+          "y_min": 506.0,
+          "x_max": 222.0,
+          "y_max": 529.0
+        },
+        "text": "Cь9ьrkьn ea kичe ero",
+        "confidence": 0.6824120283126831,
+        "column": "L"
+      },
+      {
+        "bbox": {
+          "x_min": 0.0,
+          "y_min": 529.0,
+          "x_max": 56.0,
+          "y_max": 545.0
+        },
+        "text": "еьга",
+        "confidence": 0.8422061204910278,
+        "column": "L"
+      },
+      {
+        "bbox": {
+          "x_min": 0.0,
+          "y_min": 540.0,
+          "x_max": 278.0,
+          "y_max": 565.0
+        },
+        "text": "cgembra. TaKke acgembiap-eur",
+        "confidence": 0.9338642358779907,
+        "column": "L"
+      },
+      {
+        "bbox": {
+          "x_min": 21.0,
+          "y_min": 560.0,
+          "x_max": 274.0,
+          "y_max": 582.0
+        },
+        "text": "сoюoph Toм ke, noeлaky ",
+        "confidence": 0.783652663230896,
+        "column": "L"
+      },
+      {
+        "bbox": {
+          "x_min": 22.0,
+          "y_min": 579.0,
+          "x_max": 252.0,
+          "y_max": 599.0
+        },
+        "text": "I cokaehho, k heciacth",
+        "confidence": 0.8308691382408142,
+        "column": "L"
+      },
+      {
+        "bbox": {
+          "x_min": 0.0,
+          "y_min": 596.0,
+          "x_max": 280.0,
+          "y_max": 622.0
+        },
+        "text": ".acgembra reen ajgulatka rus-",
+        "confidence": 0.901507556438446,
+        "column": "L"
+      },
+      {
+        "bbox": {
+          "x_min": 23.0,
+          "y_min": 616.0,
+          "x_max": 279.0,
+          "y_max": 636.0
+        },
+        "text": "Sbmll -- x cokanehwo, a eue",
+        "confidence": 0.8364102244377136,
+        "column": "L"
+      },
+      {
+        "bbox": {
+          "x_min": 22.0,
+          "y_min": 634.0,
+          "x_max": 277.0,
+          "y_max": 655.0
+        },
+        "text": "Heyмею говоpить по-pyсски",
+        "confidence": 0.8465226888656616,
+        "column": "L"
+      },
+      {
+        "bbox": {
+          "x_min": 0.0,
+          "y_min": 656.0,
+          "x_max": 33.0,
+          "y_max": 676.0
+        },
+        "text": "ја",
+        "confidence": 0.7359379529953003,
+        "column": "L"
+      },
+      {
+        "bbox": {
+          "x_min": 0.0,
+          "y_min": 674.0,
+          "x_max": 163.0,
+          "y_max": 694.0
+        },
+        "text": "Iсgьtа Hаp pядом",
+        "confidence": 0.8908324241638184,
+        "column": "L"
+      },
+      {
+        "bbox": {
+          "x_min": 0.0,
+          "y_min": 696.0,
+          "x_max": 29.0,
+          "y_max": 716.0
+        },
+        "text": "Kw",
+        "confidence": 0.6921920776367188,
+        "column": "L"
+      },
+      {
+        "bbox": {
+          "x_min": 0.0,
+          "y_min": 715.0,
+          "x_max": 275.0,
+          "y_max": 732.0
+        },
+        "text": "Ie-ik wbi cy'ut. kpemehi, Oykb.",
+        "confidence": 0.8291608691215515,
+        "column": "L"
+      },
+      {
+        "bbox": {
+          "x_min": 206.0,
+          "y_min": 733.0,
+          "x_max": 233.0,
+          "y_max": 751.0
+        },
+        "text": "ас",
+        "confidence": 0.9101781845092773,
+        "column": "L"
+      },
+      {
+        "bbox": {
+          "x_min": 23.0,
+          "y_min": 745.0,
+          "x_max": 204.0,
+          "y_max": 765.0
+        },
+        "text": "Kиphыt kamehb cm.",
+        "confidence": 0.8153913021087646,
+        "column": "L"
+      },
+      {
+        "bbox": {
+          "x_min": 204.0,
+          "y_min": 752.0,
+          "x_max": 231.0,
+          "y_max": 773.0
+        },
+        "text": "ас",
+        "confidence": 0.9170345067977905,
+        "column": "L"
+      },
+      {
+        "bbox": {
+          "x_min": 0.0,
+          "y_min": 767.0,
+          "x_max": 278.0,
+          "y_max": 790.0
+        },
+        "text": "c-ukwbn matbebi cyu. kypok",
+        "confidence": 0.8647854328155518,
+        "column": "L"
+      },
+      {
+        "bbox": {
+          "x_min": 147.0,
+          "y_min": 787.0,
+          "x_max": 278.0,
+          "y_max": 809.0
+        },
+        "text": "хремневом",
+        "confidence": 0.8159844875335693,
+        "column": "L"
+      },
+      {
+        "bbox": {
+          "x_min": 63.0,
+          "y_min": 789.0,
+          "x_max": 136.0,
+          "y_max": 806.0
+        },
+        "text": "ремня",
+        "confidence": 0.9192058444023132,
+        "column": "L"
+      },
+      {
+        "bbox": {
+          "x_min": 23.0,
+          "y_min": 790.0,
+          "x_max": 67.0,
+          "y_max": 805.0
+        },
+        "text": "длн",
+        "confidence": 0.8720390200614929,
+        "column": "L"
+      },
+      {
+        "bbox": {
+          "x_min": 20.0,
+          "y_min": 804.0,
+          "x_max": 86.0,
+          "y_max": 828.0
+        },
+        "text": "ружье",
+        "confidence": 0.856378436088562,
+        "column": "L"
+      },
+      {
+        "bbox": {
+          "x_min": 0.0,
+          "y_min": 830.0,
+          "x_max": 66.0,
+          "y_max": 852.0
+        },
+        "text": "I --17go",
+        "confidence": 0.7335319519042969,
+        "column": "L"
+      }
+    ],
+    "bbox": {
+      "x_min": 0.0,
+      "y_min": 417.0,
+      "x_max": 348.0,
+      "y_max": 852.0
+    },
+    "column": "L"
+  },
+  {
+    "entry_id": "R000",
+    "lines": [
+      {
+        "bbox": {
+          "x_min": 306.0,
+          "y_min": 38.0,
+          "x_max": 390.0,
+          "y_max": 59.0
+        },
+        "text": "Alewlekb",
+        "confidence": 0.9831226468086243,
+        "column": "R"
+      },
+      {
+        "bbox": {
+          "x_min": 334.0,
+          "y_min": 53.0,
+          "x_max": 627.0,
+          "y_max": 78.0
+        },
+        "text": "Alewlekb9 Hap. rycbkom, Apyr",
+        "confidence": 0.9172496795654297,
+        "column": "R"
+      }
+    ],
+    "bbox": {
+      "x_min": 306.0,
+      "y_min": 38.0,
+      "x_max": 627.0,
+      "y_max": 78.0
+    },
+    "column": "R"
+  },
+  {
+    "entry_id": "R001",
+    "lines": [
+      {
+        "bbox": {
+          "x_min": 362.0,
+          "y_min": 78.0,
+          "x_max": 452.0,
+          "y_max": 95.0
+        },
+        "text": "Sадргом",
+        "confidence": 0.827085018157959,
+        "column": "R"
+      },
+      {
+        "bbox": {
+          "x_min": 334.0,
+          "y_min": 89.0,
+          "x_max": 627.0,
+          "y_max": 113.0
+        },
+        "text": "alewiek? yalb lupu. rycbkoM",
+        "confidence": 0.8803325295448303,
+        "column": "R"
+      },
+      {
+        "bbox": {
+          "x_min": 359.0,
+          "y_min": 110.0,
+          "x_max": 627.0,
+          "y_max": 132.0
+        },
+        "text": "pаcположehный, rycьkoм Hдy.",
+        "confidence": 0.7557487487792969,
+        "column": "R"
+      },
+      {
+        "bbox": {
+          "x_min": 358.0,
+          "y_min": 127.0,
+          "x_max": 402.0,
+          "y_max": 153.0
+        },
+        "text": "ший",
+        "confidence": 0.993628203868866,
+        "column": "R"
+      },
+      {
+        "bbox": {
+          "x_min": 305.0,
+          "y_min": 147.0,
+          "x_max": 354.0,
+          "y_max": 169.0
+        },
+        "text": "ађ",
+        "confidence": 0.8985342979431152,
+        "column": "R"
+      },
+      {
+        "bbox": {
+          "x_min": 331.0,
+          "y_min": 164.0,
+          "x_max": 626.0,
+          "y_max": 186.0
+        },
+        "text": "Albm cyu. лhшняя,sanachaя",
+        "confidence": 0.7557040452957153,
+        "column": "R"
+      },
+      {
+        "bbox": {
+          "x_min": 359.0,
+          "y_min": 183.0,
+          "x_max": 624.0,
+          "y_max": 204.0
+        },
+        "text": "Heшь E дbOйHOм KOмплeKтe",
+        "confidence": 0.5983917117118835,
+        "column": "R"
+      },
+      {
+        "bbox": {
+          "x_min": 331.0,
+          "y_min": 201.0,
+          "x_max": 625.0,
+          "y_max": 222.0
+        },
+        "text": "аlbmerb сyu.ganаchая oдeжда",
+        "confidence": 0.7781569361686707,
+        "column": "R"
+      },
+      {
+        "bbox": {
+          "x_min": 331.0,
+          "y_min": 219.0,
+          "x_max": 624.0,
+          "y_max": 241.0
+        },
+        "text": "Alьm-elgbсyшsaпаchoй peмehь",
+        "confidence": 0.7842987775802612,
+        "column": "R"
+      },
+      {
+        "bbox": {
+          "x_min": 332.0,
+          "y_min": 239.0,
+          "x_max": 623.0,
+          "y_max": 258.0
+        },
+        "text": "Alьmаtђrkђnene cдbahbae, pi",
+        "confidence": 0.7713322043418884,
+        "column": "R"
+      }
+    ],
+    "bbox": {
+      "x_min": 305.0,
+      "y_min": 78.0,
+      "x_max": 627.0,
+      "y_max": 258.0
+    },
+    "column": "R"
+  },
+  {
+    "entry_id": "R002",
+    "lines": [
+      {
+        "bbox": {
+          "x_min": 359.0,
+          "y_min": 258.0,
+          "x_max": 488.0,
+          "y_max": 275.0
+        },
+        "text": "Cтавляяpядом",
+        "confidence": 0.8183298110961914,
+        "column": "R"
+      },
+      {
+        "bbox": {
+          "x_min": 330.0,
+          "y_min": 272.0,
+          "x_max": 624.0,
+          "y_max": 295.0
+        },
+        "text": "Acbm-bttbm cyu. Mano6epuobaя",
+        "confidence": 0.9098762273788452,
+        "column": "R"
+      },
+      {
+        "bbox": {
+          "x_min": 358.0,
+          "y_min": 292.0,
+          "x_max": 623.0,
+          "y_max": 312.0
+        },
+        "text": "Kocть roлehh,Tаkжe лчeвая",
+        "confidence": 0.7313313484191895,
+        "column": "R"
+      },
+      {
+        "bbox": {
+          "x_min": 356.0,
+          "y_min": 308.0,
+          "x_max": 623.0,
+          "y_max": 332.0
+        },
+        "text": "Koctь pykи '6ykb. Aboйhaя",
+        "confidence": 0.7753077745437622,
+        "column": "R"
+      },
+      {
+        "bbox": {
+          "x_min": 358.0,
+          "y_min": 331.0,
+          "x_max": 494.0,
+          "y_max": 348.0
+        },
+        "text": "Kotib cn. Ihm",
+        "confidence": 0.8543392419815063,
+        "column": "R"
+      }
+    ],
+    "bbox": {
+      "x_min": 330.0,
+      "y_min": 258.0,
+      "x_max": 624.0,
+      "y_max": 348.0
+    },
+    "column": "R"
+  },
+  {
+    "entry_id": "R003",
+    "lines": [
+      {
+        "bbox": {
+          "x_min": 329.0,
+          "y_min": 366.0,
+          "x_max": 624.0,
+          "y_max": 388.0
+        },
+        "text": "Albmbn lcows nonokhm, yro...",
+        "confidence": 0.8542615175247192,
+        "column": "R"
+      },
+      {
+        "bbox": {
+          "x_min": 329.0,
+          "y_min": 384.0,
+          "x_max": 623.0,
+          "y_max": 406.0
+        },
+        "text": "Ilbmb likwaw, ekurgam aalom ka-",
+        "confidence": 0.9255126714706421,
+        "column": "R"
+      },
+      {
+        "bbox": {
+          "x_min": 355.0,
+          "y_min": 404.0,
+          "x_max": 623.0,
+          "y_max": 423.0
+        },
+        "text": "Jen -- nodokhm, A ckaaal, Ho",
+        "confidence": 0.8520631194114685,
+        "column": "R"
+      },
+      {
+        "bbox": {
+          "x_min": 355.0,
+          "y_min": 420.0,
+          "x_max": 489.0,
+          "y_max": 444.0
+        },
+        "text": "Oн he cayшaeI",
+        "confidence": 0.8023647665977478,
+        "column": "R"
+      },
+      {
+        "bbox": {
+          "x_min": 328.0,
+          "y_min": 437.0,
+          "x_max": 493.0,
+          "y_max": 460.0
+        },
+        "text": "Albmga!-- boI kaK!",
+        "confidence": 0.8442164063453674,
+        "column": "R"
+      }
+    ],
+    "bbox": {
+      "x_min": 328.0,
+      "y_min": 366.0,
+      "x_max": 624.0,
+      "y_max": 460.0
+    },
+    "column": "R"
+  },
+  {
+    "entry_id": "R004",
+    "lines": [
+      {
+        "bbox": {
+          "x_min": 327.0,
+          "y_min": 473.0,
+          "x_max": 552.0,
+          "y_max": 495.0
+        },
+        "text": "Alb Gap. oyehb, Becbмa",
+        "confidence": 0.8192922472953796,
+        "column": "R"
+      },
+      {
+        "bbox": {
+          "x_min": 328.0,
+          "y_min": 491.0,
+          "x_max": 601.0,
+          "y_max": 512.0
+        },
+        "text": "Alb-atgaloO Gap. Becbмa xyдo",
+        "confidence": 0.8120623826980591,
+        "column": "R"
+      },
+      {
+        "bbox": {
+          "x_min": 331.0,
+          "y_min": 511.0,
+          "x_max": 622.0,
+          "y_max": 528.0
+        },
+        "text": "Aibitarken gtlvbl -- oehb Maioe",
+        "confidence": 0.777190625667572,
+        "column": "R"
+      }
+    ],
+    "bbox": {
+      "x_min": 327.0,
+      "y_min": 473.0,
+      "x_max": 622.0,
+      "y_max": 528.0
+    },
+    "column": "R"
+  },
+  {
+    "entry_id": "R005",
+    "lines": [
+      {
+        "bbox": {
+          "x_min": 354.0,
+          "y_min": 528.0,
+          "x_max": 406.0,
+          "y_max": 548.0
+        },
+        "text": "стадо",
+        "confidence": 0.9734259843826294,
+        "column": "R"
+      },
+      {
+        "bbox": {
+          "x_min": 299.0,
+          "y_min": 543.0,
+          "x_max": 375.0,
+          "y_max": 568.0
+        },
+        "text": "Algatga",
+        "confidence": 0.9893891215324402,
+        "column": "R"
+      },
+      {
+        "bbox": {
+          "x_min": 326.0,
+          "y_min": 561.0,
+          "x_max": 622.0,
+          "y_max": 586.0
+        },
+        "text": "Algittb, Cyu? Tonop Orup. naa.",
+        "confidence": 0.8933418393135071,
+        "column": "R"
+      },
+      {
+        "bbox": {
+          "x_min": 357.0,
+          "y_min": 582.0,
+          "x_max": 449.0,
+          "y_max": 600.0
+        },
+        "text": "Algatgајpь",
+        "confidence": 0.8329353332519531,
+        "column": "R"
+      },
+      {
+        "bbox": {
+          "x_min": 328.0,
+          "y_min": 596.0,
+          "x_max": 530.0,
+          "y_max": 618.0
+        },
+        "text": "Algatgaribn ea. pyour",
+        "confidence": 0.8642615079879761,
+        "column": "R"
+      },
+      {
+        "bbox": {
+          "x_min": 328.0,
+          "y_min": 614.0,
+          "x_max": 621.0,
+          "y_max": 637.0
+        },
+        "text": "Aigatgatkorkbn e4. denae Tono-",
+        "confidence": 0.8570404648780823,
+        "column": "R"
+      },
+      {
+        "bbox": {
+          "x_min": 354.0,
+          "y_min": 632.0,
+          "x_max": 494.0,
+          "y_max": 652.0
+        },
+        "text": "Dом чтоAибyдь",
+        "confidence": 0.7299019694328308,
+        "column": "R"
+      },
+      {
+        "bbox": {
+          "x_min": 328.0,
+          "y_min": 649.0,
+          "x_max": 619.0,
+          "y_max": 672.0
+        },
+        "text": "Algatgajpojgbn c'ts. Tonophu e",
+        "confidence": 0.9313963055610657,
+        "column": "R"
+      },
+      {
+        "bbox": {
+          "x_min": 298.0,
+          "y_min": 669.0,
+          "x_max": 364.0,
+          "y_max": 696.0
+        },
+        "text": "аlpђ",
+        "confidence": 0.819452702999115,
+        "column": "R"
+      },
+      {
+        "bbox": {
+          "x_min": 326.0,
+          "y_min": 689.0,
+          "x_max": 622.0,
+          "y_max": 711.0
+        },
+        "text": "Alpbupbi c'm. 3anata Ha no-",
+        "confidence": 0.7899726629257202,
+        "column": "R"
+      },
+      {
+        "bbox": {
+          "x_min": 355.0,
+          "y_min": 708.0,
+          "x_max": 415.0,
+          "y_max": 728.0
+        },
+        "text": "дошве",
+        "confidence": 0.9971694946289062,
+        "column": "R"
+      },
+      {
+        "bbox": {
+          "x_min": 327.0,
+          "y_min": 725.0,
+          "x_max": 621.0,
+          "y_max": 748.0
+        },
+        "text": "Alpbnpьikыnen e4. kладeT 3апaTy",
+        "confidence": 0.7370824217796326,
+        "column": "R"
+      },
+      {
+        "bbox": {
+          "x_min": 354.0,
+          "y_min": 744.0,
+          "x_max": 526.0,
+          "y_max": 766.0
+        },
+        "text": "Hаподошвуобуви",
+        "confidence": 0.9168813824653625,
+        "column": "R"
+      },
+      {
+        "bbox": {
+          "x_min": 301.0,
+          "y_min": 764.0,
+          "x_max": 582.0,
+          "y_max": 787.0
+        },
+        "text": "A.B. alpbnnblgbn Cyu. kam6ana",
+        "confidence": 0.8516407012939453,
+        "column": "R"
+      },
+      {
+        "bbox": {
+          "x_min": 397.0,
+          "y_min": 784.0,
+          "x_max": 445.0,
+          "y_max": 803.0
+        },
+        "text": "те",
+        "confidence": 0.5060117244720459,
+        "column": "R"
+      },
+      {
+        "bbox": {
+          "x_min": 296.0,
+          "y_min": 792.0,
+          "x_max": 391.0,
+          "y_max": 821.0
+        },
+        "text": "alva cm.",
+        "confidence": 0.9479443430900574,
+        "column": "R"
+      },
+      {
+        "bbox": {
+          "x_min": 401.0,
+          "y_min": 802.0,
+          "x_max": 444.0,
+          "y_max": 828.0
+        },
+        "text": "la",
+        "confidence": 0.790719747543335,
+        "column": "R"
+      }
+    ],
+    "bbox": {
+      "x_min": 296.0,
+      "y_min": 528.0,
+      "x_max": 622.0,
+      "y_max": 828.0
+    },
+    "column": "R"
+  }
+]

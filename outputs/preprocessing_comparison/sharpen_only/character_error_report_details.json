@@ -1,0 +1,689 @@
+{
+  "cer": 0.06086341118188252,
+  "wer": 0.11961722488038277,
+  "total_chars": 1413,
+  "total_words": 209,
+  "total_char_errors": 86,
+  "total_word_errors": 25,
+  "substitutions": {
+    "count": 26,
+    "rate": 0.01840056617126681,
+    "most_common": [
+      {
+        "from": "р",
+        "to": "p",
+        "count": 4,
+        "examples": [
+          {
+            "ground_truth": "отпр. пад. ālgatgájрь",
+            "extracted": "отпр. пад. ālgatgajpь"
+          },
+          {
+            "ground_truth": "álрьnŋьn",
+            "extracted": "álpьnŋьn"
+          },
+          {
+            "ground_truth": "alрь́nŋьrkьnen",
+            "extracted": "alpьnŋьrkьnen"
+          }
+        ]
+      },
+      {
+        "from": "ŋ",
+        "to": "p",
+        "count": 2,
+        "examples": [
+          {
+            "ground_truth": "áaŋkь válьn",
+            "extracted": "áapkь válьn"
+          },
+          {
+            "ground_truth": "alьm-ŋélgьn",
+            "extracted": "alьm-pélgьn"
+          }
+        ]
+      },
+      {
+        "from": "И",
+        "to": "H",
+        "count": 2,
+        "examples": [
+          {
+            "ground_truth": "И.B.acgémbra réen æjgulǽtkæ rússьmil",
+            "extracted": "H.B.acgémbra réen æjgulǽtkæ rússьmil"
+          },
+          {
+            "ground_truth": "И.B. alрь́nŋьlgьn",
+            "extracted": "H.B. alpьnŋьlgьn"
+          }
+        ]
+      },
+      {
+        "from": "ə",
+        "to": "a",
+        "count": 2,
+        "examples": [
+          {
+            "ground_truth": "álьmь tikwæп, ékwurgam aálomkəlen",
+            "extracted": "álьmь tikwæul, ékwurgam aálomkalen"
+          },
+          {
+            "ground_truth": "álьŋ-atqə(ŋ)",
+            "extracted": "álьŋ-atqa(ŋ)"
+          }
+        ]
+      },
+      {
+        "from": "a",
+        "to": "ь",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "aaŋkátьrkьn",
+            "extracted": "acьŋьrkьn"
+          }
+        ]
+      },
+      {
+        "from": "р",
+        "to": "к",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "растворяется, распарывается, распахивается",
+            "extracted": "кличет его"
+          }
+        ]
+      },
+      {
+        "from": "а",
+        "to": "л",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "растворяется, распарывается, распахивается",
+            "extracted": "кличет его"
+          }
+        ]
+      },
+      {
+        "from": "с",
+        "to": "и",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "растворяется, распарывается, распахивается",
+            "extracted": "кличет его"
+          }
+        ]
+      },
+      {
+        "from": "т",
+        "to": "ч",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "растворяется, распарывается, распахивается",
+            "extracted": "кличет его"
+          }
+        ]
+      },
+      {
+        "from": "т",
+        "to": "г",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "растворяется, распарывается, распахивается",
+            "extracted": "кличет его"
+          }
+        ]
+      },
+      {
+        "from": "с",
+        "to": "о",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "растворяется, распарывается, распахивается",
+            "extracted": "кличет его"
+          }
+        ]
+      },
+      {
+        "from": "г",
+        "to": "т",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "aaŋk-éгьn",
+            "extracted": "aaŋk-éтьп"
+          }
+        ]
+      },
+      {
+        "from": "n",
+        "to": "п",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "aaŋk-éгьn",
+            "extracted": "aaŋk-éтьп"
+          }
+        ]
+      },
+      {
+        "from": "a",
+        "to": "á",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "acь́ŋьlьn",
+            "extracted": "ácьŋьlьn"
+          }
+        ]
+      },
+      {
+        "from": "ь",
+        "to": "b",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "racьŋáurkьnen",
+            "extracted": "racьŋáurkbnen"
+          }
+        ]
+      },
+      {
+        "from": "ŋ",
+        "to": "n",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "acgémbra, также acgémbraŋ-eur",
+            "extracted": "acgémbra, также acgémbran-eur"
+          }
+        ]
+      },
+      {
+        "from": "п",
+        "to": "n",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "alьmátьrkьпen",
+            "extracted": "alьmátьrkьnen"
+          }
+        ]
+      },
+      {
+        "from": "п",
+        "to": "l",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "álьmь tikwæп, ékwurgam aálomkəlen",
+            "extracted": "álьmь tikwæul, ékwurgam aálomkalen"
+          }
+        ]
+      },
+      {
+        "from": "ŋ",
+        "to": "y",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "álьŋ-tārken ŋǽlvьl",
+            "extracted": "álьŋ-tārken yǽlvьl"
+          }
+        ]
+      },
+      {
+        "from": "á",
+        "to": "a",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "отпр. пад. ālgatgájрь",
+            "extracted": "отпр. пад. ālgatgajpь"
+          }
+        ]
+      }
+    ]
+  },
+  "deletions": {
+    "count": 58,
+    "rate": 0.04104741684359519,
+    "most_common": [
+      {
+        "character": "а",
+        "count": 6,
+        "examples": [
+          {
+            "ground_truth": "растворяется, распарывается, распахивается",
+            "extracted": "кличет его"
+          },
+          {
+            "ground_truth": "растворяется, распарывается, распахивается",
+            "extracted": "кличет его"
+          },
+          {
+            "ground_truth": "растворяется, распарывается, распахивается",
+            "extracted": "кличет его"
+          }
+        ]
+      },
+      {
+        "character": "р",
+        "count": 5,
+        "examples": [
+          {
+            "ground_truth": "растворяется, распарывается, распахивается",
+            "extracted": "кличет его"
+          },
+          {
+            "ground_truth": "растворяется, распарывается, распахивается",
+            "extracted": "кличет его"
+          },
+          {
+            "ground_truth": "растворяется, распарывается, распахивается",
+            "extracted": "кличет его"
+          }
+        ]
+      },
+      {
+        "character": "я",
+        "count": 4,
+        "examples": [
+          {
+            "ground_truth": "растворяется, распарывается, распахивается",
+            "extracted": "кличет его"
+          },
+          {
+            "ground_truth": "растворяется, распарывается, распахивается",
+            "extracted": "кличет его"
+          },
+          {
+            "ground_truth": "растворяется, распарывается, распахивается",
+            "extracted": "кличет его"
+          }
+        ]
+      },
+      {
+        "character": "с",
+        "count": 4,
+        "examples": [
+          {
+            "ground_truth": "растворяется, распарывается, распахивается",
+            "extracted": "кличет его"
+          },
+          {
+            "ground_truth": "растворяется, распарывается, распахивается",
+            "extracted": "кличет его"
+          },
+          {
+            "ground_truth": "растворяется, распарывается, распахивается",
+            "extracted": "кличет его"
+          }
+        ]
+      },
+      {
+        "character": "в",
+        "count": 3,
+        "examples": [
+          {
+            "ground_truth": "растворяется, распарывается, распахивается",
+            "extracted": "кличет его"
+          },
+          {
+            "ground_truth": "растворяется, распарывается, распахивается",
+            "extracted": "кличет его"
+          },
+          {
+            "ground_truth": "растворяется, распарывается, распахивается",
+            "extracted": "кличет его"
+          }
+        ]
+      },
+      {
+        "character": "п",
+        "count": 3,
+        "examples": [
+          {
+            "ground_truth": "растворяется, распарывается, распахивается",
+            "extracted": "кличет его"
+          },
+          {
+            "ground_truth": "растворяется, распарывается, распахивается",
+            "extracted": "кличет его"
+          },
+          {
+            "ground_truth": "прош. II gaaŋkátlen",
+            "extracted": ""
+          }
+        ]
+      },
+      {
+        "character": " ",
+        "count": 3,
+        "examples": [
+          {
+            "ground_truth": "растворяется, распарывается, распахивается",
+            "extracted": "кличет его"
+          },
+          {
+            "ground_truth": "прош. II gaaŋkátlen",
+            "extracted": ""
+          },
+          {
+            "ground_truth": "прош. II gaaŋkátlen",
+            "extracted": ""
+          }
+        ]
+      },
+      {
+        "character": "́",
+        "count": 3,
+        "examples": [
+          {
+            "ground_truth": "acь́ŋьlьn",
+            "extracted": "ácьŋьlьn"
+          },
+          {
+            "ground_truth": "alрь́nŋьrkьnen",
+            "extracted": "alpьnŋьrkьnen"
+          },
+          {
+            "ground_truth": "И.B. alрь́nŋьlgьn",
+            "extracted": "H.B. alpьnŋьlgьn"
+          }
+        ]
+      },
+      {
+        "character": "k",
+        "count": 2,
+        "examples": [
+          {
+            "ground_truth": "aaŋkátьrkьn",
+            "extracted": "acьŋьrkьn"
+          },
+          {
+            "ground_truth": "прош. II gaaŋkátlen",
+            "extracted": ""
+          }
+        ]
+      },
+      {
+        "character": "á",
+        "count": 2,
+        "examples": [
+          {
+            "ground_truth": "aaŋkátьrkьn",
+            "extracted": "acьŋьrkьn"
+          },
+          {
+            "ground_truth": "прош. II gaaŋkátlen",
+            "extracted": ""
+          }
+        ]
+      },
+      {
+        "character": "t",
+        "count": 2,
+        "examples": [
+          {
+            "ground_truth": "aaŋkátьrkьn",
+            "extracted": "acьŋьrkьn"
+          },
+          {
+            "ground_truth": "прош. II gaaŋkátlen",
+            "extracted": ""
+          }
+        ]
+      },
+      {
+        "character": "о",
+        "count": 2,
+        "examples": [
+          {
+            "ground_truth": "растворяется, распарывается, распахивается",
+            "extracted": "кличет его"
+          },
+          {
+            "ground_truth": "прош. II gaaŋkátlen",
+            "extracted": ""
+          }
+        ]
+      },
+      {
+        "character": ",",
+        "count": 2,
+        "examples": [
+          {
+            "ground_truth": "растворяется, распарывается, распахивается",
+            "extracted": "кличет его"
+          },
+          {
+            "ground_truth": "растворяется, распарывается, распахивается",
+            "extracted": "кличет его"
+          }
+        ]
+      },
+      {
+        "character": "I",
+        "count": 2,
+        "examples": [
+          {
+            "ground_truth": "прош. II gaaŋkátlen",
+            "extracted": ""
+          },
+          {
+            "ground_truth": "прош. II gaaŋkátlen",
+            "extracted": ""
+          }
+        ]
+      },
+      {
+        "character": "a",
+        "count": 2,
+        "examples": [
+          {
+            "ground_truth": "прош. II gaaŋkátlen",
+            "extracted": ""
+          },
+          {
+            "ground_truth": "прош. II gaaŋkátlen",
+            "extracted": ""
+          }
+        ]
+      },
+      {
+        "character": "ы",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "растворяется, распарывается, распахивается",
+            "extracted": "кличет его"
+          }
+        ]
+      },
+      {
+        "character": "х",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "растворяется, распарывается, распахивается",
+            "extracted": "кличет его"
+          }
+        ]
+      },
+      {
+        "character": "и",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "растворяется, распарывается, распахивается",
+            "extracted": "кличет его"
+          }
+        ]
+      },
+      {
+        "character": "е",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "растворяется, распарывается, распахивается",
+            "extracted": "кличет его"
+          }
+        ]
+      },
+      {
+        "character": "т",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "растворяется, распарывается, распахивается",
+            "extracted": "кличет его"
+          }
+        ]
+      },
+      {
+        "character": "ш",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "прош. II gaaŋkátlen",
+            "extracted": ""
+          }
+        ]
+      },
+      {
+        "character": ".",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "прош. II gaaŋkátlen",
+            "extracted": ""
+          }
+        ]
+      },
+      {
+        "character": "g",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "прош. II gaaŋkátlen",
+            "extracted": ""
+          }
+        ]
+      },
+      {
+        "character": "ŋ",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "прош. II gaaŋkátlen",
+            "extracted": ""
+          }
+        ]
+      },
+      {
+        "character": "l",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "прош. II gaaŋkátlen",
+            "extracted": ""
+          }
+        ]
+      },
+      {
+        "character": "e",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "прош. II gaaŋkátlen",
+            "extracted": ""
+          }
+        ]
+      },
+      {
+        "character": "n",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "прош. II gaaŋkátlen",
+            "extracted": ""
+          }
+        ]
+      },
+      {
+        "character": "г",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "aátgьг, также aátir",
+            "extracted": "aátgь, также aátir"
+          }
+        ]
+      }
+    ]
+  },
+  "insertions": {
+    "count": 2,
+    "rate": 0.0014154281670205238,
+    "most_common": [
+      {
+        "character": "c",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "aaŋkátьrkьn",
+            "extracted": "acьŋьrkьn"
+          }
+        ]
+      },
+      {
+        "character": "u",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "álьmь tikwæп, ékwurgam aálomkəlen",
+            "extracted": "álьmь tikwæul, ékwurgam aálomkalen"
+          }
+        ]
+      }
+    ]
+  },
+  "word_errors": {
+    "substitutions": 21,
+    "deletions": 4,
+    "insertions": 0
+  },
+  "field_stats": {
+    "Headword_Phrase": {
+      "chars": 450,
+      "subs": 18,
+      "dels": 7,
+      "ins": 2
+    },
+    "POS": {
+      "chars": 124,
+      "subs": 0,
+      "dels": 0,
+      "ins": 0
+    },
+    "Translation_RU": {
+      "chars": 775,
+      "subs": 6,
+      "dels": 32,
+      "ins": 0
+    },
+    "Grammar_Notes": {
+      "chars": 64,
+      "subs": 2,
+      "dels": 19,
+      "ins": 0
+    }
+  }
+}

@@ -1,0 +1,478 @@
+{
+  "metrics": {
+    "total_ground_truth": 38,
+    "total_extracted": 37,
+    "exact_matches": 1,
+    "partial_matches": 20,
+    "missing_entries": 14,
+    "extra_entries": 13,
+    "headword_accuracy": 0.832603824628788,
+    "grammatical_accuracy": 0.9250992063492064,
+    "definition_accuracy": 0.9460321754119708,
+    "overall_f1": 0.5599999999999999,
+    "precision": 0.5675675675675675,
+    "recall": 0.5526315789473685
+  },
+  "missing_entries": [
+    {
+      "Headword_Phrase": "áaŋkь",
+      "Entry_Type": "word",
+      "POS": "нар.",
+      "Translation_RU": "настежь, приоткрывшись, распахнувшись",
+      "Literal_Meaning": "",
+      "Grammar_Notes": ""
+    },
+    {
+      "Headword_Phrase": "aaŋk-éгьn",
+      "Entry_Type": "word",
+      "POS": "сущ.",
+      "Translation_RU": "кафтан",
+      "Literal_Meaning": "распахнутая одежда",
+      "Grammar_Notes": ""
+    },
+    {
+      "Headword_Phrase": "ácьŋ",
+      "Entry_Type": "word",
+      "POS": "сущ.",
+      "Translation_RU": "долг",
+      "Literal_Meaning": "",
+      "Grammar_Notes": ""
+    },
+    {
+      "Headword_Phrase": "acь́ŋьlьn",
+      "Entry_Type": "word",
+      "POS": "сущ.",
+      "Translation_RU": "должник",
+      "Literal_Meaning": "",
+      "Grammar_Notes": ""
+    },
+    {
+      "Headword_Phrase": "acь́ŋьrkьn",
+      "Entry_Type": "word",
+      "POS": "гл.",
+      "Translation_RU": "кличет его",
+      "Literal_Meaning": "",
+      "Grammar_Notes": ""
+    },
+    {
+      "Headword_Phrase": "alьmátьrkьпen",
+      "Entry_Type": "word",
+      "POS": "гл.",
+      "Translation_RU": "сдваивает, приставляя рядом",
+      "Literal_Meaning": "",
+      "Grammar_Notes": ""
+    },
+    {
+      "Headword_Phrase": "ácьm-ьttьm",
+      "Entry_Type": "word",
+      "POS": "сущ.",
+      "Translation_RU": "малоберцовая кость голени, также лучевая кость руки",
+      "Literal_Meaning": "двойная кость",
+      "Grammar_Notes": "см. lьm"
+    },
+    {
+      "Headword_Phrase": "álьmь(ŋ)",
+      "Entry_Type": "word",
+      "POS": "союз",
+      "Translation_RU": "положим, что...",
+      "Literal_Meaning": "",
+      "Grammar_Notes": ""
+    },
+    {
+      "Headword_Phrase": "álьmŋə!",
+      "Entry_Type": "phrase",
+      "POS": "",
+      "Translation_RU": "вот как!",
+      "Literal_Meaning": "",
+      "Grammar_Notes": ""
+    },
+    {
+      "Headword_Phrase": "álьŋ",
+      "Entry_Type": "word",
+      "POS": "нар.",
+      "Translation_RU": "очень, весьма",
+      "Literal_Meaning": "",
+      "Grammar_Notes": ""
+    },
+    {
+      "Headword_Phrase": "álрьnŋьn",
+      "Entry_Type": "word",
+      "POS": "сущ.",
+      "Translation_RU": "заплата на подошве",
+      "Literal_Meaning": "",
+      "Grammar_Notes": ""
+    },
+    {
+      "Headword_Phrase": "alрь́nŋьrkьnen",
+      "Entry_Type": "word",
+      "POS": "гл.",
+      "Translation_RU": "кладет заплату на подошву обуви",
+      "Literal_Meaning": "",
+      "Grammar_Notes": ""
+    },
+    {
+      "Headword_Phrase": "И.B. alрь́nŋьlgьn",
+      "Entry_Type": "word",
+      "POS": "сущ.",
+      "Translation_RU": "камбала",
+      "Literal_Meaning": "",
+      "Grammar_Notes": ""
+    },
+    {
+      "Headword_Phrase": "alva",
+      "Entry_Type": "word",
+      "POS": "",
+      "Translation_RU": "",
+      "Literal_Meaning": "",
+      "Grammar_Notes": "см. ælvæ"
+    }
+  ],
+  "extra_entries": [
+    {
+      "Headword_Phrase": "а́аŋкь",
+      "Entry_Type": "word",
+      "POS": "нар.",
+      "Translation_RU": "настежь, приоткрывшись, распахнувшись",
+      "Literal_Meaning": "",
+      "Grammar_Notes": ""
+    },
+    {
+      "Headword_Phrase": "аадк-е́тьп",
+      "Entry_Type": "word",
+      "POS": "сущ.",
+      "Translation_RU": "кафтан",
+      "Literal_Meaning": "распахнутая одежда",
+      "Grammar_Notes": ""
+    },
+    {
+      "Headword_Phrase": "а́сьд",
+      "Entry_Type": "word",
+      "POS": "сущ.",
+      "Translation_RU": "долг",
+      "Literal_Meaning": "",
+      "Grammar_Notes": ""
+    },
+    {
+      "Headword_Phrase": "ась́уьlьn",
+      "Entry_Type": "word",
+      "POS": "сущ.",
+      "Translation_RU": "должник",
+      "Literal_Meaning": "",
+      "Grammar_Notes": ""
+    },
+    {
+      "Headword_Phrase": "асбәыткьп",
+      "Entry_Type": "word",
+      "POS": "гл.",
+      "Translation_RU": "кличет его",
+      "Literal_Meaning": "",
+      "Grammar_Notes": ""
+    },
+    {
+      "Headword_Phrase": "alsmátbrkbnen",
+      "Entry_Type": "word",
+      "POS": "гл.",
+      "Translation_RU": "сдваивает, приставляя рядом",
+      "Literal_Meaning": "",
+      "Grammar_Notes": ""
+    },
+    {
+      "Headword_Phrase": "а́сьт-ыttom",
+      "Entry_Type": "word",
+      "POS": "сущ.",
+      "Translation_RU": "малоберцовая кость годени, также лучевая кость руки",
+      "Literal_Meaning": "двойная кость",
+      "Grammar_Notes": "см. 1 bm"
+    },
+    {
+      "Headword_Phrase": "а́lьmb(η)",
+      "Entry_Type": "word",
+      "POS": "сожз",
+      "Translation_RU": "положим, что...",
+      "Literal_Meaning": "",
+      "Grammar_Notes": ""
+    },
+    {
+      "Headword_Phrase": "а́lвтра!",
+      "Entry_Type": "phrase",
+      "POS": "",
+      "Translation_RU": "вот как!",
+      "Literal_Meaning": "",
+      "Grammar_Notes": ""
+    },
+    {
+      "Headword_Phrase": "а́lьд",
+      "Entry_Type": "word",
+      "POS": "нар.",
+      "Translation_RU": "очень, весьма",
+      "Literal_Meaning": "",
+      "Grammar_Notes": ""
+    },
+    {
+      "Headword_Phrase": "а́ррыпул",
+      "Entry_Type": "word",
+      "POS": "сущ.",
+      "Translation_RU": "заплата на подошве",
+      "Literal_Meaning": "",
+      "Grammar_Notes": ""
+    },
+    {
+      "Headword_Phrase": "alpbnŋbrkbnen",
+      "Entry_Type": "word",
+      "POS": "2л.",
+      "Translation_RU": "кладет заплату на подошву обуви",
+      "Literal_Meaning": "",
+      "Grammar_Notes": ""
+    },
+    {
+      "Headword_Phrase": "alpingblgsn",
+      "Entry_Type": "word",
+      "POS": "cycu.",
+      "Translation_RU": "камбала",
+      "Literal_Meaning": "",
+      "Grammar_Notes": ""
+    }
+  ],
+  "low_score_matches": [
+    {
+      "ground_truth": {
+        "Headword_Phrase": "aaŋkátьrkьn",
+        "Entry_Type": "word",
+        "POS": "гл.",
+        "Translation_RU": "растворяется, распарывается, распахивается",
+        "Literal_Meaning": "",
+        "Grammar_Notes": "прош. II gaaŋkátlen"
+      },
+      "extracted": {
+        "Headword_Phrase": "aapkátsrkın",
+        "Entry_Type": "word",
+        "POS": "гл.",
+        "Translation_RU": "растворяется, распарывается, распахивается",
+        "Literal_Meaning": "",
+        "Grammar_Notes": "(прош. II gaaykátlen)"
+      },
+      "scores": {
+        "overall": 0.8636363636363636,
+        "headword": 0.7272727272727273,
+        "grammatical": 1.0,
+        "definition": 1.0
+      }
+    },
+    {
+      "ground_truth": {
+        "Headword_Phrase": "áaŋkь válьn",
+        "Entry_Type": "word",
+        "POS": "прил.",
+        "Translation_RU": "распахнутый, раскрытый",
+        "Literal_Meaning": "",
+        "Grammar_Notes": ""
+      },
+      "extracted": {
+        "Headword_Phrase": "áapkb válbn",
+        "Entry_Type": "word",
+        "POS": "прил.",
+        "Translation_RU": "распахнутый, раскрытый",
+        "Literal_Meaning": "",
+        "Grammar_Notes": ""
+      },
+      "scores": {
+        "overall": 0.8636363636363636,
+        "headword": 0.7272727272727273,
+        "grammatical": 1.0,
+        "definition": 1.0
+      }
+    },
+    {
+      "ground_truth": {
+        "Headword_Phrase": "ácəq",
+        "Entry_Type": "word",
+        "POS": "сущ.",
+        "Translation_RU": "утка-савка, морянка (Anas fuligula)",
+        "Literal_Meaning": "",
+        "Grammar_Notes": ""
+      },
+      "extracted": {
+        "Headword_Phrase": "ácәq",
+        "Entry_Type": "word",
+        "POS": "сущ.",
+        "Translation_RU": "утка-савка, морянка (Anas fuligula)",
+        "Literal_Meaning": "",
+        "Grammar_Notes": ""
+      },
+      "scores": {
+        "overall": 0.875,
+        "headword": 0.75,
+        "grammatical": 1.0,
+        "definition": 1.0
+      }
+    },
+    {
+      "ground_truth": {
+        "Headword_Phrase": "racьŋáurkьnen",
+        "Entry_Type": "word",
+        "POS": "гл.",
+        "Translation_RU": "дает в долг; требует долг",
+        "Literal_Meaning": "",
+        "Grammar_Notes": ""
+      },
+      "extracted": {
+        "Headword_Phrase": "racbjáurkbnen",
+        "Entry_Type": "word",
+        "POS": "2.2.",
+        "Translation_RU": "дает в долг || требует долг",
+        "Literal_Meaning": "",
+        "Grammar_Notes": "(2.2.)"
+      },
+      "scores": {
+        "overall": 0.7505494505494505,
+        "headword": 0.7692307692307693,
+        "grammatical": 0.2857142857142857,
+        "definition": 0.9230769230769231
+      }
+    },
+    {
+      "ground_truth": {
+        "Headword_Phrase": "ac-úkwьn mátьcьn",
+        "Entry_Type": "word",
+        "POS": "сущ.",
+        "Translation_RU": "курок для кремня (в кремневом ружье)",
+        "Literal_Meaning": "",
+        "Grammar_Notes": ""
+      },
+      "extracted": {
+        "Headword_Phrase": "ac-úkwbn mátbcon",
+        "Entry_Type": "word",
+        "POS": "cym.",
+        "Translation_RU": "курок для кремня (в кремневом ружье)",
+        "Literal_Meaning": "",
+        "Grammar_Notes": ""
+      },
+      "scores": {
+        "overall": 0.79375,
+        "headword": 0.8125,
+        "grammatical": 0.25,
+        "definition": 1.0
+      }
+    },
+    {
+      "ground_truth": {
+        "Headword_Phrase": "álьm",
+        "Entry_Type": "word",
+        "POS": "сущ.",
+        "Translation_RU": "лишняя, запасная вещь (в двойном комплекте)",
+        "Literal_Meaning": "",
+        "Grammar_Notes": ""
+      },
+      "extracted": {
+        "Headword_Phrase": "álbm",
+        "Entry_Type": "word",
+        "POS": "сущ.",
+        "Translation_RU": "лишняя, запасная вещь (в двойном комплекте)",
+        "Literal_Meaning": "",
+        "Grammar_Notes": ""
+      },
+      "scores": {
+        "overall": 0.875,
+        "headword": 0.75,
+        "grammatical": 1.0,
+        "definition": 1.0
+      }
+    },
+    {
+      "ground_truth": {
+        "Headword_Phrase": "alьm-érьn",
+        "Entry_Type": "word",
+        "POS": "сущ.",
+        "Translation_RU": "запасная одежда",
+        "Literal_Meaning": "",
+        "Grammar_Notes": ""
+      },
+      "extracted": {
+        "Headword_Phrase": "alsm-érsn",
+        "Entry_Type": "word",
+        "POS": "сущ.",
+        "Translation_RU": "запасная одежда",
+        "Literal_Meaning": "",
+        "Grammar_Notes": ""
+      },
+      "scores": {
+        "overall": 0.8888888888888888,
+        "headword": 0.7777777777777778,
+        "grammatical": 1.0,
+        "definition": 1.0
+      }
+    },
+    {
+      "ground_truth": {
+        "Headword_Phrase": "alьm-ŋélgьn",
+        "Entry_Type": "word",
+        "POS": "сущ.",
+        "Translation_RU": "запасной ремень",
+        "Literal_Meaning": "",
+        "Grammar_Notes": ""
+      },
+      "extracted": {
+        "Headword_Phrase": "alsm-pélgsn",
+        "Entry_Type": "word",
+        "POS": "сущ.",
+        "Translation_RU": "запасной ремень",
+        "Literal_Meaning": "",
+        "Grammar_Notes": ""
+      },
+      "scores": {
+        "overall": 0.8636363636363636,
+        "headword": 0.7272727272727273,
+        "grammatical": 1.0,
+        "definition": 1.0
+      }
+    },
+    {
+      "ground_truth": {
+        "Headword_Phrase": "álьŋ-atqə(ŋ)",
+        "Entry_Type": "word",
+        "POS": "нар.",
+        "Translation_RU": "весьма худо",
+        "Literal_Meaning": "",
+        "Grammar_Notes": ""
+      },
+      "extracted": {
+        "Headword_Phrase": "álbŋ-atqa(0)",
+        "Entry_Type": "word",
+        "POS": "нар.",
+        "Translation_RU": "весьма худо",
+        "Literal_Meaning": "",
+        "Grammar_Notes": ""
+      },
+      "scores": {
+        "overall": 0.875,
+        "headword": 0.75,
+        "grammatical": 1.0,
+        "definition": 1.0
+      }
+    },
+    {
+      "ground_truth": {
+        "Headword_Phrase": "álьŋ-tārken ŋǽlvьl",
+        "Entry_Type": "phrase",
+        "POS": "",
+        "Translation_RU": "очень малое стадо",
+        "Literal_Meaning": "",
+        "Grammar_Notes": ""
+      },
+      "extracted": {
+        "Headword_Phrase": "álb p-tārken yǽlvbl",
+        "Entry_Type": "phrase",
+        "POS": "",
+        "Translation_RU": "очень малое стадо",
+        "Literal_Meaning": "",
+        "Grammar_Notes": ""
+      },
+      "scores": {
+        "overall": 0.8783783783783784,
+        "headword": 0.7567567567567568,
+        "grammatical": 1.0,
+        "definition": 1.0
+      }
+    }
+  ]
+}

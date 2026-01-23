@@ -1,0 +1,62 @@
+{
+  "metrics": {
+    "total_ground_truth": 38,
+    "total_extracted": 38,
+    "exact_matches": 17,
+    "partial_matches": 20,
+    "missing_entries": 1,
+    "extra_entries": 1,
+    "headword_accuracy": 0.9330532201026623,
+    "grammatical_accuracy": 1.0,
+    "definition_accuracy": 1.0,
+    "overall_f1": 0.9736842105263158,
+    "precision": 0.9736842105263158,
+    "recall": 0.9736842105263158
+  },
+  "missing_entries": [
+    {
+      "Headword_Phrase": "aaŋk-éгьn",
+      "Entry_Type": "word",
+      "POS": "сущ.",
+      "Translation_RU": "кафтан",
+      "Literal_Meaning": "распахнутая одежда",
+      "Grammar_Notes": ""
+    }
+  ],
+  "extra_entries": [
+    {
+      "Headword_Phrase": "aaŋк-éтъp",
+      "Entry_Type": "word",
+      "POS": "сущ.",
+      "Translation_RU": "кафтан",
+      "Literal_Meaning": "распахнутая одежда",
+      "Grammar_Notes": ""
+    }
+  ],
+  "low_score_matches": [
+    {
+      "ground_truth": {
+        "Headword_Phrase": "aaŋkátьrkьn",
+        "Entry_Type": "word",
+        "POS": "гл.",
+        "Translation_RU": "растворяется, распарывается, распахивается",
+        "Literal_Meaning": "",
+        "Grammar_Notes": "прош. II gaaŋkátlen"
+      },
+      "extracted": {
+        "Headword_Phrase": "aapkátsrкьn",
+        "Entry_Type": "word",
+        "POS": "гл.",
+        "Translation_RU": "растворяется, распарывается, распахивается",
+        "Literal_Meaning": "",
+        "Grammar_Notes": "прош. II gaaykátlen"
+      },
+      "scores": {
+        "overall": 0.8636363636363636,
+        "headword": 0.7272727272727273,
+        "grammatical": 1.0,
+        "definition": 1.0
+      }
+    }
+  ]
+}

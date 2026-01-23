@@ -1,0 +1,190 @@
+{
+  "cer": 0.010445682451253482,
+  "wer": 0.06572769953051644,
+  "total_chars": 1436,
+  "total_words": 213,
+  "total_char_errors": 15,
+  "total_word_errors": 14,
+  "substitutions": {
+    "count": 9,
+    "rate": 0.006267409470752089,
+    "most_common": [
+      {
+        "from": "И",
+        "to": "H",
+        "count": 2,
+        "examples": [
+          {
+            "ground_truth": "И.B.acgémbra réen æjgulǽtkæ rússьmil",
+            "extracted": "H.B.acgémbra réen æjgulǽtkæ rússьmil"
+          },
+          {
+            "ground_truth": "И.B. alрь́nŋьlgьn",
+            "extracted": "H.B. alрьnŋьlgьn"
+          }
+        ]
+      },
+      {
+        "from": "ə",
+        "to": "a",
+        "count": 2,
+        "examples": [
+          {
+            "ground_truth": "álьmь tikwæп, ékwurgam aálomkəlen",
+            "extracted": "álьmь tikwæul, ékwurgam aálomkalen"
+          },
+          {
+            "ground_truth": "álьŋ-atqə(ŋ)",
+            "extracted": "álьŋ-atqa(ŋ)"
+          }
+        ]
+      },
+      {
+        "from": "г",
+        "to": "ɣ",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "aaŋk-éгьn",
+            "extracted": "aaŋk-éɣьn"
+          }
+        ]
+      },
+      {
+        "from": "ŋ",
+        "to": "p",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "ácьŋ",
+            "extracted": "ácьp"
+          }
+        ]
+      },
+      {
+        "from": "ŋ",
+        "to": "n",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "acgémbra, также acgémbraŋ-eur",
+            "extracted": "acgémbra, также acgémbran-eur"
+          }
+        ]
+      },
+      {
+        "from": "п",
+        "to": "n",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "alьmátьrkьпen",
+            "extracted": "alьmátьrkьnen"
+          }
+        ]
+      },
+      {
+        "from": "п",
+        "to": "l",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "álьmь tikwæп, ékwurgam aálomkəlen",
+            "extracted": "álьmь tikwæul, ékwurgam aálomkalen"
+          }
+        ]
+      }
+    ]
+  },
+  "deletions": {
+    "count": 3,
+    "rate": 0.0020891364902506965,
+    "most_common": [
+      {
+        "character": "́",
+        "count": 2,
+        "examples": [
+          {
+            "ground_truth": "alрь́nŋьrkьnen",
+            "extracted": "alрьnŋьrkьnen"
+          },
+          {
+            "ground_truth": "И.B. alрь́nŋьlgьn",
+            "extracted": "H.B. alрьnŋьlgьn"
+          }
+        ]
+      },
+      {
+        "character": "г",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "aátgьг, также aátir",
+            "extracted": "aátgь, также aátir"
+          }
+        ]
+      }
+    ]
+  },
+  "insertions": {
+    "count": 3,
+    "rate": 0.0020891364902506965,
+    "most_common": [
+      {
+        "character": "u",
+        "count": 2,
+        "examples": [
+          {
+            "ground_truth": "acь́ŋьlьn",
+            "extracted": "acь́ŋuьlьn"
+          },
+          {
+            "ground_truth": "álьmь tikwæп, ékwurgam aálomkəlen",
+            "extracted": "álьmь tikwæul, ékwurgam aálomkalen"
+          }
+        ]
+      },
+      {
+        "character": "r",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "acь́ŋьrkьn",
+            "extracted": "acь́rŋьrkьn"
+          }
+        ]
+      }
+    ]
+  },
+  "word_errors": {
+    "substitutions": 14,
+    "deletions": 0,
+    "insertions": 0
+  },
+  "field_stats": {
+    "Headword_Phrase": {
+      "chars": 460,
+      "subs": 9,
+      "dels": 3,
+      "ins": 3
+    },
+    "POS": {
+      "chars": 127,
+      "subs": 0,
+      "dels": 0,
+      "ins": 0
+    },
+    "Translation_RU": {
+      "chars": 785,
+      "subs": 0,
+      "dels": 0,
+      "ins": 0
+    },
+    "Grammar_Notes": {
+      "chars": 64,
+      "subs": 0,
+      "dels": 0,
+      "ins": 0
+    }
+  }
+}

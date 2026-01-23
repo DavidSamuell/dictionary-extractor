@@ -4,3 +4,8 @@ Pillow
 pydantic
 python-dotenv
 pandas
+opencv-python
+matplotlib
+paddleocr
+scikit-learn
+python-Levenshtein

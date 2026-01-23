@@ -1,0 +1,901 @@
+{
+  "cer": 0.1284313725490196,
+  "wer": 0.3422818791946309,
+  "total_chars": 1020,
+  "total_words": 149,
+  "total_char_errors": 131,
+  "total_word_errors": 51,
+  "substitutions": {
+    "count": 57,
+    "rate": 0.05588235294117647,
+    "most_common": [
+      {
+        "from": "ь",
+        "to": "b",
+        "count": 19,
+        "examples": [
+          {
+            "ground_truth": "aacew-matálьn",
+            "extracted": "aacew-matálbn"
+          },
+          {
+            "ground_truth": "áaŋkь válьn",
+            "extracted": "áapkb válbn"
+          },
+          {
+            "ground_truth": "áaŋkь válьn",
+            "extracted": "áapkb válbn"
+          }
+        ]
+      },
+      {
+        "from": "ь",
+        "to": "s",
+        "count": 8,
+        "examples": [
+          {
+            "ground_truth": "aaŋkátьrkьn",
+            "extracted": "aapkátsrkın"
+          },
+          {
+            "ground_truth": "alewlékь válьn",
+            "extracted": "alewléks válsn"
+          },
+          {
+            "ground_truth": "alewlékь válьn",
+            "extracted": "alewléks válsn"
+          }
+        ]
+      },
+      {
+        "from": "ŋ",
+        "to": "p",
+        "count": 5,
+        "examples": [
+          {
+            "ground_truth": "aaŋkátьrkьn",
+            "extracted": "aapkátsrkın"
+          },
+          {
+            "ground_truth": "áaŋkь válьn",
+            "extracted": "áapkb válbn"
+          },
+          {
+            "ground_truth": "alewlékь(ŋ)",
+            "extracted": "alewlékb(p)"
+          }
+        ]
+      },
+      {
+        "from": ";",
+        "to": "|",
+        "count": 3,
+        "examples": [
+          {
+            "ground_truth": "шурин; деверь",
+            "extracted": "шурин || деверь"
+          },
+          {
+            "ground_truth": "дает в долг; требует долг",
+            "extracted": "дает в долг || требует долг"
+          },
+          {
+            "ground_truth": "при том же, поелику; к сожалению, к несчастью",
+            "extracted": "при том же, поелику || к сожалению, к весчастью"
+          }
+        ]
+      },
+      {
+        "from": "ŋ",
+        "to": "y",
+        "count": 2,
+        "examples": [
+          {
+            "ground_truth": "прош. II gaaŋkátlen",
+            "extracted": "(прош. II gaaykátlen)"
+          },
+          {
+            "ground_truth": "álьŋ-tārken ŋǽlvьl",
+            "extracted": "álb p-tārken yǽlvbl"
+          }
+        ]
+      },
+      {
+        "from": "ə",
+        "to": "a",
+        "count": 2,
+        "examples": [
+          {
+            "ground_truth": "álьmь tikwæп, ékwurgam aálomkəlen",
+            "extracted": "álbmb tikwæul, ékwurgam aálomkalen"
+          },
+          {
+            "ground_truth": "álьŋ-atqə(ŋ)",
+            "extracted": "álbŋ-atqa(0)"
+          }
+        ]
+      },
+      {
+        "from": "ь",
+        "to": "ı",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "aaŋkátьrkьn",
+            "extracted": "aapkátsrkın"
+          }
+        ]
+      },
+      {
+        "from": "ə",
+        "to": "ә",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "ácəq",
+            "extracted": "ácәq"
+          }
+        ]
+      },
+      {
+        "from": "ŋ",
+        "to": "j",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "racьŋáurkьnen",
+            "extracted": "racbjáurkbnen"
+          }
+        ]
+      },
+      {
+        "from": "г",
+        "to": ".",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "гл.",
+            "extracted": "2.2."
+          }
+        ]
+      },
+      {
+        "from": "л",
+        "to": "2",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "гл.",
+            "extracted": "2.2."
+          }
+        ]
+      },
+      {
+        "from": "ŋ",
+        "to": "n",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "acgémbra, также acgémbraŋ-eur",
+            "extracted": "acgémbra, также acgémbran-eur"
+          }
+        ]
+      },
+      {
+        "from": "н",
+        "to": "в",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "при том же, поелику; к сожалению, к несчастью",
+            "extracted": "при том же, поелику || к сожалению, к весчастью"
+          }
+        ]
+      },
+      {
+        "from": "ь",
+        "to": "ы",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "И.B.acgémbra réen æjgulǽtkæ rússьmil",
+            "extracted": "acgémbra réen æjgulǽtkæ rússыmil"
+          }
+        ]
+      },
+      {
+        "from": "ь",
+        "to": "o",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "ac-úkwьn mátьcьn",
+            "extracted": "ac-úkwbn mátbcon"
+          }
+        ]
+      },
+      {
+        "from": "с",
+        "to": "c",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "сущ.",
+            "extracted": "cym."
+          }
+        ]
+      },
+      {
+        "from": "у",
+        "to": "y",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "сущ.",
+            "extracted": "cym."
+          }
+        ]
+      },
+      {
+        "from": "щ",
+        "to": "m",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "сущ.",
+            "extracted": "cym."
+          }
+        ]
+      },
+      {
+        "from": "п",
+        "to": "l",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "álьmь tikwæп, ékwurgam aálomkəlen",
+            "extracted": "álbmb tikwæul, ékwurgam aálomkalen"
+          }
+        ]
+      },
+      {
+        "from": "ŋ",
+        "to": "0",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "álьŋ-atqə(ŋ)",
+            "extracted": "álbŋ-atqa(0)"
+          }
+        ]
+      },
+      {
+        "from": "ь",
+        "to": " ",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "álьŋ-tārken ŋǽlvьl",
+            "extracted": "álb p-tārken yǽlvbl"
+          }
+        ]
+      },
+      {
+        "from": "á",
+        "to": "å",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "ālgátgarkьn",
+            "extracted": "ālgåtgarksn"
+          }
+        ]
+      },
+      {
+        "from": "г",
+        "to": "2",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "гл.",
+            "extracted": "2л."
+          }
+        ]
+      },
+      {
+        "from": "ā",
+        "to": "ă",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "ālgatgatkórkьn",
+            "extracted": "ălgatgatkórkbn"
+          }
+        ]
+      }
+    ]
+  },
+  "deletions": {
+    "count": 32,
+    "rate": 0.03137254901960784,
+    "most_common": [
+      {
+        "character": ".",
+        "count": 4,
+        "examples": [
+          {
+            "ground_truth": "И.B.acgémbra réen æjgulǽtkæ rússьmil",
+            "extracted": "acgémbra réen æjgulǽtkæ rússыmil"
+          },
+          {
+            "ground_truth": "И.B.acgémbra réen æjgulǽtkæ rússьmil",
+            "extracted": "acgémbra réen æjgulǽtkæ rússыmil"
+          },
+          {
+            "ground_truth": "отпр. пад. ālgatgájрь",
+            "extracted": ""
+          }
+        ]
+      },
+      {
+        "character": " ",
+        "count": 3,
+        "examples": [
+          {
+            "ground_truth": "см. æc/ac",
+            "extracted": "см."
+          },
+          {
+            "ground_truth": "отпр. пад. ālgatgájрь",
+            "extracted": ""
+          },
+          {
+            "ground_truth": "отпр. пад. ālgatgájрь",
+            "extracted": ""
+          }
+        ]
+      },
+      {
+        "character": "c",
+        "count": 2,
+        "examples": [
+          {
+            "ground_truth": "см. æc/ac",
+            "extracted": "см."
+          },
+          {
+            "ground_truth": "см. æc/ac",
+            "extracted": "см."
+          }
+        ]
+      },
+      {
+        "character": "a",
+        "count": 2,
+        "examples": [
+          {
+            "ground_truth": "см. æc/ac",
+            "extracted": "см."
+          },
+          {
+            "ground_truth": "отпр. пад. ālgatgájрь",
+            "extracted": ""
+          }
+        ]
+      },
+      {
+        "character": "п",
+        "count": 2,
+        "examples": [
+          {
+            "ground_truth": "отпр. пад. ālgatgájрь",
+            "extracted": ""
+          },
+          {
+            "ground_truth": "отпр. пад. ālgatgájрь",
+            "extracted": ""
+          }
+        ]
+      },
+      {
+        "character": "р",
+        "count": 2,
+        "examples": [
+          {
+            "ground_truth": "отпр. пад. ālgatgájрь",
+            "extracted": ""
+          },
+          {
+            "ground_truth": "отпр. пад. ālgatgájрь",
+            "extracted": ""
+          }
+        ]
+      },
+      {
+        "character": "g",
+        "count": 2,
+        "examples": [
+          {
+            "ground_truth": "отпр. пад. ālgatgájрь",
+            "extracted": ""
+          },
+          {
+            "ground_truth": "отпр. пад. ālgatgájрь",
+            "extracted": ""
+          }
+        ]
+      },
+      {
+        "character": "г",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "aátgьг, также aátir",
+            "extracted": "aátgb, также aátir"
+          }
+        ]
+      },
+      {
+        "character": "И",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "И.B.acgémbra réen æjgulǽtkæ rússьmil",
+            "extracted": "acgémbra réen æjgulǽtkæ rússыmil"
+          }
+        ]
+      },
+      {
+        "character": "B",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "И.B.acgémbra réen æjgulǽtkæ rússьmil",
+            "extracted": "acgémbra réen æjgulǽtkæ rússыmil"
+          }
+        ]
+      },
+      {
+        "character": "æ",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "см. æc/ac",
+            "extracted": "см."
+          }
+        ]
+      },
+      {
+        "character": "/",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "см. æc/ac",
+            "extracted": "см."
+          }
+        ]
+      },
+      {
+        "character": "о",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "отпр. пад. ālgatgájрь",
+            "extracted": ""
+          }
+        ]
+      },
+      {
+        "character": "т",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "отпр. пад. ālgatgájрь",
+            "extracted": ""
+          }
+        ]
+      },
+      {
+        "character": "а",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "отпр. пад. ālgatgájрь",
+            "extracted": ""
+          }
+        ]
+      },
+      {
+        "character": "д",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "отпр. пад. ālgatgájрь",
+            "extracted": ""
+          }
+        ]
+      },
+      {
+        "character": "ā",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "отпр. пад. ālgatgájрь",
+            "extracted": ""
+          }
+        ]
+      },
+      {
+        "character": "l",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "отпр. пад. ālgatgájрь",
+            "extracted": ""
+          }
+        ]
+      },
+      {
+        "character": "t",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "отпр. пад. ālgatgájрь",
+            "extracted": ""
+          }
+        ]
+      },
+      {
+        "character": "á",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "отпр. пад. ālgatgájрь",
+            "extracted": ""
+          }
+        ]
+      },
+      {
+        "character": "j",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "отпр. пад. ālgatgájрь",
+            "extracted": ""
+          }
+        ]
+      },
+      {
+        "character": "ь",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "отпр. пад. ālgatgájрь",
+            "extracted": ""
+          }
+        ]
+      }
+    ]
+  },
+  "insertions": {
+    "count": 42,
+    "rate": 0.041176470588235294,
+    "most_common": [
+      {
+        "character": " ",
+        "count": 7,
+        "examples": [
+          {
+            "ground_truth": "шурин; деверь",
+            "extracted": "шурин || деверь"
+          },
+          {
+            "ground_truth": "дает в долг; требует долг",
+            "extracted": "дает в долг || требует долг"
+          },
+          {
+            "ground_truth": "при том же, поелику; к сожалению, к несчастью",
+            "extracted": "при том же, поелику || к сожалению, к весчастью"
+          }
+        ]
+      },
+      {
+        "character": "|",
+        "count": 3,
+        "examples": [
+          {
+            "ground_truth": "шурин; деверь",
+            "extracted": "шурин || деверь"
+          },
+          {
+            "ground_truth": "дает в долг; требует долг",
+            "extracted": "дает в долг || требует долг"
+          },
+          {
+            "ground_truth": "при том же, поелику; к сожалению, к несчастью",
+            "extracted": "при том же, поелику || к сожалению, к весчастью"
+          }
+        ]
+      },
+      {
+        "character": "b",
+        "count": 3,
+        "examples": [
+          {
+            "ground_truth": "álьŋ-tārken ŋǽlvьl",
+            "extracted": "álb p-tārken yǽlvbl"
+          },
+          {
+            "ground_truth": "топор",
+            "extracted": "топор (отпр. пад. ālgatgajpb)"
+          },
+          {
+            "ground_truth": "топорище",
+            "extracted": "топорище alpbnp"
+          }
+        ]
+      },
+      {
+        "character": "a",
+        "count": 3,
+        "examples": [
+          {
+            "ground_truth": "топор",
+            "extracted": "топор (отпр. пад. ālgatgajpb)"
+          },
+          {
+            "ground_truth": "топор",
+            "extracted": "топор (отпр. пад. ālgatgajpb)"
+          },
+          {
+            "ground_truth": "топорище",
+            "extracted": "топорище alpbnp"
+          }
+        ]
+      },
+      {
+        "character": "p",
+        "count": 3,
+        "examples": [
+          {
+            "ground_truth": "топор",
+            "extracted": "топор (отпр. пад. ālgatgajpb)"
+          },
+          {
+            "ground_truth": "топорище",
+            "extracted": "топорище alpbnp"
+          },
+          {
+            "ground_truth": "топорище",
+            "extracted": "топорище alpbnp"
+          }
+        ]
+      },
+      {
+        "character": "(",
+        "count": 2,
+        "examples": [
+          {
+            "ground_truth": "прош. II gaaŋkátlen",
+            "extracted": "(прош. II gaaykátlen)"
+          },
+          {
+            "ground_truth": "топор",
+            "extracted": "топор (отпр. пад. ālgatgajpb)"
+          }
+        ]
+      },
+      {
+        "character": ")",
+        "count": 2,
+        "examples": [
+          {
+            "ground_truth": "прош. II gaaŋkátlen",
+            "extracted": "(прош. II gaaykátlen)"
+          },
+          {
+            "ground_truth": "топор",
+            "extracted": "топор (отпр. пад. ālgatgajpb)"
+          }
+        ]
+      },
+      {
+        "character": "п",
+        "count": 2,
+        "examples": [
+          {
+            "ground_truth": "топор",
+            "extracted": "топор (отпр. пад. ālgatgajpb)"
+          },
+          {
+            "ground_truth": "топор",
+            "extracted": "топор (отпр. пад. ālgatgajpb)"
+          }
+        ]
+      },
+      {
+        "character": ".",
+        "count": 2,
+        "examples": [
+          {
+            "ground_truth": "топор",
+            "extracted": "топор (отпр. пад. ālgatgajpb)"
+          },
+          {
+            "ground_truth": "топор",
+            "extracted": "топор (отпр. пад. ālgatgajpb)"
+          }
+        ]
+      },
+      {
+        "character": "l",
+        "count": 2,
+        "examples": [
+          {
+            "ground_truth": "топор",
+            "extracted": "топор (отпр. пад. ālgatgajpb)"
+          },
+          {
+            "ground_truth": "топорище",
+            "extracted": "топорище alpbnp"
+          }
+        ]
+      },
+      {
+        "character": "g",
+        "count": 2,
+        "examples": [
+          {
+            "ground_truth": "топор",
+            "extracted": "топор (отпр. пад. ālgatgajpb)"
+          },
+          {
+            "ground_truth": "топор",
+            "extracted": "топор (отпр. пад. ālgatgajpb)"
+          }
+        ]
+      },
+      {
+        "character": "2",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "гл.",
+            "extracted": "2.2."
+          }
+        ]
+      },
+      {
+        "character": "u",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "álьmь tikwæп, ékwurgam aálomkəlen",
+            "extracted": "álbmb tikwæul, ékwurgam aálomkalen"
+          }
+        ]
+      },
+      {
+        "character": "о",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "топор",
+            "extracted": "топор (отпр. пад. ālgatgajpb)"
+          }
+        ]
+      },
+      {
+        "character": "т",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "топор",
+            "extracted": "топор (отпр. пад. ālgatgajpb)"
+          }
+        ]
+      },
+      {
+        "character": "р",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "топор",
+            "extracted": "топор (отпр. пад. ālgatgajpb)"
+          }
+        ]
+      },
+      {
+        "character": "а",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "топор",
+            "extracted": "топор (отпр. пад. ālgatgajpb)"
+          }
+        ]
+      },
+      {
+        "character": "д",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "топор",
+            "extracted": "топор (отпр. пад. ālgatgajpb)"
+          }
+        ]
+      },
+      {
+        "character": "ā",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "топор",
+            "extracted": "топор (отпр. пад. ālgatgajpb)"
+          }
+        ]
+      },
+      {
+        "character": "t",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "топор",
+            "extracted": "топор (отпр. пад. ālgatgajpb)"
+          }
+        ]
+      },
+      {
+        "character": "j",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "топор",
+            "extracted": "топор (отпр. пад. ālgatgajpb)"
+          }
+        ]
+      },
+      {
+        "character": "n",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "топорище",
+            "extracted": "топорище alpbnp"
+          }
+        ]
+      }
+    ]
+  },
+  "word_errors": {
+    "substitutions": 39,
+    "deletions": 4,
+    "insertions": 8
+  },
+  "field_stats": {
+    "Headword_Phrase": {
+      "chars": 338,
+      "subs": 46,
+      "dels": 5,
+      "ins": 2
+    },
+    "POS": {
+      "chars": 82,
+      "subs": 6,
+      "dels": 0,
+      "ins": 1
+    },
+    "Translation_RU": {
+      "chars": 551,
+      "subs": 4,
+      "dels": 0,
+      "ins": 37
+    },
+    "Grammar_Notes": {
+      "chars": 49,
+      "subs": 1,
+      "dels": 27,
+      "ins": 2
+    }
+  }
+}

@@ -51,6 +51,37 @@ class DetailedErrorAnalyzer:
         """Initialize the detailed error analyzer"""
         self.has_levenshtein = HAS_LEVENSHTEIN
 
+    def normalize_text(self, text: str) -> str:
+        """
+        Normalize text for comparison (lowercase, strip whitespace, etc.)
+        Also normalizes homoglyphs (visually identical characters from different scripts)
+
+        Args:
+            text: Text to normalize
+
+        Returns:
+            Normalized text
+        """
+        if text is None:
+            return ""
+
+        # Homoglyph mapping: normalize to Cyrillic equivalents
+        # These characters look identical but have different Unicode codepoints
+        homoglyph_map = {
+            # Latin → Cyrillic
+            "B": "В",  # Latin B (U+0042) → Cyrillic Ve (U+0412)
+            "p": "р",  # Latin p (U+0070) → Cyrillic er (U+0440)
+            "ə": "ә",  # Latin schwa (U+0259) → Cyrillic schwa (U+04D9)
+        }
+
+        # Apply homoglyph normalization before other normalizations
+        for latin_char, cyrillic_char in homoglyph_map.items():
+            text = text.replace(latin_char, cyrillic_char)
+
+        # Basic normalization
+        # Normalize commas to semicolons for consistent comparison
+        return text.strip().lower().replace(",", ";")
+
     def get_edit_operations(
         self, ground_truth: str, extracted: str
     ) -> List[Tuple[str, str, str, int]]:
@@ -177,41 +208,43 @@ class DetailedErrorAnalyzer:
                 if not gt_text:  # Skip empty ground truth fields
                     continue
 
-                # Character-level analysis
-                gt_chars = len(gt_text)
+                # Normalize texts for character-level comparison
+                # This applies homoglyph normalization and other text standardization
+                gt_text_normalized = self.normalize_text(gt_text)
+                ext_text_normalized = self.normalize_text(ext_text)
+
+                # Character-level analysis (use normalized text)
+                gt_chars = len(gt_text_normalized)
                 total_chars += gt_chars
                 field_stats[field]["chars"] += gt_chars
 
-                ops = self.get_edit_operations(gt_text, ext_text)
+                ops = self.get_edit_operations(gt_text_normalized, ext_text_normalized)
 
                 for op_type, char1, char2, pos in ops:
                     if op_type == "substitution":
                         total_substitutions += 1
                         field_stats[field]["subs"] += 1
                         substitution_pairs[(char1, char2)] += 1
-                        # Store word example (limit to 3 examples per character pair)
-                        if len(substitution_word_examples[(char1, char2)]) < 3:
-                            substitution_word_examples[(char1, char2)].append(
-                                (gt_text, ext_text)
-                            )
+                        # Store all word examples (no limit)
+                        substitution_word_examples[(char1, char2)].append(
+                            (gt_text, ext_text)
+                        )
                     elif op_type == "deletion":
                         total_deletions += 1
                         field_stats[field]["dels"] += 1
                         deletion_chars[char1] += 1
-                        # Store word example
-                        if len(deletion_word_examples[char1]) < 3:
-                            deletion_word_examples[char1].append((gt_text, ext_text))
+                        # Store all word examples (no limit)
+                        deletion_word_examples[char1].append((gt_text, ext_text))
                     elif op_type == "insertion":
                         total_insertions += 1
                         field_stats[field]["ins"] += 1
                         insertion_chars[char2] += 1
-                        # Store word example
-                        if len(insertion_word_examples[char2]) < 3:
-                            insertion_word_examples[char2].append((gt_text, ext_text))
+                        # Store all word examples (no limit)
+                        insertion_word_examples[char2].append((gt_text, ext_text))
 
-                # Word-level analysis
-                gt_words = gt_text.split()
-                ext_words = ext_text.split()
+                # Word-level analysis (use normalized text)
+                gt_words = gt_text_normalized.split()
+                ext_words = ext_text_normalized.split()
                 total_words += len(gt_words)
 
                 # Calculate word-level edit distance
@@ -302,18 +335,24 @@ class DetailedErrorAnalyzer:
         )
         report.append("")
         report.append(f"Total characters analyzed: {error_stats['total_chars']:,}")
-        report.append(f"Total words analyzed: {error_stats['total_words']:,}")
         report.append(f"Total character errors: {error_stats['total_char_errors']:,}")
-        report.append(f"Total word errors: {error_stats['total_word_errors']:,}")
         report.append("")
 
-        # Word-level error breakdown
-        word_errs = error_stats["word_errors"]
-        report.append("WORD-LEVEL ERROR BREAKDOWN:")
+        # Character-level error breakdown
+        subs = error_stats["substitutions"]
+        dels = error_stats["deletions"]
+        ins = error_stats["insertions"]
+        report.append("CHARACTER-LEVEL ERROR BREAKDOWN:")
         report.append("-" * 80)
-        report.append(f"  Substitutions: {word_errs['substitutions']:,}")
-        report.append(f"  Deletions: {word_errs['deletions']:,}")
-        report.append(f"  Insertions: {word_errs['insertions']:,}")
+        report.append(
+            f"  Substitutions: {subs['count']:,} ({subs['rate']*100:.2f}% of all characters)"
+        )
+        report.append(
+            f"  Deletions: {dels['count']:,} ({dels['rate']*100:.2f}% of all characters)"
+        )
+        report.append(
+            f"  Insertions: {ins['count']:,} ({ins['rate']*100:.2f}% of all characters)"
+        )
         report.append("")
 
         # Substitutions
@@ -546,6 +585,7 @@ class DictionaryEvaluator:
     def normalize_text(self, text: str) -> str:
         """
         Normalize text for comparison (lowercase, strip whitespace, etc.)
+        Also normalizes homoglyphs (visually identical characters from different scripts)
 
         Args:
             text: Text to normalize
@@ -555,8 +595,23 @@ class DictionaryEvaluator:
         """
         if text is None:
             return ""
-        # Basic normalization - can be extended based on specific needs
-        return text.strip().lower()
+
+        # Homoglyph mapping: normalize to Cyrillic equivalents
+        # These characters look identical but have different Unicode codepoints
+        homoglyph_map = {
+            # Latin → Cyrillic
+            "B": "В",  # Latin B (U+0042) → Cyrillic Ve (U+0412)
+            "p": "р",  # Latin p (U+0070) → Cyrillic er (U+0440)
+            "ə": "ә",  # Latin schwa (U+0259) → Cyrillic schwa (U+04D9)
+        }
+
+        # Apply homoglyph normalization before other normalizations
+        for latin_char, cyrillic_char in homoglyph_map.items():
+            text = text.replace(latin_char, cyrillic_char)
+
+        # Basic normalization
+        # Normalize commas to semicolons for consistent comparison
+        return text.strip().lower().replace(",", ";")
 
     def calculate_similarity(self, str1: str, str2: str) -> float:
         """

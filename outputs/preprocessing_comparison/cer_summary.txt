@@ -1,16 +1,16 @@
 =======================================================================
 PREPROCESSING CER COMPARISON SUMMARY
 =======================================================================
-Generated: Sat Jan 24 00:45:03 AEDT 2026
+Generated: Sat Jan 24 12:45:50 PM AEDT 2026
 Model: gemini/gemini-2.5-pro
 
 Method                          | CER     | WER     | F1 Score
 --------------------------------|---------|---------|----------
-Baseline (Grayscale Only)       | 0.0200  | 0.0870  | Score:
-Grayscale + Deskew              | 0.0327  | 0.1337  | Score:
-Grayscale + Denoise             | 0.0289  | 0.1190  | Score:
-Grayscale + Contrast (CLAHE)    | 0.0188  | 0.0892  | Score:
-Grayscale + Sharpen             | 0.0609  | 0.1196  | Score:
-All Steps Combined              | 0.0223  | 0.0986  | Score:
+Baseline (Grayscale Only)       | 0.0127  | 0.0667  | Score:
+Grayscale + Deskew              | 0.0197  | 0.0905  | Score:
+Grayscale + Denoise             | 0.0148  | 0.0762  | Score:
+Grayscale + Contrast (CLAHE)    | 0.0267  | 0.1000  | Score:
+Grayscale + Sharpen             | 0.0229  | 0.1068  | Score:
+All Steps Combined              | 0.0100  | 0.0583  | Score:
 
 Detailed reports available in: outputs/preprocessing_comparison/

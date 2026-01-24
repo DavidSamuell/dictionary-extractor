@@ -1,0 +1,146 @@
+================================================================================
+DETAILED CHARACTER-LEVEL ERROR ANALYSIS
+================================================================================
+
+Character Error Rate (CER): 0.0941 (9.41%)
+Word Error Rate (WER): 0.1753 (17.53%)
+
+Total characters analyzed: 659
+Total character errors: 62
+
+CHARACTER-LEVEL ERROR BREAKDOWN:
+--------------------------------------------------------------------------------
+  Substitutions: 18 (2.73% of all characters)
+  Deletions: 40 (6.07% of all characters)
+  Insertions: 4 (0.61% of all characters)
+
+================================================================================
+SUBSTITUTIONS: 18 (2.73% of all characters)
+================================================================================
+Original → Wrong                    Count      % of Subs    % of Total
+--------------------------------------------------------------------------------
+'m' → 'ь'                           3           16.67%         0.46%
+    Example: acgémbra, также acgémbraŋ-eur → acgéмьгra, также acgéмьгraŋ-eur
+    Example: acgémbra, также acgémbraŋ-eur → acgéмьгra, также acgéмьгraŋ-eur
+    Example: И.B.acgémbra réen æjgulǽtkæ rússьmil → acgéмьгra réen æjgulǽikæ rús-sьmьl
+'b' → 'г'                           3           16.67%         0.46%
+    Example: acgémbra, также acgémbraŋ-eur → acgéмьгra, также acgéмьгraŋ-eur
+    Example: acgémbra, также acgémbraŋ-eur → acgéмьгra, также acgéмьгraŋ-eur
+    Example: И.B.acgémbra réen æjgulǽtkæ rússьmil → acgéмьгra réen æjgulǽikæ rús-sьmьl
+'n' → 'п'                           1            5.56%         0.15%
+    Example: aaŋk-éгьn → aaŋk-éгьп
+'г' → 'r'                           1            5.56%         0.15%
+    Example: aátgьг, также aátir → aátgьr, также aátir
+'á' → 'ь'                           1            5.56%         0.15%
+    Example: racьŋáurkьnen → acьŋьrkьn
+'д' → 'к'                           1            5.56%         0.15%
+    Example: дает в долг; требует долг → кличет его
+'г' → 'и'                           1            5.56%         0.15%
+    Example: дает в долг; требует долг → кличет его
+';' → 'ч'                           1            5.56%         0.15%
+    Example: дает в долг; требует долг → кличет его
+' ' → 'е'                           1            5.56%         0.15%
+    Example: дает в долг; требует долг → кличет его
+'р' → ' '                           1            5.56%         0.15%
+    Example: дает в долг; требует долг → кличет его
+'б' → 'г'                           1            5.56%         0.15%
+    Example: дает в долг; требует долг → кличет его
+'t' → 'i'                           1            5.56%         0.15%
+    Example: И.B.acgémbra réen æjgulǽtkæ rússьmil → acgéмьгra réen æjgulǽikæ rús-sьmьl
+'i' → 'ь'                           1            5.56%         0.15%
+    Example: И.B.acgémbra réen æjgulǽtkæ rússьmil → acgéмьгra réen æjgulǽikæ rús-sьmьl
+'a' → 'á'                           1            5.56%         0.15%
+    Example: acgьta → ácgьta
+
+================================================================================
+DELETIONS: 40 (6.07% of all characters)
+================================================================================
+Deleted Character                   Count      % of Dels    % of Total
+--------------------------------------------------------------------------------
+' '                                 5           12.50%         0.76%
+    Example: утка-савка, морянка (Anas fuligula) → утка-савка, морянка
+    Example: утка-савка, морянка (Anas fuligula) → утка-савка, морянка
+    Example: дает в долг; требует долг → кличет его
+    Example: дает в долг; требует долг → кличет его
+    Example: дает в долг; требует долг → кличет его
+'a'                                 3            7.50%         0.46%
+    Example: утка-савка, морянка (Anas fuligula) → утка-савка, морянка
+    Example: утка-савка, морянка (Anas fuligula) → утка-савка, морянка
+    Example: утка-савка, морянка (Anas fuligula) → утка-савка, морянка
+'u'                                 3            7.50%         0.46%
+    Example: утка-савка, морянка (Anas fuligula) → утка-савка, морянка
+    Example: утка-савка, морянка (Anas fuligula) → утка-савка, морянка
+    Example: racьŋáurkьnen → acьŋьrkьn
+'n'                                 2            5.00%         0.30%
+    Example: утка-савка, морянка (Anas fuligula) → утка-савка, морянка
+    Example: racьŋáurkьnen → acьŋьrkьn
+'l'                                 2            5.00%         0.30%
+    Example: утка-савка, морянка (Anas fuligula) → утка-савка, морянка
+    Example: утка-савка, морянка (Anas fuligula) → утка-савка, морянка
+'е'                                 2            5.00%         0.30%
+    Example: дает в долг; требует долг → кличет его
+    Example: дает в долг; требует долг → кличет его
+'т'                                 2            5.00%         0.30%
+    Example: дает в долг; требует долг → кличет его
+    Example: дает в долг; требует долг → кличет его
+'в'                                 2            5.00%         0.30%
+    Example: дает в долг; требует долг → кличет его
+    Example: И.B.acgémbra réen æjgulǽtkæ rússьmil → acgéмьгra réen æjgulǽikæ rús-sьmьl
+'д'                                 2            5.00%         0.30%
+    Example: дает в долг; требует долг → кличет его
+    Example: дает в долг; требует долг → кличет его
+'.'                                 2            5.00%         0.30%
+    Example: И.B.acgémbra réen æjgulǽtkæ rússьmil → acgéмьгra réen æjgulǽikæ rús-sьmьl
+    Example: И.B.acgémbra réen æjgulǽtkæ rússьmil → acgéмьгra réen æjgulǽikæ rús-sьmьl
+'('                                 1            2.50%         0.15%
+    Example: утка-савка, морянка (Anas fuligula) → утка-савка, морянка
+'s'                                 1            2.50%         0.15%
+    Example: утка-савка, морянка (Anas fuligula) → утка-савка, морянка
+'f'                                 1            2.50%         0.15%
+    Example: утка-савка, морянка (Anas fuligula) → утка-савка, морянка
+'i'                                 1            2.50%         0.15%
+    Example: утка-савка, морянка (Anas fuligula) → утка-савка, морянка
+'g'                                 1            2.50%         0.15%
+    Example: утка-савка, морянка (Anas fuligula) → утка-савка, морянка
+')'                                 1            2.50%         0.15%
+    Example: утка-савка, морянка (Anas fuligula) → утка-савка, морянка
+'́'                                 1            2.50%         0.15%
+    Example: acь́ŋьlьn → acьŋьlьn
+'r'                                 1            2.50%         0.15%
+    Example: racьŋáurkьnen → acьŋьrkьn
+'e'                                 1            2.50%         0.15%
+    Example: racьŋáurkьnen → acьŋьrkьn
+'а'                                 1            2.50%         0.15%
+    Example: дает в долг; требует долг → кличет его
+'о'                                 1            2.50%         0.15%
+    Example: дает в долг; требует долг → кличет его
+'у'                                 1            2.50%         0.15%
+    Example: дает в долг; требует долг → кличет его
+'л'                                 1            2.50%         0.15%
+    Example: дает в долг; требует долг → кличет его
+'г'                                 1            2.50%         0.15%
+    Example: дает в долг; требует долг → кличет его
+'и'                                 1            2.50%         0.15%
+    Example: И.B.acgémbra réen æjgulǽtkæ rússьmil → acgéмьгra réen æjgulǽikæ rús-sьmьl
+
+================================================================================
+INSERTIONS: 4 (0.61% of all characters)
+================================================================================
+Inserted Character                  Count      % of Ins     % of Total
+--------------------------------------------------------------------------------
+'м'                                 3           75.00%         0.46%
+    Example: acgémbra, также acgémbraŋ-eur → acgéмьгra, также acgéмьгraŋ-eur
+    Example: acgémbra, также acgémbraŋ-eur → acgéмьгra, также acgéмьгraŋ-eur
+    Example: И.B.acgémbra réen æjgulǽtkæ rússьmil → acgéмьгra réen æjgulǽikæ rús-sьmьl
+'-'                                 1           25.00%         0.15%
+    Example: И.B.acgémbra réen æjgulǽtkæ rússьmil → acgéмьгra réen æjgulǽikæ rús-sьmьl
+
+================================================================================
+ERROR RATES BY FIELD:
+================================================================================
+Field                     Chars      Subs     Dels     Ins      CER
+--------------------------------------------------------------------------------
+Headword_Phrase           206        12       9        4        0.1214
+POS                       59         0        0        0        0.0000
+Translation_RU            366        6        31       0        0.1011
+Grammar_Notes             28         0        0        0        0.0000

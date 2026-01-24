@@ -2,11 +2,11 @@
   "metrics": {
     "total_ground_truth": 38,
     "total_extracted": 38,
-    "exact_matches": 17,
-    "partial_matches": 20,
+    "exact_matches": 24,
+    "partial_matches": 13,
     "missing_entries": 1,
     "extra_entries": 1,
-    "headword_accuracy": 0.9330532201026623,
+    "headword_accuracy": 0.9650019631568819,
     "grammatical_accuracy": 1.0,
     "definition_accuracy": 1.0,
     "overall_f1": 0.9736842105263158,
@@ -25,7 +25,7 @@
   ],
   "extra_entries": [
     {
-      "Headword_Phrase": "aaŋк-éтъp",
+      "Headword_Phrase": "aaŋk-éтъп",
       "Entry_Type": "word",
       "POS": "сущ.",
       "Translation_RU": "кафтан",
@@ -36,24 +36,24 @@
   "low_score_matches": [
     {
       "ground_truth": {
-        "Headword_Phrase": "aaŋkátьrkьn",
+        "Headword_Phrase": "acь́ŋьlьn",
         "Entry_Type": "word",
-        "POS": "гл.",
-        "Translation_RU": "растворяется, распарывается, распахивается",
+        "POS": "сущ.",
+        "Translation_RU": "должник",
         "Literal_Meaning": "",
-        "Grammar_Notes": "прош. II gaaŋkátlen"
+        "Grammar_Notes": ""
       },
       "extracted": {
-        "Headword_Phrase": "aapkátsrкьn",
+        "Headword_Phrase": "ácьŋúьlьn",
         "Entry_Type": "word",
-        "POS": "гл.",
-        "Translation_RU": "растворяется, распарывается, распахивается",
+        "POS": "сущ.",
+        "Translation_RU": "должник",
         "Literal_Meaning": "",
-        "Grammar_Notes": "прош. II gaaykátlen"
+        "Grammar_Notes": ""
       },
       "scores": {
-        "overall": 0.8636363636363636,
-        "headword": 0.7272727272727273,
+        "overall": 0.8888888888888888,
+        "headword": 0.7777777777777778,
         "grammatical": 1.0,
         "definition": 1.0
       }

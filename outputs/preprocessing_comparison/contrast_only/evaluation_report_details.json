@@ -3,41 +3,59 @@
     "total_ground_truth": 38,
     "total_extracted": 38,
     "exact_matches": 23,
-    "partial_matches": 15,
-    "missing_entries": 0,
-    "extra_entries": 0,
-    "headword_accuracy": 0.9621113751246092,
+    "partial_matches": 14,
+    "missing_entries": 1,
+    "extra_entries": 1,
+    "headword_accuracy": 0.9691560850922311,
     "grammatical_accuracy": 1.0,
-    "definition_accuracy": 1.0,
-    "overall_f1": 1.0,
-    "precision": 1.0,
-    "recall": 1.0
+    "definition_accuracy": 0.991991991991992,
+    "overall_f1": 0.9736842105263158,
+    "precision": 0.9736842105263158,
+    "recall": 0.9736842105263158
   },
-  "missing_entries": [],
-  "extra_entries": [],
+  "missing_entries": [
+    {
+      "Headword_Phrase": "aaŋk-éгьn",
+      "Entry_Type": "word",
+      "POS": "сущ.",
+      "Translation_RU": "кафтан",
+      "Literal_Meaning": "распахнутая одежда",
+      "Grammar_Notes": ""
+    }
+  ],
+  "extra_entries": [
+    {
+      "Headword_Phrase": "aaŋk-éтъп",
+      "Entry_Type": "word",
+      "POS": "сущ.",
+      "Translation_RU": "кафтан",
+      "Literal_Meaning": "распахнутая одежда",
+      "Grammar_Notes": ""
+    }
+  ],
   "low_score_matches": [
     {
       "ground_truth": {
-        "Headword_Phrase": "acь́ŋьlьn",
+        "Headword_Phrase": "ácəq",
         "Entry_Type": "word",
         "POS": "сущ.",
-        "Translation_RU": "должник",
+        "Translation_RU": "утка-савка, морянка (Anas fuligula)",
         "Literal_Meaning": "",
         "Grammar_Notes": ""
       },
       "extracted": {
-        "Headword_Phrase": "acь́ŋuľьn",
+        "Headword_Phrase": "ácəq",
         "Entry_Type": "word",
         "POS": "сущ.",
-        "Translation_RU": "должник",
+        "Translation_RU": "утка-савка, морянка",
         "Literal_Meaning": "",
-        "Grammar_Notes": ""
+        "Grammar_Notes": "Anas fuligula"
       },
       "scores": {
-        "overall": 0.8888888888888888,
-        "headword": 0.7777777777777778,
+        "overall": 0.8962962962962964,
+        "headword": 1.0,
         "grammatical": 1.0,
-        "definition": 1.0
+        "definition": 0.7037037037037037
       }
     }
   ]

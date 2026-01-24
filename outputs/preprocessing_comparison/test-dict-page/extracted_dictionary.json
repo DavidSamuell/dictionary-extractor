@@ -16,12 +16,12 @@
     "grammar_notes": ""
   },
   {
-    "headword_phrase": "aapkátьrkьn",
+    "headword_phrase": "aaŋkátьrkьn",
     "entry_type": "word",
     "pos": "гл.",
     "translation_ru": "растворяется, распарывается, распахивается",
     "literal_meaning": "",
-    "grammar_notes": "прош. II gaaykátlen"
+    "grammar_notes": "прош. II gaaŋkátlen"
   },
   {
     "headword_phrase": "áaŋkь",
@@ -32,7 +32,7 @@
     "grammar_notes": ""
   },
   {
-    "headword_phrase": "áapkь válьn",
+    "headword_phrase": "áaŋkь válьn",
     "entry_type": "word",
     "pos": "прил.",
     "translation_ru": "распахнутый, раскрытый",
@@ -40,7 +40,7 @@
     "grammar_notes": ""
   },
   {
-    "headword_phrase": "aaŋk-éтьп",
+    "headword_phrase": "aaŋk-éтъp",
     "entry_type": "word",
     "pos": "сущ.",
     "translation_ru": "кафтан",
@@ -72,7 +72,7 @@
     "grammar_notes": ""
   },
   {
-    "headword_phrase": "ácьŋьlьn",
+    "headword_phrase": "acь́ŋьlьn",
     "entry_type": "word",
     "pos": "сущ.",
     "translation_ru": "должник",
@@ -88,7 +88,7 @@
     "grammar_notes": ""
   },
   {
-    "headword_phrase": "acьŋьrkьn",
+    "headword_phrase": "acьpəытkьn",
     "entry_type": "word",
     "pos": "гл.",
     "translation_ru": "кличет его",
@@ -104,7 +104,7 @@
     "grammar_notes": ""
   },
   {
-    "headword_phrase": "H.B.acgémьra réen æjgulǽtkæ rússьmil",
+    "headword_phrase": "И.В.acgémьra réen æjgulǽtkæ rússыmil",
     "entry_type": "phrase",
     "pos": "",
     "translation_ru": "к сожалению, я еще не умею (говорить) по-русски",
@@ -232,7 +232,7 @@
     "grammar_notes": ""
   },
   {
-    "headword_phrase": "álьŋ-tārken yǽlvьl",
+    "headword_phrase": "álьŋ-tārken ŋǽlvьl",
     "entry_type": "phrase",
     "pos": "",
     "translation_ru": "очень малое стадо",
@@ -272,7 +272,7 @@
     "grammar_notes": ""
   },
   {
-    "headword_phrase": "álpьnŋьn",
+    "headword_phrase": "álрьnŋьn",
     "entry_type": "word",
     "pos": "сущ.",
     "translation_ru": "заплата на подошве",
@@ -280,7 +280,7 @@
     "grammar_notes": ""
   },
   {
-    "headword_phrase": "alpьnŋьrkьnen",
+    "headword_phrase": "alрьnŋьrkьnen",
     "entry_type": "word",
     "pos": "гл.",
     "translation_ru": "кладет заплату на подошву обуви",
@@ -288,7 +288,7 @@
     "grammar_notes": ""
   },
   {
-    "headword_phrase": "H.B. alpьnŋьlgьn",
+    "headword_phrase": "И.В. alрьnŋьlgьn",
     "entry_type": "word",
     "pos": "сущ.",
     "translation_ru": "камбала",

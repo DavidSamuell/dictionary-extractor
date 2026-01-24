@@ -1,0 +1,48 @@
+================================================================================
+DICTIONARY EXTRACTION EXPERIMENT RESULTS
+================================================================================
+Generated: Sat Jan 24 01:23:02 PM AEDT 2026
+
+Experiment Configurations:
+--------------------------
+1. Mathpix OCR (DOCX) + Gemini 2.5 Pro (NO preprocessing)
+   - OCR: Mathpix (DOCX output)
+   - Image: Grayscale only (baseline)
+   
+2. Mathpix OCR (DOCX) + Gemini 2.5 Pro (WITH all preprocessing)
+   - OCR: Mathpix (DOCX output)
+   - Image: Grayscale + Deskew + Denoise + Contrast + Sharpen
+
+3. PaddleOCR VL (crops) + Gemini 2.5 Pro (NO preprocessing)
+   - OCR: PaddleOCR VL (with layout detection)
+   - Image: Grayscale only (baseline)
+   
+4. PaddleOCR VL (crops) + Gemini 2.5 Pro (WITH all preprocessing)
+   - OCR: PaddleOCR VL (with layout detection)
+   - Image: Grayscale + Deskew + Denoise + Contrast + Sharpen
+
+Results Summary:
+----------------
+
+mathpix+gemini-no-preprocess:
+Character Error Rate (CER): 0.0157 (1.57%)
+Word Error Rate (WER): 0.0777 (7.77%)
+
+mathpix+gemini-with-preprocess:
+Character Error Rate (CER): 0.0143 (1.43%)
+Word Error Rate (WER): 0.0680 (6.80%)
+
+paddleocr+gemini-no-preprocess:
+Character Error Rate (CER): 0.0941 (9.41%)
+Word Error Rate (WER): 0.1753 (17.53%)
+
+paddleocr+gemini-with-preprocess:
+Character Error Rate (CER): 0.0690 (6.90%)
+Word Error Rate (WER): 0.2357 (23.57%)
+
+Detailed reports available in:
+  - outputs/mathpix+gemini-no-preprocess/
+  - outputs/mathpix+gemini-with-preprocess/
+  - outputs/paddleocr+gemini-no-preprocess/
+  - outputs/paddleocr+gemini-with-preprocess/
+================================================================================

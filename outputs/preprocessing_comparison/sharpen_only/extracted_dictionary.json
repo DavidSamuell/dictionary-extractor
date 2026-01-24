@@ -11,17 +11,17 @@
     "headword_phrase": "aacew-matálьn",
     "entry_type": "word",
     "pos": "сущ.",
-    "translation_ru": "шурин; деверь",
+    "translation_ru": "шурин || деверь",
     "literal_meaning": "",
     "grammar_notes": ""
   },
   {
-    "headword_phrase": "aapkátsrkbnen",
+    "headword_phrase": "aaŋkátьrkьn",
     "entry_type": "word",
     "pos": "гл.",
     "translation_ru": "растворяется, распарывается, распахивается",
     "literal_meaning": "",
-    "grammar_notes": "прош. II gaaykátlen"
+    "grammar_notes": "прош. II gaaŋkátlen"
   },
   {
     "headword_phrase": "áaŋkь",
@@ -32,7 +32,7 @@
     "grammar_notes": ""
   },
   {
-    "headword_phrase": "áapkь válьn",
+    "headword_phrase": "áaŋkь válьn",
     "entry_type": "word",
     "pos": "прил.",
     "translation_ru": "распахнутый, раскрытый",
@@ -40,7 +40,7 @@
     "grammar_notes": ""
   },
   {
-    "headword_phrase": "aaŋk-éтьп",
+    "headword_phrase": "aaŋk-éтъp",
     "entry_type": "word",
     "pos": "сущ.",
     "translation_ru": "кафтан",
@@ -64,7 +64,7 @@
     "grammar_notes": ""
   },
   {
-    "headword_phrase": "ácьŋ",
+    "headword_phrase": "ácьp",
     "entry_type": "word",
     "pos": "сущ.",
     "translation_ru": "долг",
@@ -72,7 +72,7 @@
     "grammar_notes": ""
   },
   {
-    "headword_phrase": "ácьŋьlьn",
+    "headword_phrase": "acь́pvьlьn",
     "entry_type": "word",
     "pos": "сущ.",
     "translation_ru": "должник",
@@ -80,15 +80,15 @@
     "grammar_notes": ""
   },
   {
-    "headword_phrase": "racьŋáurkbnen",
+    "headword_phrase": "racьpjáurkьnen",
     "entry_type": "word",
     "pos": "гл.",
-    "translation_ru": "дает в долг; требует долг",
+    "translation_ru": "дает в долг || требует долг",
     "literal_meaning": "",
     "grammar_notes": ""
   },
   {
-    "headword_phrase": "acьŋьrkьn",
+    "headword_phrase": "acьpəытkьn",
     "entry_type": "word",
     "pos": "гл.",
     "translation_ru": "кличет его",
@@ -99,12 +99,12 @@
     "headword_phrase": "acgémbra, также acgémbran-eur",
     "entry_type": "word",
     "pos": "союз",
-    "translation_ru": "при том же, поелику; к сожалению, к несчастью",
+    "translation_ru": "при том же, поелику || к сожалению, к несчастью",
     "literal_meaning": "",
     "grammar_notes": ""
   },
   {
-    "headword_phrase": "H.B.acgémbra réen æjgulǽtkæ rússьmil",
+    "headword_phrase": "H.B.acgémbra réen æjgulǽtkæ rússыmil",
     "entry_type": "phrase",
     "pos": "",
     "translation_ru": "к сожалению, я еще не умею (говорить) по-русски",
@@ -232,7 +232,7 @@
     "grammar_notes": ""
   },
   {
-    "headword_phrase": "álьŋ-tārken yǽlvьl",
+    "headword_phrase": "álьŋ-tārken ŋǽlvьl",
     "entry_type": "phrase",
     "pos": "",
     "translation_ru": "очень малое стадо",
@@ -245,7 +245,7 @@
     "pos": "сущ.",
     "translation_ru": "топор",
     "literal_meaning": "",
-    "grammar_notes": "отпр. пад. ālgatgajpь"
+    "grammar_notes": "отпр. пад. ālgatgájрь"
   },
   {
     "headword_phrase": "ālgátgarkьn",
@@ -293,7 +293,7 @@
     "pos": "сущ.",
     "translation_ru": "камбала",
     "literal_meaning": "",
-    "grammar_notes": ""
+    "grammar_notes": "см. ælvæ"
   },
   {
     "headword_phrase": "alva",

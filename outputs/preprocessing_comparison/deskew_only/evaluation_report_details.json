@@ -2,78 +2,38 @@
   "metrics": {
     "total_ground_truth": 38,
     "total_extracted": 38,
-    "exact_matches": 14,
-    "partial_matches": 22,
-    "missing_entries": 2,
-    "extra_entries": 2,
-    "headword_accuracy": 0.9244589185494253,
+    "exact_matches": 23,
+    "partial_matches": 14,
+    "missing_entries": 1,
+    "extra_entries": 1,
+    "headword_accuracy": 0.9654134454195437,
     "grammatical_accuracy": 1.0,
     "definition_accuracy": 1.0,
-    "overall_f1": 0.9473684210526315,
-    "precision": 0.9473684210526315,
-    "recall": 0.9473684210526315
+    "overall_f1": 0.9736842105263158,
+    "precision": 0.9736842105263158,
+    "recall": 0.9736842105263158
   },
   "missing_entries": [
     {
-      "Headword_Phrase": "aaŋkátьrkьn",
+      "Headword_Phrase": "aaŋk-éгьn",
       "Entry_Type": "word",
-      "POS": "гл.",
-      "Translation_RU": "растворяется, распарывается, распахивается",
-      "Literal_Meaning": "",
-      "Grammar_Notes": "прош. II gaaŋkátlen"
-    },
-    {
-      "Headword_Phrase": "acgьta",
-      "Entry_Type": "word",
-      "POS": "нар.",
-      "Translation_RU": "рядом",
-      "Literal_Meaning": "",
+      "POS": "сущ.",
+      "Translation_RU": "кафтан",
+      "Literal_Meaning": "распахнутая одежда",
       "Grammar_Notes": ""
     }
   ],
   "extra_entries": [
     {
-      "Headword_Phrase": "aaprátsrкın",
+      "Headword_Phrase": "aaŋk-éтъp",
       "Entry_Type": "word",
-      "POS": "гл.",
-      "Translation_RU": "растворяется, распарывается, распахивается",
-      "Literal_Meaning": "",
-      "Grammar_Notes": "прош. II gaaykátlen"
-    },
-    {
-      "Headword_Phrase": "äcgbta",
-      "Entry_Type": "word",
-      "POS": "нар.",
-      "Translation_RU": "рядом",
-      "Literal_Meaning": "",
+      "POS": "сущ.",
+      "Translation_RU": "кафтан",
+      "Literal_Meaning": "распахнутая одежда",
       "Grammar_Notes": ""
     }
   ],
   "low_score_matches": [
-    {
-      "ground_truth": {
-        "Headword_Phrase": "aaŋk-éгьn",
-        "Entry_Type": "word",
-        "POS": "сущ.",
-        "Translation_RU": "кафтан",
-        "Literal_Meaning": "распахнутая одежда",
-        "Grammar_Notes": ""
-      },
-      "extracted": {
-        "Headword_Phrase": "aaŋк-éтьn",
-        "Entry_Type": "word",
-        "POS": "сущ.",
-        "Translation_RU": "кафтан",
-        "Literal_Meaning": "распахнутая одежда",
-        "Grammar_Notes": ""
-      },
-      "scores": {
-        "overall": 0.8888888888888888,
-        "headword": 0.7777777777777778,
-        "grammatical": 1.0,
-        "definition": 1.0
-      }
-    },
     {
       "ground_truth": {
         "Headword_Phrase": "acь́ŋьlьn",
@@ -84,7 +44,7 @@
         "Grammar_Notes": ""
       },
       "extracted": {
-        "Headword_Phrase": "ácьŋуьlьn",
+        "Headword_Phrase": "ácьŋúьlьn",
         "Entry_Type": "word",
         "POS": "сущ.",
         "Translation_RU": "должник",

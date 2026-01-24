@@ -1,0 +1,588 @@
+{
+  "cer": 0.06896551724137931,
+  "wer": 0.2356687898089172,
+  "total_chars": 1073,
+  "total_words": 157,
+  "total_char_errors": 74,
+  "total_word_errors": 37,
+  "substitutions": {
+    "count": 49,
+    "rate": 0.045666356011183594,
+    "most_common": [
+      {
+        "from": "ь",
+        "to": "ъ",
+        "count": 22,
+        "examples": [
+          {
+            "ground_truth": "alewlékь(ŋ)",
+            "extracted": "alewlékъ(ŋ)"
+          },
+          {
+            "ground_truth": "alewlékь válьn",
+            "extracted": "alewlékъ válъn"
+          },
+          {
+            "ground_truth": "alewlékь válьn",
+            "extracted": "alewlékъ válъn"
+          },
+          {
+            "ground_truth": "álьm",
+            "extracted": "álъm"
+          },
+          {
+            "ground_truth": "alьm-érьn",
+            "extracted": "alъm-érъn"
+          },
+          {
+            "ground_truth": "alьm-érьn",
+            "extracted": "alъm-érъn"
+          },
+          {
+            "ground_truth": "alьm-ŋélgьn",
+            "extracted": "alъm-ŋélgъn"
+          },
+          {
+            "ground_truth": "alьm-ŋélgьn",
+            "extracted": "alъm-ŋélgъn"
+          },
+          {
+            "ground_truth": "álьmь(ŋ)",
+            "extracted": "álъmъ(ŋ)"
+          },
+          {
+            "ground_truth": "álьmь(ŋ)",
+            "extracted": "álъmъ(ŋ)"
+          },
+          {
+            "ground_truth": "álьmь tikwæп, ékwurgam aálomkəlen",
+            "extracted": "álъmъ tikwæn, ékwurgam aálomkalen"
+          },
+          {
+            "ground_truth": "álьmь tikwæп, ékwurgam aálomkəlen",
+            "extracted": "álъmъ tikwæn, ékwurgam aálomkalen"
+          },
+          {
+            "ground_truth": "álьmŋə!",
+            "extracted": "álъmŋæ!"
+          },
+          {
+            "ground_truth": "álьŋ",
+            "extracted": "álъŋ"
+          },
+          {
+            "ground_truth": "álьŋ-atqə(ŋ)",
+            "extracted": "álъŋ-atqæ(ŋ)"
+          },
+          {
+            "ground_truth": "álьŋ-tārken ŋǽlvьl",
+            "extracted": "álъŋ-tärken ŋælvъl"
+          },
+          {
+            "ground_truth": "álьŋ-tārken ŋǽlvьl",
+            "extracted": "álъŋ-tärken ŋælvъl"
+          },
+          {
+            "ground_truth": "ālgáttь",
+            "extracted": "ālgáttъ"
+          },
+          {
+            "ground_truth": "отпр. пад. ālgatgájрь",
+            "extracted": "отпр. пад. ālgatgájrъ"
+          },
+          {
+            "ground_truth": "ālgátgarkьn",
+            "extracted": "ālgátgarkъn"
+          },
+          {
+            "ground_truth": "ālgatgatkórkьn",
+            "extracted": "ālgatgatkórkъn"
+          },
+          {
+            "ground_truth": "ālgatgaj-pójgьn",
+            "extracted": "ālgatgaj-pójgъn"
+          }
+        ]
+      },
+      {
+        "from": "l",
+        "to": "ḷ",
+        "count": 4,
+        "examples": [
+          {
+            "ground_truth": "aacew-matálьn",
+            "extracted": "aacew-matáḷьn"
+          },
+          {
+            "ground_truth": "прош. II gaaŋkátlen",
+            "extracted": "прош. II gaaŋkátḷen"
+          },
+          {
+            "ground_truth": "acь́ŋьlьn",
+            "extracted": "acь́pьḷьn"
+          },
+          {
+            "ground_truth": "И.B.acgémbra réen æjgulǽtkæ rússьmil",
+            "extracted": "II.B.acgéмьгra réen æjguḷáikæ rús-sьmıl"
+          }
+        ]
+      },
+      {
+        "from": "k",
+        "to": "ḳ",
+        "count": 4,
+        "examples": [
+          {
+            "ground_truth": "aaŋkátьrkьn",
+            "extracted": "aaŋkátьrḳьn"
+          },
+          {
+            "ground_truth": "áaŋkь",
+            "extracted": "áaŋḳь"
+          },
+          {
+            "ground_truth": "áaŋkь válьn",
+            "extracted": "áaŋḳь válьn"
+          },
+          {
+            "ground_truth": "acь́ŋьrkьn",
+            "extracted": "acь́pьrḳьn"
+          }
+        ]
+      },
+      {
+        "from": "ŋ",
+        "to": "р",
+        "count": 3,
+        "examples": [
+          {
+            "ground_truth": "ácьŋ",
+            "extracted": "ácьp"
+          },
+          {
+            "ground_truth": "acь́ŋьlьn",
+            "extracted": "acь́pьḷьn"
+          },
+          {
+            "ground_truth": "acь́ŋьrkьn",
+            "extracted": "acь́pьrḳьn"
+          }
+        ]
+      },
+      {
+        "from": "ә",
+        "to": "æ",
+        "count": 2,
+        "examples": [
+          {
+            "ground_truth": "álьmŋə!",
+            "extracted": "álъmŋæ!"
+          },
+          {
+            "ground_truth": "álьŋ-atqə(ŋ)",
+            "extracted": "álъŋ-atqæ(ŋ)"
+          }
+        ]
+      },
+      {
+        "from": "г",
+        "to": "ґ",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "aaŋk-éгьn",
+            "extracted": "aaŋk-éґьп"
+          }
+        ]
+      },
+      {
+        "from": "n",
+        "to": "п",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "aaŋk-éгьn",
+            "extracted": "aaŋk-éґьп"
+          }
+        ]
+      },
+      {
+        "from": "и",
+        "to": "i",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "И.B.acgémbra réen æjgulǽtkæ rússьmil",
+            "extracted": "II.B.acgéмьгra réen æjguḷáikæ rús-sьmıl"
+          }
+        ]
+      },
+      {
+        "from": "m",
+        "to": "ь",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "И.B.acgémbra réen æjgulǽtkæ rússьmil",
+            "extracted": "II.B.acgéмьгra réen æjguḷáikæ rús-sьmıl"
+          }
+        ]
+      },
+      {
+        "from": "b",
+        "to": "г",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "И.B.acgémbra réen æjgulǽtkæ rússьmil",
+            "extracted": "II.B.acgéмьгra réen æjguḷáikæ rús-sьmıl"
+          }
+        ]
+      },
+      {
+        "from": "ǽ",
+        "to": "á",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "И.B.acgémbra réen æjgulǽtkæ rússьmil",
+            "extracted": "II.B.acgéмьгra réen æjguḷáikæ rús-sьmıl"
+          }
+        ]
+      },
+      {
+        "from": "t",
+        "to": "i",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "И.B.acgémbra réen æjgulǽtkæ rússьmil",
+            "extracted": "II.B.acgéмьгra réen æjguḷáikæ rús-sьmıl"
+          }
+        ]
+      },
+      {
+        "from": "i",
+        "to": "ı",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "И.B.acgémbra réen æjgulǽtkæ rússьmil",
+            "extracted": "II.B.acgéмьгra réen æjguḷáikæ rús-sьmıl"
+          }
+        ]
+      },
+      {
+        "from": "a",
+        "to": "á",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "acgьta",
+            "extracted": "ácgьta"
+          }
+        ]
+      },
+      {
+        "from": "п",
+        "to": "n",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "álьmь tikwæп, ékwurgam aálomkəlen",
+            "extracted": "álъmъ tikwæn, ékwurgam aálomkalen"
+          }
+        ]
+      },
+      {
+        "from": "ә",
+        "to": "a",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "álьmь tikwæп, ékwurgam aálomkəlen",
+            "extracted": "álъmъ tikwæn, ékwurgam aálomkalen"
+          }
+        ]
+      },
+      {
+        "from": "ā",
+        "to": "ä",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "álьŋ-tārken ŋǽlvьl",
+            "extracted": "álъŋ-tärken ŋælvъl"
+          }
+        ]
+      },
+      {
+        "from": "ǽ",
+        "to": "æ",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "álьŋ-tārken ŋǽlvьl",
+            "extracted": "álъŋ-tärken ŋælvъl"
+          }
+        ]
+      },
+      {
+        "from": "р",
+        "to": "r",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "отпр. пад. ālgatgájрь",
+            "extracted": "отпр. пад. ālgatgájrъ"
+          }
+        ]
+      }
+    ]
+  },
+  "deletions": {
+    "count": 22,
+    "rate": 0.02050326188257223,
+    "most_common": [
+      {
+        "character": "a",
+        "count": 5,
+        "examples": [
+          {
+            "ground_truth": "утка-савка, морянка (Anas fuligula)",
+            "extracted": "утка-савка, морянка"
+          },
+          {
+            "ground_truth": "утка-савка, морянка (Anas fuligula)",
+            "extracted": "утка-савка, морянка"
+          },
+          {
+            "ground_truth": "утка-савка, морянка (Anas fuligula)",
+            "extracted": "утка-савка, морянка"
+          },
+          {
+            "ground_truth": "см. ælvæ/alva",
+            "extracted": "см. ælvæ"
+          },
+          {
+            "ground_truth": "см. ælvæ/alva",
+            "extracted": "см. ælvæ"
+          }
+        ]
+      },
+      {
+        "character": "l",
+        "count": 3,
+        "examples": [
+          {
+            "ground_truth": "утка-савка, морянка (Anas fuligula)",
+            "extracted": "утка-савка, морянка"
+          },
+          {
+            "ground_truth": "утка-савка, морянка (Anas fuligula)",
+            "extracted": "утка-савка, морянка"
+          },
+          {
+            "ground_truth": "см. ælvæ/alva",
+            "extracted": "см. ælvæ"
+          }
+        ]
+      },
+      {
+        "character": " ",
+        "count": 2,
+        "examples": [
+          {
+            "ground_truth": "утка-савка, морянка (Anas fuligula)",
+            "extracted": "утка-савка, морянка"
+          },
+          {
+            "ground_truth": "утка-савка, морянка (Anas fuligula)",
+            "extracted": "утка-савка, морянка"
+          }
+        ]
+      },
+      {
+        "character": "u",
+        "count": 2,
+        "examples": [
+          {
+            "ground_truth": "утка-савка, морянка (Anas fuligula)",
+            "extracted": "утка-савка, морянка"
+          },
+          {
+            "ground_truth": "утка-савка, морянка (Anas fuligula)",
+            "extracted": "утка-савка, морянка"
+          }
+        ]
+      },
+      {
+        "character": "ь",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "шурин; деверь",
+            "extracted": "шурин; девер"
+          }
+        ]
+      },
+      {
+        "character": "(",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "утка-савка, морянка (Anas fuligula)",
+            "extracted": "утка-савка, морянка"
+          }
+        ]
+      },
+      {
+        "character": "n",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "утка-савка, морянка (Anas fuligula)",
+            "extracted": "утка-савка, морянка"
+          }
+        ]
+      },
+      {
+        "character": "s",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "утка-савка, морянка (Anas fuligula)",
+            "extracted": "утка-савка, морянка"
+          }
+        ]
+      },
+      {
+        "character": "f",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "утка-савка, морянка (Anas fuligula)",
+            "extracted": "утка-савка, морянка"
+          }
+        ]
+      },
+      {
+        "character": "i",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "утка-савка, морянка (Anas fuligula)",
+            "extracted": "утка-савка, морянка"
+          }
+        ]
+      },
+      {
+        "character": "g",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "утка-савка, морянка (Anas fuligula)",
+            "extracted": "утка-савка, морянка"
+          }
+        ]
+      },
+      {
+        "character": ")",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "утка-савка, морянка (Anas fuligula)",
+            "extracted": "утка-савка, морянка"
+          }
+        ]
+      },
+      {
+        "character": "/",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "см. ælvæ/alva",
+            "extracted": "см. ælvæ"
+          }
+        ]
+      },
+      {
+        "character": "v",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "см. ælvæ/alva",
+            "extracted": "см. ælvæ"
+          }
+        ]
+      }
+    ]
+  },
+  "insertions": {
+    "count": 3,
+    "rate": 0.0027958993476234857,
+    "most_common": [
+      {
+        "character": "i",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "И.B.acgémbra réen æjgulǽtkæ rússьmil",
+            "extracted": "II.B.acgéмьгra réen æjguḷáikæ rús-sьmıl"
+          }
+        ]
+      },
+      {
+        "character": "м",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "И.B.acgémbra réen æjgulǽtkæ rússьmil",
+            "extracted": "II.B.acgéмьгra réen æjguḷáikæ rús-sьmıl"
+          }
+        ]
+      },
+      {
+        "character": "-",
+        "count": 1,
+        "examples": [
+          {
+            "ground_truth": "И.B.acgémbra réen æjgulǽtkæ rússьmil",
+            "extracted": "II.B.acgéмьгra réen æjguḷáikæ rús-sьmıl"
+          }
+        ]
+      }
+    ]
+  },
+  "word_errors": {
+    "substitutions": 35,
+    "deletions": 2,
+    "insertions": 0
+  },
+  "field_stats": {
+    "Headword_Phrase": {
+      "chars": 337,
+      "subs": 46,
+      "dels": 0,
+      "ins": 3
+    },
+    "POS": {
+      "chars": 98,
+      "subs": 0,
+      "dels": 0,
+      "ins": 0
+    },
+    "Translation_RU": {
+      "chars": 576,
+      "subs": 0,
+      "dels": 17,
+      "ins": 0
+    },
+    "Grammar_Notes": {
+      "chars": 62,
+      "subs": 3,
+      "dels": 5,
+      "ins": 0
+    }
+  }
+}

@@ -16,7 +16,7 @@
     "grammar_notes": ""
   },
   {
-    "headword_phrase": "aaprátsrкın",
+    "headword_phrase": "aaŋkátьrkьn",
     "entry_type": "word",
     "pos": "гл.",
     "translation_ru": "растворяется, распарывается, распахивается",
@@ -24,7 +24,7 @@
     "grammar_notes": "прош. II gaaykátlen"
   },
   {
-    "headword_phrase": "áaŋкь",
+    "headword_phrase": "áaŋkь",
     "entry_type": "word",
     "pos": "нар.",
     "translation_ru": "настежь, приоткрывшись, распахнувшись",
@@ -32,7 +32,7 @@
     "grammar_notes": ""
   },
   {
-    "headword_phrase": "áapкь válьn",
+    "headword_phrase": "áaŋkь válьn",
     "entry_type": "word",
     "pos": "прил.",
     "translation_ru": "распахнутый, раскрытый",
@@ -40,7 +40,7 @@
     "grammar_notes": ""
   },
   {
-    "headword_phrase": "aaŋк-éтьn",
+    "headword_phrase": "aaŋk-éтъp",
     "entry_type": "word",
     "pos": "сущ.",
     "translation_ru": "кафтан",
@@ -72,7 +72,7 @@
     "grammar_notes": ""
   },
   {
-    "headword_phrase": "ácьŋуьlьn",
+    "headword_phrase": "ácьŋúьlьn",
     "entry_type": "word",
     "pos": "сущ.",
     "translation_ru": "должник",
@@ -80,7 +80,7 @@
     "grammar_notes": ""
   },
   {
-    "headword_phrase": "racьŋáurкьnen",
+    "headword_phrase": "racьŋáurkьnen",
     "entry_type": "word",
     "pos": "гл.",
     "translation_ru": "дает в долг; требует долг",
@@ -88,7 +88,7 @@
     "grammar_notes": ""
   },
   {
-    "headword_phrase": "acьŋьrкьn",
+    "headword_phrase": "acьŋьrkьn",
     "entry_type": "word",
     "pos": "гл.",
     "translation_ru": "кличет его",
@@ -112,7 +112,7 @@
     "grammar_notes": ""
   },
   {
-    "headword_phrase": "äcgbta",
+    "headword_phrase": "äcgьta",
     "entry_type": "word",
     "pos": "нар.",
     "translation_ru": "рядом",
@@ -120,7 +120,7 @@
     "grammar_notes": ""
   },
   {
-    "headword_phrase": "ac-úкwьn",
+    "headword_phrase": "ac-úkwьn",
     "entry_type": "word",
     "pos": "сущ.",
     "translation_ru": "кремень",
@@ -128,7 +128,7 @@
     "grammar_notes": "см. æc/ac"
   },
   {
-    "headword_phrase": "ac-úкwьn mátьcьn",
+    "headword_phrase": "ac-úkwьn mátьcьn",
     "entry_type": "word",
     "pos": "сущ.",
     "translation_ru": "курок для кремня (в кремневом ружье)",
@@ -176,7 +176,7 @@
     "grammar_notes": ""
   },
   {
-    "headword_phrase": "alьmátьrкьnen",
+    "headword_phrase": "alьmátьrkьnen",
     "entry_type": "word",
     "pos": "гл.",
     "translation_ru": "сдваивает, приставляя рядом",
@@ -200,7 +200,7 @@
     "grammar_notes": ""
   },
   {
-    "headword_phrase": "álьmь tikwæul, éкwurgam aálomкalen",
+    "headword_phrase": "álьmь tikwæul, ékwurgam aálomkalen",
     "entry_type": "phrase",
     "pos": "",
     "translation_ru": "положим, я сказал, но он не слушает",
@@ -208,7 +208,7 @@
     "grammar_notes": ""
   },
   {
-    "headword_phrase": "álьmŋә!",
+    "headword_phrase": "álьmŋæ!",
     "entry_type": "phrase",
     "pos": "",
     "translation_ru": "вот как!",
@@ -248,7 +248,7 @@
     "grammar_notes": "отпр. пад. ālgatgájрь"
   },
   {
-    "headword_phrase": "ālgátgarкьn",
+    "headword_phrase": "ālgátgarkьn",
     "entry_type": "word",
     "pos": "гл.",
     "translation_ru": "рубит",
@@ -256,7 +256,7 @@
     "grammar_notes": ""
   },
   {
-    "headword_phrase": "ālgatgatkórкьn",
+    "headword_phrase": "ālgatgatkórkьn",
     "entry_type": "word",
     "pos": "гл.",
     "translation_ru": "делает топором что-нибудь",
@@ -280,7 +280,7 @@
     "grammar_notes": ""
   },
   {
-    "headword_phrase": "alpьnŋьrкьnen",
+    "headword_phrase": "alpьnŋьrkьnen",
     "entry_type": "word",
     "pos": "гл.",
     "translation_ru": "кладет заплату на подошву обуви",
@@ -293,7 +293,7 @@
     "pos": "сущ.",
     "translation_ru": "камбала",
     "literal_meaning": "",
-    "grammar_notes": ""
+    "grammar_notes": "см. ælvæ"
   },
   {
     "headword_phrase": "alva",
@@ -301,6 +301,6 @@
     "pos": "",
     "translation_ru": "",
     "literal_meaning": "",
-    "grammar_notes": "см. ælvæ/alva"
+    "grammar_notes": "см. alva"
   }
 ]

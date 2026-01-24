@@ -6,39 +6,33 @@ SUMMARY STATISTICS:
 ----------------------------------------
 Total entries in ground truth: 38
 Total entries extracted: 38
-Exact matches: 14
-Partial matches: 22
-Missing entries: 2
-Extra entries: 2
+Exact matches: 23
+Partial matches: 14
+Missing entries: 1
+Extra entries: 1
 
 PERFORMANCE METRICS:
 ----------------------------------------
-Overall F1 Score: 0.947
-Precision: 0.947
-Recall: 0.947
+Overall F1 Score: 0.974
+Precision: 0.974
+Recall: 0.974
 
 FIELD-LEVEL ACCURACY:
 ----------------------------------------
-Headword accuracy: 0.924
+Headword accuracy: 0.965
 Grammatical info accuracy: 1.000
 Definition accuracy: 1.000
 
 MISSING ENTRIES (First 10):
 ----------------------------------------
-1. aaŋkátьrkьn (гл.)
-2. acgьta (нар.)
+1. aaŋk-éгьn (сущ.)
 
 EXTRA ENTRIES (First 10):
 ----------------------------------------
-1. aaprátsrкın (гл.)
-2. äcgbta (нар.)
+1. aaŋk-éтъp (сущ.)
 
 LOW-SCORING MATCHES (First 5):
 ----------------------------------------
-1. Ground Truth: aaŋk-éгьn
-   Extracted: aaŋк-éтьn
-   Score: 0.889
-
-2. Ground Truth: acь́ŋьlьn
-   Extracted: ácьŋуьlьn
+1. Ground Truth: acь́ŋьlьn
+   Extracted: ácьŋúьlьn
    Score: 0.889

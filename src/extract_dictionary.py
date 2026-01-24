@@ -17,9 +17,106 @@ from pydantic import BaseModel, Field
 from docx import Document
 from PIL import Image
 from dotenv import load_dotenv
+import cv2
+import numpy as np
 
 # Load environment variables
 load_dotenv()
+
+
+def preprocess_image(
+    image_path: str,
+    output_path: str,
+    deskew: bool = True,
+    denoise: bool = True,
+    contrast: bool = True,
+    sharpen: bool = True,
+    deskew_threshold: float = 0.5,
+    sharpen_amount: float = 0.5,
+) -> str:
+    """
+    Preprocess an image with specified steps.
+
+    Args:
+        image_path: Path to input image
+        output_path: Path to save preprocessed image
+        deskew: Whether to apply deskew correction
+        denoise: Whether to apply denoising
+        contrast: Whether to apply contrast normalization (CLAHE)
+        sharpen: Whether to apply sharpening
+        deskew_threshold: Minimum angle (degrees) to apply deskew
+        sharpen_amount: Sharpening strength
+
+    Returns:
+        Path to preprocessed image
+    """
+    print(f"\nPreprocessing image: {image_path}")
+    print(
+        f"Steps: Grayscale={True}, Deskew={deskew}, Denoise={denoise}, Contrast={contrast}, Sharpen={sharpen}"
+    )
+
+    # Load image
+    img = cv2.imread(str(image_path))
+    if img is None:
+        raise ValueError(f"Could not load image from {image_path}")
+
+    # Step 1: Convert to grayscale
+    if len(img.shape) == 3:
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+
+    # Step 2: Deskew (optional)
+    if deskew:
+        _, binary = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+        edges = cv2.Canny(binary, 50, 150, apertureSize=3)
+        lines = cv2.HoughLines(edges, 1, np.pi / 180, 200)
+
+        if lines is not None:
+            angles = []
+            for rho, theta in lines[:, 0]:
+                angle = (theta * 180 / np.pi) - 90
+                if -45 < angle < 45:
+                    angles.append(angle)
+
+            if angles:
+                skew_angle = np.median(angles)
+                if abs(skew_angle) > deskew_threshold:
+                    h, w = img.shape[:2]
+                    center = (w // 2, h // 2)
+                    M = cv2.getRotationMatrix2D(center, skew_angle, 1.0)
+                    img = cv2.warpAffine(
+                        img,
+                        M,
+                        (w, h),
+                        flags=cv2.INTER_CUBIC,
+                        borderMode=cv2.BORDER_CONSTANT,
+                        borderValue=255,
+                    )
+                    print(f"  ✓ Deskew applied: {skew_angle:.2f}°")
+
+    # Step 3: Denoise (optional)
+    if denoise:
+        img = cv2.bilateralFilter(img, d=5, sigmaColor=75, sigmaSpace=75)
+        print(f"  ✓ Denoise applied")
+
+    # Step 4: Contrast normalization (optional)
+    if contrast:
+        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+        img = clahe.apply(img)
+        print(f"  ✓ Contrast normalization applied (CLAHE)")
+
+    # Step 5: Sharpen (optional)
+    if sharpen:
+        gaussian = cv2.GaussianBlur(img, (0, 0), 2.0)
+        img = cv2.addWeighted(img, 1.0 + sharpen_amount, gaussian, -sharpen_amount, 0)
+        print(f"  ✓ Sharpen applied (amount={sharpen_amount})")
+
+    # Save preprocessed image
+    output_path = Path(output_path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    cv2.imwrite(str(output_path), img)
+    print(f"  ✓ Preprocessed image saved: {output_path}\n")
+
+    return str(output_path)
 
 
 class DictionaryEntry(BaseModel):
@@ -64,6 +161,14 @@ def read_docx_text(docx_path: str) -> str:
     return "\n".join(full_text)
 
 
+def read_text_file(text_path: str) -> str:
+    """
+    Read text from a plain text file
+    """
+    with open(text_path, "r", encoding="utf-8") as f:
+        return f.read()
+
+
 def encode_image_base64(image_path: str) -> str:
     """
     Encode an image file to base64
@@ -100,7 +205,11 @@ def extract_dictionary_entries(
     # The model can read the image directly, so this is optional
     extracted_text = ""
     if docx_path and Path(docx_path).exists():
-        extracted_text = read_docx_text(docx_path)
+        if docx_path.endswith(".docx"):
+            extracted_text = read_docx_text(docx_path)
+        else:
+            # Plain text or Markdown file
+            extracted_text = read_text_file(docx_path)
 
     # Encode the image
     encoded_image = encode_image_base64(image_path)
@@ -130,7 +239,7 @@ def extract_dictionary_entries(
                         ### CRITICAL FORMATTING RULES:
                         - **Encoding**: Preserve ALL phonetic symbols (e.g., ŋ, æ, ʌ, ь, ə) exactly. Chukchi uses specific characters that must not be simplified to standard Latin or Cyrillic.
                         - **Cleanup**: In the final JSON, provide the content only—remove the "букв." prefixes to keep the data clean for the TSV.
-                        - **Accuracy**: Prioritize the visual image over OCR text, as standard OCR could sometimes misinterprets Chukchi phonetic characters. """
+                        - **Accuracy**: Prioritize the visual image over OCR text, as standard OCR could sometimes missed some characters or misinterprets Chukchi phonetic characters. """
 
     user_prompt = f"""<extracted_text>{extracted_text}</extracted_text>. 
     Using the OCR text as a reference for character shapes, extract all Chukchi entries from the image into a JSON array. 
@@ -279,6 +388,187 @@ def extract_dictionary_entries(
     )
 
 
+def extract_from_paddleocr_json(
+    json_path: str,
+    image_path: str,
+    page_number: int = 1,
+    model: str = "openrouter/qwen/qwen3-vl-30b-a3b-thinking",
+) -> DictionaryPage:
+    """
+    Extract dictionary entries from PaddleOCR VL JSON output.
+
+    Args:
+        json_path: Path to PaddleOCR VL JSON output
+        image_path: Path to the original image (for cropping)
+        page_number: Page number for tracking
+        model: LLM model to use
+
+    Returns:
+        DictionaryPage object containing all extracted entries from all text blocks
+    """
+    # Load JSON
+    with open(json_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    # Get input image path from JSON if not provided
+    if not image_path:
+        image_path = data.get("input_path")
+
+    # Create temporary directory for crops
+    from tempfile import TemporaryDirectory
+
+    with TemporaryDirectory() as temp_dir:
+        temp_path = Path(temp_dir)
+
+        # Load image for cropping
+        from PIL import Image
+
+        img = Image.open(image_path)
+
+        # Filter for text blocks only
+        text_blocks = [
+            block
+            for block in data.get("parsing_res_list", [])
+            if block.get("block_label") == "text"
+        ]
+
+        print(f"Found {len(text_blocks)} text blocks in JSON")
+        print("=" * 60)
+
+        all_entries = []
+
+        for idx, block in enumerate(text_blocks, 1):
+            block_id = block.get("block_id", idx)
+            block_content = block.get("block_content", "")
+            block_bbox = block.get("block_bbox", [])
+
+            if not block_content:
+                print(
+                    f"\n[{idx}/{len(text_blocks)}] Block {block_id}: No content, skipping..."
+                )
+                continue
+
+            print(f"\n[{idx}/{len(text_blocks)}] Processing block {block_id}...")
+
+            # Crop the block temporarily
+            if len(block_bbox) == 4:
+                x1, y1, x2, y2 = block_bbox
+                cropped = img.crop((x1, y1, x2, y2))
+
+                # Save temporarily
+                temp_image = temp_path / f"block_{block_id}.png"
+                cropped.save(temp_image)
+
+                # Save text content temporarily
+                temp_text = temp_path / f"block_{block_id}.txt"
+                with open(temp_text, "w", encoding="utf-8") as f:
+                    f.write(block_content)
+
+                try:
+                    # Extract entries from this block
+                    block_page = extract_dictionary_entries(
+                        image_path=str(temp_image),
+                        docx_path=str(temp_text),
+                        page_number=page_number,
+                        model=model,
+                    )
+
+                    # Collect entries
+                    all_entries.extend(block_page.entries)
+                    print(
+                        f"  ✓ Extracted {len(block_page.entries)} entries from this block"
+                    )
+
+                except Exception as e:
+                    print(f"  ✗ Error processing block {block_id}: {str(e)}")
+                    continue
+            else:
+                print(f"  ✗ Invalid bbox for block {block_id}, skipping...")
+
+        print("\n" + "=" * 60)
+        print(f"Total entries extracted from all blocks: {len(all_entries)}")
+
+        # Return combined results
+        return DictionaryPage(
+            entries=all_entries, page_number=page_number, source_file=json_path
+        )
+
+
+def extract_from_crops_directory(
+    crops_dir: str,
+    page_number: int = 1,
+    model: str = "openrouter/qwen/qwen3-vl-30b-a3b-thinking",
+) -> DictionaryPage:
+    """
+    Extract dictionary entries from a directory of cropped text blocks.
+
+    Args:
+        crops_dir: Directory containing paired .png and .txt files from PaddleOCR VL
+        page_number: Page number for tracking
+        model: LLM model to use
+
+    Returns:
+        DictionaryPage object containing all extracted entries from all blocks
+    """
+    crops_path = Path(crops_dir)
+
+    if not crops_path.exists():
+        raise ValueError(f"Crops directory not found: {crops_dir}")
+
+    # Find all text block image files (look for both .txt and .md)
+    image_files = sorted(crops_path.glob("block_*_text.png"))
+
+    if not image_files:
+        raise ValueError(f"No text block crops found in {crops_dir}")
+
+    print(f"Found {len(image_files)} text block crops to process")
+    print("=" * 60)
+
+    all_entries = []
+
+    for idx, image_file in enumerate(image_files, 1):
+        # Find corresponding text/markdown file (prefer .md, fallback to .txt)
+        md_file = image_file.with_suffix(".md")
+        txt_file = image_file.with_suffix(".txt")
+
+        text_file = (
+            md_file if md_file.exists() else txt_file if txt_file.exists() else None
+        )
+
+        if not text_file:
+            print(
+                f"Warning: No text/markdown file found for {image_file.name}, skipping..."
+            )
+            continue
+
+        print(f"\n[{idx}/{len(image_files)}] Processing {image_file.name}...")
+
+        try:
+            # Extract entries from this block
+            block_page = extract_dictionary_entries(
+                image_path=str(image_file),
+                docx_path=str(text_file),  # Will be read as plain text or markdown
+                page_number=page_number,
+                model=model,
+            )
+
+            # Collect entries
+            all_entries.extend(block_page.entries)
+            print(f"  ✓ Extracted {len(block_page.entries)} entries from this block")
+
+        except Exception as e:
+            print(f"  ✗ Error processing {image_file.name}: {str(e)}")
+            continue
+
+    print("\n" + "=" * 60)
+    print(f"Total entries extracted from all blocks: {len(all_entries)}")
+
+    # Return combined results
+    return DictionaryPage(
+        entries=all_entries, page_number=page_number, source_file=str(crops_path)
+    )
+
+
 def save_to_tsv(
     dictionary_page: DictionaryPage, output_path: str, append: bool = False
 ):
@@ -338,6 +628,21 @@ Examples:
   # With OCR text reference
   python extract_dictionary.py -i page1.png -d page1.docx -o output.tsv
   
+  # With preprocessing (all steps: deskew, denoise, contrast, sharpen)
+  python extract_dictionary.py -i page1.png -o output.tsv --preprocess all
+  
+  # With specific preprocessing step
+  python extract_dictionary.py -i page1.png -o output.tsv --preprocess denoise
+  
+  # Batch mode: Process cropped text blocks from PaddleOCR VL
+  python extract_dictionary.py --crops-dir paddle_ocr_vl_output/preprocessed_crops -o output.tsv
+  
+  # JSON mode: Process directly from PaddleOCR VL JSON (RECOMMENDED!)
+  python extract_dictionary.py --paddleocr-json paddle_ocr_vl_output/preprocessed_res.json -o output.tsv
+  
+  # JSON mode with preprocessing
+  python extract_dictionary.py --paddleocr-json paddle_ocr_vl_output/preprocessed_res.json -o output.tsv --preprocess all
+  
   # With specific model
   python extract_dictionary.py -i page1.png -o output.tsv -m gemini/gemini-2.5-pro
   
@@ -353,7 +658,6 @@ Examples:
         "-i",
         "--image",
         type=str,
-        required=True,
         help="Path to the dictionary page image (PNG, JPG, etc.)",
     )
 
@@ -362,11 +666,23 @@ Examples:
     )
 
     parser.add_argument(
+        "--crops-dir",
+        type=str,
+        help="Path to directory containing cropped text blocks from PaddleOCR VL (alternative to --image)",
+    )
+
+    parser.add_argument(
+        "--paddleocr-json",
+        type=str,
+        help="Path to PaddleOCR VL JSON output file (extracts directly from JSON, alternative to --crops-dir)",
+    )
+
+    parser.add_argument(
         "-d",
         "--docx",
         type=str,
         default=None,
-        help="Optional path to extracted text in DOCX format (for OCR reference)",
+        help="Optional path to extracted text in DOCX, TXT, or Markdown format (for OCR reference)",
     )
 
     parser.add_argument(
@@ -396,16 +712,245 @@ Examples:
         "--json", action="store_true", help="Also save output in JSON format"
     )
 
+    # Preprocessing options
+    parser.add_argument(
+        "--preprocess",
+        type=str,
+        choices=["none", "deskew", "denoise", "contrast", "sharpen", "all"],
+        default="none",
+        help="Image preprocessing to apply: 'none' (default), 'deskew', 'denoise', 'contrast', 'sharpen', or 'all' (combine all steps)",
+    )
+
+    parser.add_argument(
+        "--preprocess-output",
+        type=str,
+        help="Directory to save preprocessed images (default: temp_preprocessed/)",
+    )
+
     args = parser.parse_args()
 
-    # Validate paths
+    # Validate that only one mode is used
+    modes = sum([bool(args.image), bool(args.crops_dir), bool(args.paddleocr_json)])
+
+    if modes > 1:
+        print(
+            "Error: Cannot use multiple modes. Choose one: --image, --crops-dir, or --paddleocr-json"
+        )
+        return 1
+
+    if modes == 0:
+        print("Error: Must provide one of: --image, --crops-dir, or --paddleocr-json")
+        return 1
+
+    output_path = Path(args.output)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    # Handle PaddleOCR JSON mode (NEW!)
+    if args.paddleocr_json:
+        json_path = Path(args.paddleocr_json)
+        if not json_path.exists():
+            print(f"Error: PaddleOCR JSON file not found at {json_path}")
+            return 1
+
+        # Get image path from JSON or require it
+        with open(json_path, "r", encoding="utf-8") as f:
+            json_data = json.load(f)
+
+        image_path = json_data.get("input_path")
+        if not image_path or not Path(image_path).exists():
+            print(f"Error: Input image not found at {image_path}")
+            print("The image path is taken from the 'input_path' field in the JSON")
+            return 1
+
+        # Apply preprocessing if requested
+        original_image_path = image_path
+        if args.preprocess != "none":
+            preprocess_dir = Path(args.preprocess_output or "temp_preprocessed")
+            preprocess_dir.mkdir(parents=True, exist_ok=True)
+
+            image_name = Path(image_path).name
+            preprocessed_path = preprocess_dir / f"preprocessed_{image_name}"
+
+            # Determine which preprocessing steps to apply
+            if args.preprocess == "all":
+                deskew, denoise, contrast, sharpen = True, True, True, True
+            else:
+                deskew = args.preprocess == "deskew"
+                denoise = args.preprocess == "denoise"
+                contrast = args.preprocess == "contrast"
+                sharpen = args.preprocess == "sharpen"
+
+            # Preprocess the image
+            image_path = preprocess_image(
+                image_path=str(original_image_path),
+                output_path=str(preprocessed_path),
+                deskew=deskew,
+                denoise=denoise,
+                contrast=contrast,
+                sharpen=sharpen,
+            )
+
+        print(f"Extracting dictionary entries from PaddleOCR JSON: {json_path}")
+        print(f"Using image: {image_path}")
+        if original_image_path != image_path:
+            print(f"  (preprocessed from: {original_image_path})")
+        print(f"Using model: {args.model}")
+        print(f"Page number: {args.page}")
+        print(f"Output: {output_path}")
+        print(f"Mode: PaddleOCR JSON processing")
+        print("-" * 60)
+
+        try:
+            # Extract from JSON
+            dictionary_page = extract_from_paddleocr_json(
+                json_path=str(json_path),
+                image_path=image_path,
+                page_number=args.page,
+                model=args.model,
+            )
+
+            print(
+                f"\nSuccessfully extracted {len(dictionary_page.entries)} total entries"
+            )
+
+            # Save to TSV
+            save_to_tsv(dictionary_page, str(output_path), append=args.append)
+
+            # Print first few entries as preview
+            print("\nFirst 5 entries extracted:")
+            for i, entry in enumerate(dictionary_page.entries[:5]):
+                translation_preview = (
+                    entry.translation_ru[:50]
+                    if len(entry.translation_ru) > 50
+                    else entry.translation_ru
+                )
+                literal = (
+                    f" [lit: {entry.literal_meaning}]" if entry.literal_meaning else ""
+                )
+                print(
+                    f"{i+1}. {entry.headword_phrase} ({entry.pos}) [{entry.entry_type}]: {translation_preview}{literal}"
+                )
+
+            # Save as JSON if requested
+            if args.json:
+                json_output = output_path.with_suffix(".json")
+                with open(json_output, "w", encoding="utf-8") as f:
+                    json.dump(
+                        [entry.model_dump() for entry in dictionary_page.entries],
+                        f,
+                        ensure_ascii=False,
+                        indent=2,
+                    )
+                print(f"\nAlso saved JSON format to: {json_output}")
+
+            return 0
+
+        except Exception as e:
+            print(f"Error during JSON extraction: {str(e)}")
+            import traceback
+
+            traceback.print_exc()
+            return 1
+
+    # Handle crops directory mode
+    if args.crops_dir:
+        crops_dir = Path(args.crops_dir)
+        if not crops_dir.exists():
+            print(f"Error: Crops directory not found at {crops_dir}")
+            return 1
+
+        print(f"Extracting dictionary entries from crops in: {crops_dir}")
+        print(f"Using model: {args.model}")
+        print(f"Page number: {args.page}")
+        print(f"Output: {output_path}")
+        print(f"Mode: Batch processing (crops directory)")
+        print("-" * 60)
+
+        try:
+            # Extract from all crops
+            dictionary_page = extract_from_crops_directory(
+                crops_dir=str(crops_dir),
+                page_number=args.page,
+                model=args.model,
+            )
+
+            print(
+                f"\nSuccessfully extracted {len(dictionary_page.entries)} total entries"
+            )
+
+            # Save to TSV
+            save_to_tsv(dictionary_page, str(output_path), append=args.append)
+
+            # Print first few entries as preview
+            print("\nFirst 5 entries extracted:")
+            for i, entry in enumerate(dictionary_page.entries[:5]):
+                translation_preview = (
+                    entry.translation_ru[:50]
+                    if len(entry.translation_ru) > 50
+                    else entry.translation_ru
+                )
+                literal = (
+                    f" [lit: {entry.literal_meaning}]" if entry.literal_meaning else ""
+                )
+                print(
+                    f"{i+1}. {entry.headword_phrase} ({entry.pos}) [{entry.entry_type}]: {translation_preview}{literal}"
+                )
+
+            # Save as JSON if requested
+            if args.json:
+                json_output = output_path.with_suffix(".json")
+                with open(json_output, "w", encoding="utf-8") as f:
+                    json.dump(
+                        [entry.model_dump() for entry in dictionary_page.entries],
+                        f,
+                        ensure_ascii=False,
+                        indent=2,
+                    )
+                print(f"\nAlso saved JSON format to: {json_output}")
+
+            return 0
+
+        except Exception as e:
+            print(f"Error during batch extraction: {str(e)}")
+            import traceback
+
+            traceback.print_exc()
+            return 1
+
+    # Handle single image mode (original behavior)
     image_path = Path(args.image)
     if not image_path.exists():
         print(f"Error: Image file not found at {image_path}")
         return 1
 
-    output_path = Path(args.output)
-    output_path.parent.mkdir(parents=True, exist_ok=True)
+    # Apply preprocessing if requested
+    original_image_path = image_path
+    if args.preprocess != "none":
+        preprocess_dir = Path(args.preprocess_output or "temp_preprocessed")
+        preprocess_dir.mkdir(parents=True, exist_ok=True)
+
+        preprocessed_path = preprocess_dir / f"preprocessed_{image_path.name}"
+
+        # Determine which preprocessing steps to apply
+        if args.preprocess == "all":
+            deskew, denoise, contrast, sharpen = True, True, True, True
+        else:
+            deskew = args.preprocess == "deskew"
+            denoise = args.preprocess == "denoise"
+            contrast = args.preprocess == "contrast"
+            sharpen = args.preprocess == "sharpen"
+
+        # Preprocess the image
+        image_path = Path(
+            preprocess_image(
+                image_path=str(original_image_path),
+                output_path=str(preprocessed_path),
+                deskew=deskew,
+                denoise=denoise,
+                contrast=contrast,
+                sharpen=sharpen,
+            )
+        )
 
     docx_path = args.docx
     if docx_path:
@@ -415,6 +960,8 @@ Examples:
             docx_path = None
 
     print(f"Extracting dictionary entries from: {image_path}")
+    if original_image_path != image_path:
+        print(f"  (preprocessed from: {original_image_path})")
     if docx_path:
         print(f"Using extracted text from: {docx_path}")
     print(f"Using model: {args.model}")

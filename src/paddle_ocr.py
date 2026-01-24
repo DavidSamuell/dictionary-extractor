@@ -114,6 +114,7 @@ class PaddleOCRExtractor:
         det_db_box_thresh: float = 0.6,
         det_db_unclip_ratio: float = 1.5,
         det_limit_side_len: int = 960,
+        rec_score_thresh: float = 0.5,
     ):
         """
         Initialize PaddleOCR extractor
@@ -132,6 +133,7 @@ class PaddleOCRExtractor:
             det_db_box_thresh: Minimum confidence for detected boxes (default: 0.6, lower=more boxes)
             det_db_unclip_ratio: Box expansion ratio (default: 1.5, lower=tighter boxes)
             det_limit_side_len: Max image side length for detection (default: 960, higher=better for small text)
+            rec_score_thresh: Minimum recognition confidence (default: 0.5, filters out low-confidence text)
         """
         print(f"Initializing PaddleOCR...")
         print(f"  Text recognition model: {text_recognition_model_name}")
@@ -142,6 +144,10 @@ class PaddleOCRExtractor:
         print(f"    - det_db_box_thresh: {det_db_box_thresh}")
         print(f"    - det_db_unclip_ratio: {det_db_unclip_ratio}")
         print(f"    - det_limit_side_len: {det_limit_side_len}")
+        print(f"  Recognition parameters:")
+        print(f"    - rec_score_thresh: {rec_score_thresh}")
+
+        self.rec_score_thresh = rec_score_thresh
 
         ocr_params = {
             "use_textline_orientation": True,  # Use the new parameter instead of use_angle_cls
@@ -238,6 +244,10 @@ class PaddleOCRExtractor:
         )
 
         for polygon, text, conf in zip(polygons, texts, scores):
+            # Filter out low-confidence recognition results
+            if float(conf) < self.rec_score_thresh:
+                continue
+
             # Convert polygon to axis-aligned bbox
             xs = [p[0] for p in polygon]
             ys = [p[1] for p in polygon]
@@ -245,7 +255,9 @@ class PaddleOCRExtractor:
 
             lines.append(OCRLine(bbox=bbox, text=text, confidence=float(conf)))
 
-        print(f"Detected {len(lines)} text lines")
+        print(
+            f"Detected {len(lines)} text lines (after recognition confidence filtering)"
+        )
         return lines
 
     def segment_columns(
@@ -288,6 +300,29 @@ class PaddleOCRExtractor:
         """Check if text contains a POS tag like (сущ.), (гл.), etc."""
         return bool(POS_TAG_PATTERN.search(text))
 
+    def _is_likely_bold_headword(
+        self,
+        line: OCRLine,
+        median_height: float,
+        height_multiplier: float = 1.1,
+        bold_confidence: float = 0.7,
+    ) -> bool:
+        """
+        Detect if a line is likely a bold headword based on visual characteristics.
+        Bold text typically has:
+        - Larger height than normal text
+        - Higher confidence (thicker strokes are easier to recognize)
+        """
+        height = line.bbox.height
+
+        # Bold text is typically 10-30% taller than regular text
+        is_taller = height > median_height * height_multiplier
+
+        # Bold text often has higher OCR confidence
+        has_good_confidence = line.confidence > bold_confidence
+
+        return is_taller and has_good_confidence
+
     def _is_entry_start(self, text: str) -> bool:
         """
         Check if a line likely starts a new dictionary entry.
@@ -308,14 +343,22 @@ class PaddleOCRExtractor:
         return False
 
     def segment_entries(
-        self, lines: List[OCRLine], column: str
+        self,
+        lines: List[OCRLine],
+        column: str,
+        gap_multiplier: float = 2.0,
+        height_multiplier: float = 1.1,
+        bold_confidence: float = 0.7,
     ) -> List[DictionaryEntry]:
         """
-        Segment lines into dictionary entries using POS tag detection + gap/indent heuristics
+        Segment lines into dictionary entries using gap and bold headword detection
 
         Args:
             lines: List of OCR lines in a column
             column: Column identifier ('L' or 'R')
+            gap_multiplier: Multiplier for gap-based splitting (default: 2.0, higher=fewer splits)
+            height_multiplier: Height multiplier for bold detection (default: 1.1, higher=stricter)
+            bold_confidence: Minimum confidence for bold text (default: 0.7, higher=stricter)
 
         Returns:
             List of dictionary entries
@@ -351,25 +394,18 @@ class PaddleOCRExtractor:
             curr_line = lines[i]
 
             gap = curr_line.bbox.y_min - prev_line.bbox.y_max
-            indent = curr_line.bbox.x_min - col_left_margin
-            is_left_aligned = indent < indent_threshold
 
-            # Check if this line contains a POS tag (strong indicator of new entry)
-            has_pos = self._has_pos_tag(curr_line.text)
-
-            # Check if this starts a new entry using multiple heuristics:
+            # Check if this starts a new entry using heuristics:
             # Rule 1: Large gap between lines
-            large_gap = gap > median_gap + 2 * mad_gap
+            large_gap = gap > median_gap + gap_multiplier * mad_gap
 
-            # Rule 2: Line has POS tag AND is reasonably left-aligned (not heavily indented)
-            # This catches entries like "acьŋ (сущ.) долг" even without large gaps
-            pos_at_margin = has_pos and is_left_aligned
+            is_new_entry = large_gap
 
-            # Rule 3: Line has POS tag with moderate indent (sub-entries under same root)
-            # Allow slightly indented lines with POS tags as new entries
-            pos_with_small_indent = has_pos and indent < indent_threshold * 3
-
-            is_new_entry = large_gap or pos_at_margin or pos_with_small_indent
+            # Debug logging
+            if is_new_entry:
+                print(
+                    f"    Line {i}: NEW ENTRY (large_gap) - '{curr_line.text[:50]}...' gap={gap:.1f}"
+                )
 
             if is_new_entry:
                 # Save previous entry
@@ -791,6 +827,13 @@ Examples:
         help="Max image side length for detection (default: 960). Higher values (1280+) better for small text.",
     )
 
+    parser.add_argument(
+        "--rec-score-thresh",
+        type=float,
+        default=0.5,
+        help="Minimum recognition confidence threshold (default: 0.5). Higher values (0.6-0.8) filter out more uncertain text.",
+    )
+
     args = parser.parse_args()
 
     # Validate input file
@@ -808,6 +851,7 @@ Examples:
             det_db_box_thresh=args.det_db_box_thresh,
             det_db_unclip_ratio=args.det_db_unclip_ratio,
             det_limit_side_len=args.det_limit_side_len,
+            rec_score_thresh=args.rec_score_thresh,
         )
         entries = extractor.extract_entries(args.image, args.output_dir, args.padding)
 

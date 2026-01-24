@@ -6,7 +6,7 @@ set -e  # Exit on error
 
 # Configuration
 MODEL="gemini/gemini-2.5-pro"
-GROUND_TRUTH="outputs/gold_label_dictionary.tsv"
+GROUND_TRUTH="assets/gold_label_dictionary.tsv"
 DOCX_PATH="assets/extracted-dict-page.docx"
 
 # Check if ground truth exists

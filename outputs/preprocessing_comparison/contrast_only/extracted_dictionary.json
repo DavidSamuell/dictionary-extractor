@@ -21,7 +21,7 @@
     "pos": "гл.",
     "translation_ru": "растворяется, распарывается, распахивается",
     "literal_meaning": "",
-    "grammar_notes": "прош. II gaaŋkátlen"
+    "grammar_notes": "прош. II gaaykátlen"
   },
   {
     "headword_phrase": "áaŋkь",
@@ -40,7 +40,7 @@
     "grammar_notes": ""
   },
   {
-    "headword_phrase": "aaŋk-éľьn",
+    "headword_phrase": "aaŋk-éтъп",
     "entry_type": "word",
     "pos": "сущ.",
     "translation_ru": "кафтан",
@@ -48,7 +48,7 @@
     "grammar_notes": ""
   },
   {
-    "headword_phrase": "aátgь, также aátir",
+    "headword_phrase": "aátgьr, также aátir",
     "entry_type": "word",
     "pos": "сущ.",
     "translation_ru": "ручей",
@@ -59,9 +59,9 @@
     "headword_phrase": "ácəq",
     "entry_type": "word",
     "pos": "сущ.",
-    "translation_ru": "утка-савка, морянка (Anas fuligula)",
+    "translation_ru": "утка-савка, морянка",
     "literal_meaning": "",
-    "grammar_notes": ""
+    "grammar_notes": "Anas fuligula"
   },
   {
     "headword_phrase": "ácьŋ",
@@ -72,7 +72,7 @@
     "grammar_notes": ""
   },
   {
-    "headword_phrase": "acь́ŋuľьn",
+    "headword_phrase": "acь́ŋьlьn",
     "entry_type": "word",
     "pos": "сущ.",
     "translation_ru": "должник",
@@ -88,7 +88,7 @@
     "grammar_notes": ""
   },
   {
-    "headword_phrase": "acь́ŋьrkьn",
+    "headword_phrase": "acь́ргьrkьn",
     "entry_type": "word",
     "pos": "гл.",
     "translation_ru": "кличет его",
@@ -96,7 +96,7 @@
     "grammar_notes": ""
   },
   {
-    "headword_phrase": "acgémьra, также acgémьraŋ-eur",
+    "headword_phrase": "acgémьra, также acgémьran-eur",
     "entry_type": "word",
     "pos": "союз",
     "translation_ru": "при том же, поелику; к сожалению, к несчастью",
@@ -112,7 +112,7 @@
     "grammar_notes": ""
   },
   {
-    "headword_phrase": "acgь́ta",
+    "headword_phrase": "äcgьta",
     "entry_type": "word",
     "pos": "нар.",
     "translation_ru": "рядом",
@@ -208,7 +208,7 @@
     "grammar_notes": ""
   },
   {
-    "headword_phrase": "álьmŋә!",
+    "headword_phrase": "álьmŋæ!",
     "entry_type": "phrase",
     "pos": "",
     "translation_ru": "вот как!",
@@ -245,7 +245,7 @@
     "pos": "сущ.",
     "translation_ru": "топор",
     "literal_meaning": "",
-    "grammar_notes": "отпр. пад. ālgatgájрь"
+    "grammar_notes": "отпр. пад. ālgatgajpь"
   },
   {
     "headword_phrase": "ālgátgarkьn",
@@ -272,7 +272,7 @@
     "grammar_notes": ""
   },
   {
-    "headword_phrase": "álpьnŋьn",
+    "headword_phrase": "álрьnŋьn",
     "entry_type": "word",
     "pos": "сущ.",
     "translation_ru": "заплата на подошве",
@@ -280,7 +280,7 @@
     "grammar_notes": ""
   },
   {
-    "headword_phrase": "alpьnŋьrkьnen",
+    "headword_phrase": "alрьnŋьrkьnen",
     "entry_type": "word",
     "pos": "гл.",
     "translation_ru": "кладет заплату на подошву обуви",
@@ -288,7 +288,7 @@
     "grammar_notes": ""
   },
   {
-    "headword_phrase": "H.B. alpь́nŋьlgьn",
+    "headword_phrase": "H.B. alрь́nŋьlgьn",
     "entry_type": "word",
     "pos": "сущ.",
     "translation_ru": "камбала",
@@ -301,6 +301,6 @@
     "pos": "",
     "translation_ru": "",
     "literal_meaning": "",
-    "grammar_notes": "см. ælvæ/alva"
+    "grammar_notes": "см. ælvæ alva"
   }
 ]

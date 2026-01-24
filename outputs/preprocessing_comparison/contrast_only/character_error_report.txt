@@ -2,91 +2,108 @@
 DETAILED CHARACTER-LEVEL ERROR ANALYSIS
 ================================================================================
 
-Character Error Rate (CER): 0.0188 (1.88%)
-Word Error Rate (WER): 0.0892 (8.92%)
+Character Error Rate (CER): 0.0267 (2.67%)
+Word Error Rate (WER): 0.1000 (10.00%)
 
-Total characters analyzed: 1,436
-Total words analyzed: 213
-Total character errors: 27
-Total word errors: 19
+Total characters analyzed: 1,422
+Total character errors: 38
 
-WORD-LEVEL ERROR BREAKDOWN:
+CHARACTER-LEVEL ERROR BREAKDOWN:
 --------------------------------------------------------------------------------
-  Substitutions: 19
-  Deletions: 0
-  Insertions: 0
+  Substitutions: 19 (1.34% of all characters)
+  Deletions: 17 (1.20% of all characters)
+  Insertions: 2 (0.14% of all characters)
 
 ================================================================================
-SUBSTITUTIONS: 18 (1.25% of all characters)
+SUBSTITUTIONS: 19 (1.34% of all characters)
 ================================================================================
 Original → Wrong                    Count      % of Subs    % of Total
 --------------------------------------------------------------------------------
-'b' → 'ь'                           3           16.67%         0.21%
-    Example: acgémbra, также acgémbraŋ-eur → acgémьra, также acgémьraŋ-eur
-    Example: acgémbra, также acgémbraŋ-eur → acgémьra, также acgémьraŋ-eur
+'b' → 'ь'                           3           15.79%         0.21%
+    Example: acgémbra, также acgémbraŋ-eur → acgémьra, также acgémьran-eur
+    Example: acgémbra, также acgémbraŋ-eur → acgémьra, также acgémьran-eur
     Example: И.B.acgémbra réen æjgulǽtkæ rússьmil → H.B.acgémьra réen æjgulǽtkæ rússьmil
-'р' → 'p'                           3           16.67%         0.21%
-    Example: álрьnŋьn → álpьnŋьn
-    Example: alрь́nŋьrkьnen → alpьnŋьrkьnen
-    Example: И.B. alрь́nŋьlgьn → H.B. alpь́nŋьlgьn
-'И' → 'H'                           2           11.11%         0.14%
+'ŋ' → 'y'                           2           10.53%         0.14%
+    Example: прош. II gaaŋkátlen → прош. II gaaykátlen
+    Example: álьŋ-tārken ŋǽlvьl → álьŋ-tārken yǽlvьl
+'и' → 'h'                           2           10.53%         0.14%
     Example: И.B.acgémbra réen æjgulǽtkæ rússьmil → H.B.acgémьra réen æjgulǽtkæ rússьmil
-    Example: И.B. alрь́nŋьlgьn → H.B. alpь́nŋьlgьn
-'ə' → 'a'                           2           11.11%         0.14%
+    Example: И.B. alрь́nŋьlgьn → H.B. alрь́nŋьlgьn
+'ә' → 'a'                           2           10.53%         0.14%
     Example: álьmь tikwæп, ékwurgam aálomkəlen → álьmь tikwæul, ékwurgam aálomkalen
     Example: álьŋ-atqə(ŋ) → álьŋ-atqa(ŋ)
-'г' → 'ľ'                           1            5.56%         0.07%
-    Example: aaŋk-éгьn → aaŋk-éľьn
-'ь' → 'u'                           1            5.56%         0.07%
-    Example: acь́ŋьlьn → acь́ŋuľьn
-'l' → 'ľ'                           1            5.56%         0.07%
-    Example: acь́ŋьlьn → acь́ŋuľьn
-'ŋ' → 'p'                           1            5.56%         0.07%
+'г' → 'r'                           1            5.26%         0.07%
+    Example: aátgьг, также aátir → aátgьr, также aátir
+'ŋ' → 'г'                           1            5.26%         0.07%
+    Example: acь́ŋьrkьn → acь́ргьrkьn
+'ŋ' → 'n'                           1            5.26%         0.07%
+    Example: acgémbra, также acgémbraŋ-eur → acgémьra, также acgémьran-eur
+'a' → 'ä'                           1            5.26%         0.07%
+    Example: acgьta → äcgьta
+'ŋ' → 'р'                           1            5.26%         0.07%
     Example: alьm-ŋélgьn → alьm-pélgьn
-'п' → 'n'                           1            5.56%         0.07%
+'п' → 'n'                           1            5.26%         0.07%
     Example: alьmátьrkьпen → alьmátьrkьnen
-'п' → 'l'                           1            5.56%         0.07%
+'п' → 'l'                           1            5.26%         0.07%
     Example: álьmь tikwæп, ékwurgam aálomkəlen → álьmь tikwæul, ékwurgam aálomkalen
-'ə' → 'ә'                           1            5.56%         0.07%
-    Example: álьmŋə! → álьmŋә!
-'ŋ' → 'y'                           1            5.56%         0.07%
-    Example: álьŋ-tārken ŋǽlvьl → álьŋ-tārken yǽlvьl
+'ә' → 'æ'                           1            5.26%         0.07%
+    Example: álьmŋə! → álьmŋæ!
+'á' → 'a'                           1            5.26%         0.07%
+    Example: отпр. пад. ālgatgájрь → отпр. пад. ālgatgajpь
+'/' → ' '                           1            5.26%         0.07%
+    Example: см. ælvæ/alva → см. ælvæ alva
 
 ================================================================================
-DELETIONS: 2 (0.14% of all characters)
+DELETIONS: 17 (1.20% of all characters)
 ================================================================================
 Deleted Character                   Count      % of Dels    % of Total
 --------------------------------------------------------------------------------
-'г'                                 1           50.00%         0.07%
-    Example: aátgьг, также aátir → aátgь, также aátir
-'́'                                 1           50.00%         0.07%
-    Example: alрь́nŋьrkьnen → alpьnŋьrkьnen
+'a'                                 3           17.65%         0.21%
+    Example: утка-савка, морянка (Anas fuligula) → утка-савка, морянка
+    Example: утка-савка, морянка (Anas fuligula) → утка-савка, морянка
+    Example: утка-савка, морянка (Anas fuligula) → утка-савка, морянка
+' '                                 2           11.76%         0.14%
+    Example: утка-савка, морянка (Anas fuligula) → утка-савка, морянка
+    Example: утка-савка, морянка (Anas fuligula) → утка-савка, морянка
+'u'                                 2           11.76%         0.14%
+    Example: утка-савка, морянка (Anas fuligula) → утка-савка, морянка
+    Example: утка-савка, морянка (Anas fuligula) → утка-савка, морянка
+'l'                                 2           11.76%         0.14%
+    Example: утка-савка, морянка (Anas fuligula) → утка-савка, морянка
+    Example: утка-савка, морянка (Anas fuligula) → утка-савка, морянка
+'('                                 1            5.88%         0.07%
+    Example: утка-савка, морянка (Anas fuligula) → утка-савка, морянка
+'n'                                 1            5.88%         0.07%
+    Example: утка-савка, морянка (Anas fuligula) → утка-савка, морянка
+'s'                                 1            5.88%         0.07%
+    Example: утка-савка, морянка (Anas fuligula) → утка-савка, морянка
+'f'                                 1            5.88%         0.07%
+    Example: утка-савка, морянка (Anas fuligula) → утка-савка, морянка
+'i'                                 1            5.88%         0.07%
+    Example: утка-савка, морянка (Anas fuligula) → утка-савка, морянка
+'g'                                 1            5.88%         0.07%
+    Example: утка-савка, морянка (Anas fuligula) → утка-савка, морянка
+')'                                 1            5.88%         0.07%
+    Example: утка-савка, морянка (Anas fuligula) → утка-савка, морянка
+'́'                                 1            5.88%         0.07%
+    Example: alрь́nŋьrkьnen → alрьnŋьrkьnen
 
 ================================================================================
-INSERTIONS: 7 (0.49% of all characters)
+INSERTIONS: 2 (0.14% of all characters)
 ================================================================================
 Inserted Character                  Count      % of Ins     % of Total
 --------------------------------------------------------------------------------
-'a'                                 2           28.57%         0.14%
-    Example: см. ælvæ → см. ælvæ/alva
-    Example: см. ælvæ → см. ælvæ/alva
-'́'                                 1           14.29%         0.07%
-    Example: acgьta → acgь́ta
-'u'                                 1           14.29%         0.07%
+'р'                                 1           50.00%         0.07%
+    Example: acь́ŋьrkьn → acь́ргьrkьn
+'u'                                 1           50.00%         0.07%
     Example: álьmь tikwæп, ékwurgam aálomkəlen → álьmь tikwæul, ékwurgam aálomkalen
-'/'                                 1           14.29%         0.07%
-    Example: см. ælvæ → см. ælvæ/alva
-'l'                                 1           14.29%         0.07%
-    Example: см. ælvæ → см. ælvæ/alva
-'v'                                 1           14.29%         0.07%
-    Example: см. ælvæ → см. ælvæ/alva
 
 ================================================================================
 ERROR RATES BY FIELD:
 ================================================================================
 Field                     Chars      Subs     Dels     Ins      CER
 --------------------------------------------------------------------------------
-Headword_Phrase           460        18       2        2        0.0478
-POS                       127        0        0        0        0.0000
-Translation_RU            785        0        0        0        0.0000
-Grammar_Notes             64         0        0        5        0.0781
+Headword_Phrase           451        16       1        2        0.0421
+POS                       123        0        0        0        0.0000
+Translation_RU            779        0        16       0        0.0205
+Grammar_Notes             69         3        0        0        0.0435

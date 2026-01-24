@@ -1,0 +1,78 @@
+================================================================================
+DETAILED CHARACTER-LEVEL ERROR ANALYSIS
+================================================================================
+
+Character Error Rate (CER): 0.0143 (1.43%)
+Word Error Rate (WER): 0.0680 (6.80%)
+
+Total characters analyzed: 1,399
+Total character errors: 20
+
+CHARACTER-LEVEL ERROR BREAKDOWN:
+--------------------------------------------------------------------------------
+  Substitutions: 11 (0.79% of all characters)
+  Deletions: 8 (0.57% of all characters)
+  Insertions: 1 (0.07% of all characters)
+
+================================================================================
+SUBSTITUTIONS: 11 (0.79% of all characters)
+================================================================================
+Original → Wrong                    Count      % of Subs    % of Total
+--------------------------------------------------------------------------------
+'b' → 'ь'                           3           27.27%         0.21%
+    Example: acgémbra, также acgémbraŋ-eur → acgémьra, также acgémьran-eur
+    Example: acgémbra, также acgémbraŋ-eur → acgémьra, также acgémьran-eur
+    Example: И.B.acgémbra réen æjgulǽtkæ rússьmil → И.В.acgémьra réen æjgulǽtkæ rússыmil
+'ә' → 'a'                           2           18.18%         0.14%
+    Example: álьmь tikwæп, ékwurgam aálomkəlen → álьmь tikwæul, ékwurgam aálomkalen
+    Example: álьŋ-atqə(ŋ) → álьŋ-atqa(ŋ)
+'ŋ' → 'n'                           1            9.09%         0.07%
+    Example: acgémbra, также acgémbraŋ-eur → acgémьra, также acgémьran-eur
+'ь' → 'ы'                           1            9.09%         0.07%
+    Example: И.B.acgémbra réen æjgulǽtkæ rússьmil → И.В.acgémьra réen æjgulǽtkæ rússыmil
+'ŋ' → 'р'                           1            9.09%         0.07%
+    Example: alьm-ŋélgьn → alьm-pélgьn
+'п' → 'n'                           1            9.09%         0.07%
+    Example: alьmátьrkьпen → alьmátьrkьnen
+'п' → 'l'                           1            9.09%         0.07%
+    Example: álьmь tikwæп, ékwurgam aálomkəlen → álьmь tikwæul, ékwurgam aálomkalen
+'á' → 'a'                           1            9.09%         0.07%
+    Example: отпр. пад. ālgatgájрь → отпр. пад. ālgatgajpь
+
+================================================================================
+DELETIONS: 8 (0.57% of all characters)
+================================================================================
+Deleted Character                   Count      % of Dels    % of Total
+--------------------------------------------------------------------------------
+'́'                                 2           25.00%         0.14%
+    Example: alрь́nŋьrkьnen → alрьnŋьrkьnen
+    Example: И.B. alрь́nŋьlgьn → И.В. alрьnŋьlgьn
+'a'                                 2           25.00%         0.14%
+    Example: см. ælvæ/alva → см. ælvæ
+    Example: см. ælvæ/alva → см. ælvæ
+'г'                                 1           12.50%         0.07%
+    Example: aátgьг, также aátir → aátgь, также aátir
+'/'                                 1           12.50%         0.07%
+    Example: см. ælvæ/alva → см. ælvæ
+'l'                                 1           12.50%         0.07%
+    Example: см. ælvæ/alva → см. ælvæ
+'v'                                 1           12.50%         0.07%
+    Example: см. ælvæ/alva → см. ælvæ
+
+================================================================================
+INSERTIONS: 1 (0.07% of all characters)
+================================================================================
+Inserted Character                  Count      % of Ins     % of Total
+--------------------------------------------------------------------------------
+'u'                                 1          100.00%         0.07%
+    Example: álьmь tikwæп, ékwurgam aálomkəlen → álьmь tikwæul, ékwurgam aálomkalen
+
+================================================================================
+ERROR RATES BY FIELD:
+================================================================================
+Field                     Chars      Subs     Dels     Ins      CER
+--------------------------------------------------------------------------------
+Headword_Phrase           441        10       3        1        0.0317
+POS                       120        0        0        0        0.0000
+Translation_RU            769        0        0        0        0.0000
+Grammar_Notes             69         1        5        0        0.0870

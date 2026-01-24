@@ -1,0 +1,103 @@
+{
+    "input_path": "preprocessing_outputs/preprocessed_baseline_grayscale.png",
+    "page_index": null,
+    "page_count": null,
+    "width": 655,
+    "height": 859,
+    "model_settings": {
+        "use_doc_preprocessor": false,
+        "use_layout_detection": true,
+        "use_chart_recognition": false,
+        "format_block_content": false,
+        "merge_layout_blocks": true,
+        "markdown_ignore_labels": [
+            "number",
+            "footnote",
+            "header",
+            "header_image",
+            "footer",
+            "footer_image",
+            "aside_text"
+        ]
+    },
+    "parsing_res_list": [
+        {
+            "block_label": "paragraph_title",
+            "block_content": "a",
+            "block_bbox": [
+                293,
+                22,
+                313,
+                46
+            ],
+            "block_id": 0,
+            "block_order": 1,
+            "group_id": 0
+        },
+        {
+            "block_label": "text",
+            "block_content": "ааек\nааек, огасек (сущ.) молодой человек, юноша, парень аасеу-матальн (сущ.) шурин | девер\nаапк\nаапкáтькн (гл.) растворяется, распарывается, распахивается (прош. II гааукáten)\nааупь (нагр.) настеж, приоткрывшись, распахнувшись\nааупь, распахнувшись, раскрытый\nааупь (спуш.) кафтан (букв., распахнутая одежда)\nаатг\nаатг, также аатг (сущ.) ручей\nасац\nасац (сущ.) утка-савка, морянка (Апас fulligula)\nасьп\nасьп (сущ.) долг\nасъупь (спущ.) должник\nгасбúйркн (гл.) даст в долг || требует долг\nасьп\nасъупь (спущ.) кличет его\nасгемь\nасгемь, также асгемьгау-еиг (союз) при том же, поелику || к сожалению, к несчастью\n11. Васбемья рёен эглиглáтеки rússámi — к сожалению, я еще не умею (говорить) по-русски\nасъбыта (нап.) рядом\nасъвы\nасъвы (сущ.) кремень (букв., жирный камень; см.  $ \\frac{ac}{ac} $ )\nасъвы (спущ.) курок для кременя (в кремневом ружье)\n1—1796",
+            "block_bbox": [
+                0,
+                51,
+                291,
+                813
+            ],
+            "block_id": 1,
+            "block_order": 2,
+            "group_id": 1
+        },
+        {
+            "block_label": "text",
+            "block_content": "alewlek\nalewlęk(p) (нар.) гуськом, друг за другом\nalewlęk vályl (прил.) гуськом расположенный, гуськом идущий\n\nalbm\nalbm (сущ.) лишняя, запасная вещь (в двойном комплекте)\nalbm-ébyn (сущ.) запасная одежда\nalbm-pélgón (сущ.) запасной ремень\nalbmátebkúen (зл.) сдваивает, приставляя рядом\nасьм-ытым (сущ.) малоберцовая кость голени, также лучшевая кость руки (букв., двойная кость; см. льм)\n\nalbm\nalbm (пил.) положим, что...\nalbm-tíkwáen, ekwurgam aálomkalen — положим, я сказал, но он не саушает\nalbmá! — вот как!\n\nalby\nalby (нар.) очень, весьма\nalby-atgán (нар.) весьма худо\nalby-tárken úelvyl — очень малое стадо\n\nalgatga\nalgatíby (сущ.) топор (отпр. пад. algatgárp)\nalgatgárkn (зл.) рубит\nalgatgatkórkn (зл.) делает топором что-нибудь\nalgatgaj-pójgn (сущ.) топорнише\n\nalpíby\nalpíbynn (сущ.) заплата на подошве\nalpíbyrúbknen (зл.) кладет запляту на подошву обуви\nH.B. alpíngíbgn (сущ.) камбала\nalva cm. álva",
+            "block_bbox": [
+                305,
+                49,
+                610,
+                790
+            ],
+            "block_id": 2,
+            "block_order": 3,
+            "group_id": 2
+        }
+    ],
+    "layout_det_res": {
+        "input_path": null,
+        "page_index": null,
+        "boxes": [
+            {
+                "cls_id": 17,
+                "label": "paragraph_title",
+                "score": 0.8614274263381958,
+                "coordinate": [
+                    293.5740966796875,
+                    22.284503936767578,
+                    313.358642578125,
+                    46.57796859741211
+                ]
+            },
+            {
+                "cls_id": 22,
+                "label": "text",
+                "score": 0.7206075191497803,
+                "coordinate": [
+                    0.17938232421875,
+                    51.504852294921875,
+                    291.4302673339844,
+                    813.326416015625
+                ]
+            },
+            {
+                "cls_id": 22,
+                "label": "text",
+                "score": 0.7485617995262146,
+                "coordinate": [
+                    305.44781494140625,
+                    49.24603271484375,
+                    610.7986450195312,
+                    790.0050048828125
+                ]
+            }
+        ]
+    }
+}

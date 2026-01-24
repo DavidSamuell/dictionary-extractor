@@ -1,0 +1,68 @@
+============================================================
+DICTIONARY EXTRACTION EVALUATION REPORT
+============================================================
+
+SUMMARY STATISTICS:
+----------------------------------------
+Total entries in ground truth: 38
+Total entries extracted: 38
+Exact matches: 4
+Partial matches: 26
+Missing entries: 8
+Extra entries: 8
+
+PERFORMANCE METRICS:
+----------------------------------------
+Overall F1 Score: 0.789
+Precision: 0.789
+Recall: 0.789
+
+FIELD-LEVEL ACCURACY:
+----------------------------------------
+Headword accuracy: 0.857
+Grammatical info accuracy: 1.000
+Definition accuracy: 0.989
+
+MISSING ENTRIES (First 10):
+----------------------------------------
+1. aátgьг, также aátir (сущ.)
+2. racьŋáurkьnen (гл.)
+3. acgémbra, также acgémbraŋ-eur (союз)
+4. alьmátьrkьпen (гл.)
+5. ácьm-ьttьm (сущ.)
+6. álрьnŋьn (сущ.)
+7. alрь́nŋьrkьnen (гл.)
+8. И.B. alрь́nŋьlgьn (сущ.)
+
+EXTRA ENTRIES (First 10):
+----------------------------------------
+1. aátgьr (сущ.)
+2. гаcьpáurḳьnen (гл.)
+3. acgéмьгra (союз)
+4. alъmátъrъkъnen (гл.)
+5. áсъm-ъtъm (сущ.)
+6. álpъŋъp (сущ.)
+7. alpъŋъrkъnen (гл.)
+8. alpíŋpъlgъn (сущ.)
+
+LOW-SCORING MATCHES (First 5):
+----------------------------------------
+1. Ground Truth: aaŋk-éгьn
+   Extracted: aaŋk-éґьп
+   Score: 0.889
+
+2. Ground Truth: ácəq
+   Extracted: ácəq
+   Score: 0.896
+
+3. Ground Truth: ácьŋ
+   Extracted: ácьp
+   Score: 0.875
+
+4. Ground Truth: acь́ŋьlьn
+   Extracted: acь́pьḷьn
+   Score: 0.889
+
+5. Ground Truth: И.B.acgémbra réen æjgulǽtkæ rússьmil
+   Extracted: II.B.acgéмьгra réen æjguḷáikæ rús-sьmıl
+   Score: 0.887

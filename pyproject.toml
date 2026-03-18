@@ -1,0 +1,45 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "dictextractor"
+version = "0.1.0"
+description = "Experimental pipeline for extracting structured entries from scanned dictionary pages using OCR and LLMs."
+requires-python = ">=3.10"
+
+dependencies = [
+    "litellm",
+    "python-docx",
+    "Pillow",
+    "pydantic",
+    "python-dotenv",
+    "pandas",
+    "opencv-python",
+    "matplotlib",
+    "scikit-learn",
+    "python-Levenshtein",
+]
+
+[project.optional-dependencies]
+paddle = [
+    "paddlepaddle",
+    "paddleocr",
+]
+
+[project.scripts]
+dictextractor-extract   = "dictextractor.cli.extract:main"
+dictextractor-evaluate  = "dictextractor.cli.evaluate:main"
+dictextractor-preprocess = "dictextractor.cli.preprocess:main"
+dictextractor-run-ocr   = "dictextractor.cli.run_ocr:main"
+dictextractor-annotate  = "dictextractor.cli.annotate:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dictextractor"]
+
+[tool.uv]
+package = true
+
+[tool.uv.sources]
+# Uncomment to pin to a local editable install during development:
+# dictextractor = { path = ".", editable = true }

@@ -1,1 +1,0 @@
-Run with mathpix ocr + qwen3-vl-30b-a3b-thinking    

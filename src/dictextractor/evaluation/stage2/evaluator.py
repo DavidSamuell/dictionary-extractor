@@ -9,7 +9,7 @@ from difflib import SequenceMatcher
 from pathlib import Path
 from typing import Dict, List, Set, Tuple
 
-from dictextractor.evaluation.metrics import EvaluationMetrics
+from dictextractor.evaluation.stage2.metrics import EvaluationMetrics
 from dictextractor.utils.text import normalize_text
 
 

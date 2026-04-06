@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Side-by-Side TSV Viewer</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #f6f7fb;
+      --panel: #ffffff;
+      --border: #d8dbe7;
+      --muted: #6b7280;
+      --accent: #2563eb;
+      --diff: rgba(245, 158, 11, 0.16);
+      --drop-bg: rgba(37, 99, 235, 0.05);
+      --drop-border: rgba(37, 99, 235, 0.45);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #111827;
+        --panel: #1f2937;
+        --border: #374151;
+        --muted: #9ca3af;
+        --accent: #60a5fa;
+        --diff: rgba(245, 158, 11, 0.18);
+        --drop-bg: rgba(96, 165, 250, 0.10);
+        --drop-border: rgba(96, 165, 250, 0.55);
+      }
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: inherit;
+    }
+
+    .page {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: 1.8rem;
+    }
+
+    .subtitle {
+      margin: 0 0 20px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .upload-card,
+    .summary,
+    .table-wrap {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    }
+
+    .upload-card {
+      padding: 16px;
+    }
+
+    .upload-card h2 {
+      margin: 0 0 6px;
+      font-size: 1rem;
+    }
+
+    .upload-card p,
+    .summary p {
+      margin: 0 0 12px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .drop-zone {
+      border: 2px dashed var(--border);
+      border-radius: 12px;
+      padding: 18px;
+      text-align: center;
+      background: transparent;
+      cursor: pointer;
+      transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+      margin-bottom: 12px;
+      user-select: none;
+    }
+
+    .drop-zone:hover,
+    .drop-zone:focus-visible {
+      border-color: var(--accent);
+      outline: none;
+    }
+
+    .drop-zone.dragover {
+      background: var(--drop-bg);
+      border-color: var(--drop-border);
+      transform: translateY(-1px);
+    }
+
+    .drop-zone-title {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .drop-zone-subtitle {
+      display: block;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.45;
+    }
+
+    input[type="file"] {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: transparent;
+    }
+
+    .file-name {
+      margin-top: 10px;
+      font-size: 0.92rem;
+      color: var(--muted);
+      word-break: break-word;
+    }
+
+    .summary {
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 12px;
+    }
+
+    .metric {
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+    }
+
+    .metric-label {
+      display: block;
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .metric-value {
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+
+    .table-wrap {
+      overflow: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    thead th {
+      position: sticky;
+      top: 0;
+      background: var(--panel);
+      z-index: 1;
+      text-align: left;
+      font-size: 0.92rem;
+    }
+
+    th,
+    td {
+      border-bottom: 1px solid var(--border);
+      padding: 12px;
+      vertical-align: top;
+    }
+
+    th:nth-child(1), td:nth-child(1) {
+      width: 92px;
+    }
+
+    th:nth-child(2), td:nth-child(2),
+    th:nth-child(3), td:nth-child(3) {
+      width: calc((100% - 92px) / 2);
+    }
+
+    tbody tr.different {
+      background: var(--diff);
+    }
+
+    .line-number {
+      font-variant-numeric: tabular-nums;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .markup-cell {
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.45;
+    }
+
+    .placeholder {
+      padding: 28px;
+      text-align: center;
+      color: var(--muted);
+    }
+
+    .pill {
+      display: inline-block;
+      margin-left: 8px;
+      padding: 2px 8px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      font-size: 0.78rem;
+      color: var(--muted);
+      vertical-align: middle;
+    }
+
+    .footer-note {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>Side-by-Side TSV Viewer</h1>
+    <p class="subtitle">
+      Upload or drag and drop two TSV files to compare them line by line. Markup in the <code>text</code> column is rendered,
+      so tags like <code>&lt;b&gt;</code> and <code>&lt;i&gt;</code> stay visible in the output.
+    </p>
+
+    <div class="controls">
+      <section class="upload-card">
+        <h2>Left file</h2>
+        <p>Drag a TSV here or use the file picker.</p>
+        <div class="drop-zone" data-side="left" tabindex="0" role="button" aria-label="Drop left TSV file here or press Enter to browse">
+          <span class="drop-zone-title">Drop left file here</span>
+          <span class="drop-zone-subtitle">or click to browse</span>
+        </div>
+        <input id="leftFile" type="file" accept=".tsv,.txt,text/tab-separated-values" />
+        <div id="leftName" class="file-name">No file selected</div>
+      </section>
+
+      <section class="upload-card">
+        <h2>Right file</h2>
+        <p>Drag a TSV here or use the file picker.</p>
+        <div class="drop-zone" data-side="right" tabindex="0" role="button" aria-label="Drop right TSV file here or press Enter to browse">
+          <span class="drop-zone-title">Drop right file here</span>
+          <span class="drop-zone-subtitle">or click to browse</span>
+        </div>
+        <input id="rightFile" type="file" accept=".tsv,.txt,text/tab-separated-values" />
+        <div id="rightName" class="file-name">No file selected</div>
+      </section>
+    </div>
+
+    <section class="summary" id="summary">
+      <p>Upload both files to see a side-by-side comparison.</p>
+      <div class="summary-grid">
+        <div class="metric">
+          <span class="metric-label">Left rows</span>
+          <span class="metric-value" id="leftCount">0</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Right rows</span>
+          <span class="metric-value" id="rightCount">0</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Aligned lines</span>
+          <span class="metric-value" id="alignedCount">0</span>
+        </div>
+        <div class="metric">
+          <span class="metric-label">Different lines</span>
+          <span class="metric-value" id="diffCount">0</span>
+        </div>
+      </div>
+      <div class="footer-note">Rows with different text are lightly highlighted.</div>
+    </section>
+
+    <section class="table-wrap" id="tableWrap">
+      <div class="placeholder">Waiting for two files…</div>
+    </section>
+  </div>
+
+  <script>
+    const state = {
+      left: null,
+      right: null,
+      leftFileName: null,
+      rightFileName: null,
+    };
+
+    const leftInput = document.getElementById('leftFile');
+    const rightInput = document.getElementById('rightFile');
+    const leftName = document.getElementById('leftName');
+    const rightName = document.getElementById('rightName');
+    const tableWrap = document.getElementById('tableWrap');
+    const leftCount = document.getElementById('leftCount');
+    const rightCount = document.getElementById('rightCount');
+    const alignedCount = document.getElementById('alignedCount');
+    const diffCount = document.getElementById('diffCount');
+    const dropZones = document.querySelectorAll('.drop-zone');
+
+    leftInput.addEventListener('change', (event) => loadFile(event.target.files[0], 'left'));
+    rightInput.addEventListener('change', (event) => loadFile(event.target.files[0], 'right'));
+
+    dropZones.forEach((zone) => {
+      const side = zone.dataset.side;
+      const input = side === 'left' ? leftInput : rightInput;
+
+      zone.addEventListener('click', () => input.click());
+      zone.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          input.click();
+        }
+      });
+
+      ['dragenter', 'dragover'].forEach((eventName) => {
+        zone.addEventListener(eventName, (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          zone.classList.add('dragover');
+        });
+      });
+
+      ['dragleave', 'dragend', 'drop'].forEach((eventName) => {
+        zone.addEventListener(eventName, (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          zone.classList.remove('dragover');
+        });
+      });
+
+      zone.addEventListener('drop', (event) => {
+        const file = event.dataTransfer?.files?.[0];
+        loadFile(file, side);
+      });
+    });
+
+    async function loadFile(file, side) {
+      if (!file) {
+        state[side] = null;
+        state[`${side}FileName`] = null;
+        updateFileName(side, null);
+        render();
+        return;
+      }
+
+      state[`${side}FileName`] = file.name;
+      updateFileName(side, file.name);
+      const content = await file.text();
+      state[side] = parseTSV(content);
+      render();
+    }
+
+    function updateFileName(side, name) {
+      const target = side === 'left' ? leftName : rightName;
+      target.textContent = name || 'No file selected';
+    }
+
+    function parseTSV(text) {
+      const lines = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n').filter(Boolean);
+      if (!lines.length) return [];
+
+      let startIndex = 0;
+      const header = lines[0].toLowerCase().trim();
+      if (header.startsWith('column_id\tline_number\ttext')) {
+        startIndex = 1;
+      }
+
+      const rows = [];
+      for (let i = startIndex; i < lines.length; i++) {
+        const parts = lines[i].split('\t');
+        if (parts.length < 3) continue;
+
+        rows.push({
+          column_id: parts[0],
+          line_number: parts[1],
+          text: parts.slice(2).join('\t'),
+        });
+      }
+      return rows;
+    }
+
+    function sortLineNumbers(values) {
+      return [...values].sort((a, b) => {
+        const aNum = Number(a);
+        const bNum = Number(b);
+        const aIsNum = Number.isFinite(aNum);
+        const bIsNum = Number.isFinite(bNum);
+        if (aIsNum && bIsNum) return aNum - bNum;
+        return String(a).localeCompare(String(b), undefined, { numeric: true, sensitivity: 'base' });
+      });
+    }
+
+    function render() {
+      const leftRows = state.left || [];
+      const rightRows = state.right || [];
+
+      leftCount.textContent = leftRows.length;
+      rightCount.textContent = rightRows.length;
+
+      if (!state.left || !state.right) {
+        alignedCount.textContent = '0';
+        diffCount.textContent = '0';
+        tableWrap.innerHTML = '<div class="placeholder">Waiting for two files…</div>';
+        return;
+      }
+
+      const leftMap = new Map(leftRows.map(row => [String(row.line_number), row]));
+      const rightMap = new Map(rightRows.map(row => [String(row.line_number), row]));
+      const allLineNumbers = sortLineNumbers(new Set([...leftMap.keys(), ...rightMap.keys()]));
+
+      let different = 0;
+
+      const rowsHtml = allLineNumbers.map(line => {
+        const left = leftMap.get(line);
+        const right = rightMap.get(line);
+        const leftText = left?.text ?? '';
+        const rightText = right?.text ?? '';
+        const isDifferent = leftText !== rightText;
+        if (isDifferent) different += 1;
+
+        return `
+          <tr class="${isDifferent ? 'different' : ''}">
+            <td class="line-number">${escapeHtml(line)}</td>
+            <td><div class="markup-cell">${leftText || '<span class="pill">Missing</span>'}</div></td>
+            <td><div class="markup-cell">${rightText || '<span class="pill">Missing</span>'}</div></td>
+          </tr>
+        `;
+      }).join('');
+
+      alignedCount.textContent = allLineNumbers.length;
+      diffCount.textContent = different;
+
+      tableWrap.innerHTML = `
+        <table>
+          <thead>
+            <tr>
+              <th>Line #</th>
+              <th>Left <span class="pill">${escapeHtml(state.leftFileName || 'file')}</span></th>
+              <th>Right <span class="pill">${escapeHtml(state.rightFileName || 'file')}</span></th>
+            </tr>
+          </thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+      `;
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+  </script>
+</body>
+</html>

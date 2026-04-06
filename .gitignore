@@ -10,3 +10,4 @@ build/
 archive/
 assets/
 **.workspace
+.claude

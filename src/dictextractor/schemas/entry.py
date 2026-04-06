@@ -14,9 +14,6 @@ class DictionaryEntry(BaseModel):
         ...,
         description="The headword word/phrase with all diacritical marks preserved",
     )
-    entry_type: str = Field(
-        default="word", description="Type of entry: 'word' or 'phrase'"
-    )
     pos: str = Field(
         default="", description="Part of speech"
     )
@@ -59,7 +56,8 @@ class ColumnTranscription(BaseModel):
         description=(
             "Every visible line of text in this column exactly as it appears, "
             "one string per line, top to bottom. Preserve all diacritics, stress marks, "
-            "and special characters. Do not merge, skip, or paraphrase any line."
+            "and special characters. Do not merge, skip, or paraphrase any line. "
+            "Wrap bold text in <b>...</b> and italic text in <i>...</i> tags."
         )
     )
 

@@ -19,6 +19,7 @@ dependencies = [
     "matplotlib",
     "scikit-learn",
     "python-Levenshtein",
+    "grapheme",
 ]
 
 [project.optional-dependencies]
@@ -33,6 +34,7 @@ dictextractor-evaluate  = "dictextractor.cli.evaluate:main"
 dictextractor-preprocess = "dictextractor.cli.preprocess:main"
 dictextractor-run-ocr   = "dictextractor.cli.run_ocr:main"
 dictextractor-annotate  = "dictextractor.cli.annotate:main"
+dictextractor-eval-s1   = "dictextractor.cli.evaluate_stage1:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/dictextractor"]

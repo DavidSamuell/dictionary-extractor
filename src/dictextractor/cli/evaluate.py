@@ -6,8 +6,8 @@ Usage: python -m dictextractor.cli.evaluate [options]
 import argparse
 from pathlib import Path
 
-from dictextractor.evaluation.evaluator import DictionaryEvaluator
-from dictextractor.evaluation.error_analyzer import DetailedErrorAnalyzer
+from dictextractor.evaluation.stage2.evaluator import DictionaryEvaluator
+from dictextractor.evaluation.stage2.error_analyzer import DetailedErrorAnalyzer
 
 
 def main():

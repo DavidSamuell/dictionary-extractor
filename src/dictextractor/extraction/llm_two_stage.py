@@ -41,15 +41,14 @@ from dictextractor.schemas.entry import (
     DictionaryPage,
     EntriesResponse,
     TranscriptionResponse,
-    ColumnTranscription,
 )
 from dictextractor.schemas.ocr_result import OCRPageResult
 from dictextractor.llm import client as llm
 from dictextractor.llm.prompts import (
-    TWO_STAGE_TRANSCRIBE_SYSTEM,
-    TWO_STAGE_STRUCTURE_USER,
-    two_stage_transcribe_user,
-    two_stage_structure_system_prompt,
+    STAGE_1_SYSTEM,
+    STAGE_2_SYSTEM,
+    stage_1_user,
+    stage_2_user,
 )
 from dictextractor.utils.image import image_data_url, resolve_mime_type
 from dictextractor.utils.io import read_docx_text
@@ -71,6 +70,30 @@ def _print_usage_summary(s1: dict, s2: dict, total: Optional[float]) -> None:
     if total is not None:
         print(f"  Page total: ${total:.6f}")
     print()
+
+
+def _sanitize_messages(messages: list) -> list:
+    """
+    Return a JSON-safe copy of the LLM messages with base64 image data replaced
+    by a compact placeholder.  Keeps the full prompt text intact for debugging.
+    """
+    import copy, re
+    sanitized = copy.deepcopy(messages)
+    b64_pattern = re.compile(r"(data:[^;]+;base64,)(.+)")
+    for msg in sanitized:
+        content = msg.get("content")
+        if not isinstance(content, list):
+            continue
+        for part in content:
+            if part.get("type") == "image_url":
+                url = part.get("image_url", {}).get("url", "")
+                m = b64_pattern.match(url)
+                if m:
+                    b64_len = len(m.group(2))
+                    part["image_url"]["url"] = (
+                        f"{m.group(1)}<{b64_len} chars omitted>"
+                    )
+    return sanitized
 
 
 def _transcription_to_tsv(result: TranscriptionResponse) -> str:
@@ -143,6 +166,7 @@ class TwoStageLLMExtraction(ExtractionStrategy):
         page_number: int = 1,
         intro_text: Optional[str] = None,
         stage1_output_path: Optional[str] = None,
+        run_stage: str = "both",
         **kwargs,
     ) -> DictionaryPage:
         """
@@ -157,60 +181,104 @@ class TwoStageLLMExtraction(ExtractionStrategy):
             stage1_output_path:  If given, the Stage 1 transcription is written to this
                                  path as a UTF-8 .txt file before Stage 2 runs.
                                  Useful for inspection and avoiding repeat API calls.
+            run_stage:           "1" = stage 1 only, "2" = stage 2 only, "both" = full pipeline.
+                                 Stage-2-only reads transcription from stage1_output_path.
         """
         effective_intro = intro_text if intro_text is not None else self.intro_text
+        stage1_usage: Dict[str, Any] = {}
+        stage2_usage: Dict[str, Any] = {}
+        entries: List[DictionaryEntry] = []
 
         # ── Stage 1: transcription ─────────────────────────────────────────────
-        print("=" * 60)
-        print("Stage 1: Transcribing page image …")
-        transcribed_text, stage1_raw, stage1_usage = self._stage1_transcribe(ocr_result, image_path)
-        print(f"Transcription ({len(transcribed_text)} chars):\n{transcribed_text[:500]}…\n")
+        if run_stage in ("1", "both"):
+            print("=" * 60)
+            print("Stage 1: Transcribing page image …")
+            transcribed_text, stage1_raw, stage1_usage, stage1_msgs = (
+                self._stage1_transcribe(ocr_result, image_path)
+            )
+            print(
+                f"Transcription ({len(transcribed_text)} chars):\n{transcribed_text[:500]}…\n"
+            )
 
-        if stage1_output_path:
-            base = Path(stage1_output_path)
-            base.parent.mkdir(parents=True, exist_ok=True)
-            base.write_text(transcribed_text, encoding="utf-8")
-            raw1_path = base.with_name(base.stem + "_raw.json")
-            raw1_path.write_text(stage1_raw, encoding="utf-8")
-            print(f"Stage 1 saved → {base.name}  |  raw → {raw1_path.name}")
+            if stage1_output_path:
+                base = Path(stage1_output_path)
+                base.parent.mkdir(parents=True, exist_ok=True)
+                base.write_text(transcribed_text, encoding="utf-8")
+                raw1_path = base.with_name(base.stem + "_raw.json")
+                raw1_path.write_text(stage1_raw, encoding="utf-8")
+                input1_path = base.with_name(base.stem + "_input.json")
+                input1_path.write_text(
+                    json.dumps(stage1_msgs, indent=2, ensure_ascii=False),
+                    encoding="utf-8",
+                )
+                print(f"Stage 1 saved → {base.name}  |  raw → {raw1_path.name}  |  input → {input1_path.name}")
+        elif run_stage == "2":
+            if not stage1_output_path or not Path(stage1_output_path).exists():
+                raise FileNotFoundError(
+                    f"Stage-2-only requires existing stage 1 TSV: {stage1_output_path}"
+                )
+            transcribed_text = Path(stage1_output_path).read_text(encoding="utf-8")
+            print("=" * 60)
+            print(f"Stage 2 only: loaded existing transcription from {stage1_output_path}")
 
         # ── Stage 2: structuring ───────────────────────────────────────────────
-        print("Stage 2: Structuring transcribed text …")
-        entries, stage2_raw, stage2_usage = self._stage2_structure(
-            transcribed_text, image_path, effective_intro, self.intro_image_paths
-        )
-        print(f"Extracted {len(entries)} entries.")
+        if run_stage in ("2", "both"):
+            print("Stage 2: Structuring transcribed text …")
+            entries, stage2_raw, stage2_usage, stage2_msgs = self._stage2_structure(
+                transcribed_text, image_path, effective_intro, self.intro_image_paths
+            )
+            print(f"Extracted {len(entries)} entries.")
 
-        if stage1_output_path:
+            if stage1_output_path:
+                base = Path(stage1_output_path)
+                raw2_path = base.with_name(
+                    base.stem.replace("_stage1", "") + "_stage2_raw.json"
+                )
+                raw2_path.write_text(stage2_raw, encoding="utf-8")
+                input2_path = base.with_name(
+                    base.stem.replace("_stage1", "") + "_stage2_input.json"
+                )
+                input2_path.write_text(
+                    json.dumps(stage2_msgs, indent=2, ensure_ascii=False),
+                    encoding="utf-8",
+                )
+                print(f"Stage 2 raw saved → {raw2_path.name}  |  input → {input2_path.name}")
+
+        # ── Per-page usage summary ────────────────────────────────────────────
+        if stage1_output_path and (stage1_usage or stage2_usage):
             base = Path(stage1_output_path)
-            raw2_path = base.with_name(base.stem.replace("_stage1", "") + "_stage2_raw.json")
-            raw2_path.write_text(stage2_raw, encoding="utf-8")
-            print(f"Stage 2 raw saved → {raw2_path.name}")
-
-            # ── Per-page usage summary ─────────────────────────────────────────
-            total_cost = _sum_costs(stage1_usage.get("cost_usd"), stage2_usage.get("cost_usd"))
+            total_cost = _sum_costs(
+                stage1_usage.get("cost_usd"), stage2_usage.get("cost_usd")
+            )
             page_usage = {
-                "stage1": stage1_usage,
-                "stage2": stage2_usage,
+                "stage1": stage1_usage or None,
+                "stage2": stage2_usage or None,
                 "total_cost_usd": total_cost,
             }
-            usage_path = base.with_name(base.stem.replace("_stage1", "") + "_usage.json")
+            usage_path = base.with_name(
+                base.stem.replace("_stage1", "") + "_usage.json"
+            )
             usage_path.write_text(
                 json.dumps(page_usage, indent=2, ensure_ascii=False),
                 encoding="utf-8",
             )
-            _print_usage_summary(stage1_usage, stage2_usage, total_cost)
+            if stage1_usage and stage2_usage:
+                _print_usage_summary(stage1_usage, stage2_usage, total_cost)
 
-        return DictionaryPage(entries=entries, page_number=page_number, source_file=image_path)
+        return DictionaryPage(
+            entries=entries, page_number=page_number, source_file=image_path
+        )
 
     # ------------------------------------------------------------------
     # Stage implementations
     # ------------------------------------------------------------------
 
-    def _stage1_transcribe(self, ocr_result: OCRPageResult, image_path: str) -> tuple[str, str, dict]:
+    def _stage1_transcribe(
+        self, ocr_result: OCRPageResult, image_path: str
+    ) -> tuple[str, str, dict, list]:
         """
         Call the transcription LLM (Stage 1) with structured output.
-        Returns (transcribed_text, raw_json_str, usage_dict).
+        Returns (transcribed_text, raw_json_str, usage_dict, sanitized_messages).
         """
         mime = resolve_mime_type(image_path)
         page_data_url = image_data_url(image_path, mime)
@@ -218,18 +286,20 @@ class TwoStageLLMExtraction(ExtractionStrategy):
         alphabet_text, alphabet_image_url = self._load_alphabet()
         ocr_hint = ocr_result.raw_text if ocr_result else ""
 
-        user_text = two_stage_transcribe_user(
+        user_text = stage_1_user(
             alphabet_text=alphabet_text,
             ocr_hint=ocr_hint,
         )
 
         content: list = [{"type": "text", "text": user_text}]
         if alphabet_image_url:
-            content.append({"type": "image_url", "image_url": {"url": alphabet_image_url}})
+            content.append(
+                {"type": "image_url", "image_url": {"url": alphabet_image_url}}
+            )
         content.append({"type": "image_url", "image_url": {"url": page_data_url}})
 
         messages = [
-            {"role": "system", "content": TWO_STAGE_TRANSCRIBE_SYSTEM},
+            {"role": "system", "content": STAGE_1_SYSTEM},
             {"role": "user", "content": content},
         ]
 
@@ -239,7 +309,7 @@ class TwoStageLLMExtraction(ExtractionStrategy):
             response_schema=TranscriptionResponse,
             reasoning_effort="low",
         )
-        return _transcription_to_tsv(result), raw, usage
+        return _transcription_to_tsv(result), raw, usage, _sanitize_messages(messages)
 
     def _stage2_structure(
         self,
@@ -247,31 +317,34 @@ class TwoStageLLMExtraction(ExtractionStrategy):
         image_path: str,
         intro_text: str,
         intro_image_paths: Optional[List[str]] = None,
-    ) -> tuple[List[DictionaryEntry], str, dict]:
+    ) -> tuple[List[DictionaryEntry], str, dict, list]:
         """
         Call the structuring LLM (Stage 2) with structured output.
-        Returns (entries, raw_json_str, usage_dict).
+        Returns (entries, raw_json_str, usage_dict, sanitized_messages).
         """
         mime = resolve_mime_type(image_path)
         page_data_url = image_data_url(image_path, mime)
 
-        system_prompt = two_stage_structure_system_prompt(
+        user_text = stage_2_user(
             transcribed_text=transcribed_text,
             intro_text=intro_text,
         )
 
         content: list = [
-            {"type": "text", "text": TWO_STAGE_STRUCTURE_USER},
+            {"type": "text", "text": user_text},
             {"type": "image_url", "image_url": {"url": page_data_url}},
         ]
-        for intro_img in (intro_image_paths or []):
+        for intro_img in intro_image_paths or []:
             intro_mime = resolve_mime_type(intro_img)
             content.append(
-                {"type": "image_url", "image_url": {"url": image_data_url(intro_img, intro_mime)}}
+                {
+                    "type": "image_url",
+                    "image_url": {"url": image_data_url(intro_img, intro_mime)},
+                }
             )
 
         messages = [
-            {"role": "system", "content": system_prompt},
+            {"role": "system", "content": STAGE_2_SYSTEM},
             {"role": "user", "content": content},
         ]
 
@@ -281,7 +354,7 @@ class TwoStageLLMExtraction(ExtractionStrategy):
             response_schema=EntriesResponse,
             reasoning_effort="high",
         )
-        return result.entries, raw, usage
+        return result.entries, raw, usage, _sanitize_messages(messages)
 
     # ------------------------------------------------------------------
     # Helpers

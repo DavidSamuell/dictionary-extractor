@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OCR TSV Editor</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --panel: #111827;
+      --panel-2: #1f2937;
+      --border: #334155;
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-2: #22c55e;
+      --danger: #f97316;
+      --surface: #f8fafc;
+      --surface-border: #cbd5e1;
+      --surface-muted: #64748b;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(180deg, #0b1220 0%, #111827 100%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+      background: rgba(15, 23, 42, 0.88);
+      backdrop-filter: blur(8px);
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+
+    .title-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.2rem;
+      line-height: 1.3;
+      font-weight: 700;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.92rem;
+      margin-top: 4px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    button,
+    .fake-button {
+      appearance: none;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      background: rgba(30, 41, 59, 0.88);
+      color: var(--text);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font: inherit;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    button:hover,
+    .fake-button:hover {
+      transform: translateY(-1px);
+      border-color: rgba(56, 189, 248, 0.6);
+      background: rgba(30, 41, 59, 1);
+    }
+
+    button.primary {
+      background: linear-gradient(180deg, #0284c7 0%, #0369a1 100%);
+      border-color: rgba(125, 211, 252, 0.5);
+    }
+
+    button.success {
+      background: linear-gradient(180deg, #16a34a 0%, #15803d 100%);
+      border-color: rgba(134, 239, 172, 0.45);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: minmax(300px, 44%) minmax(360px, 56%);
+      gap: 14px;
+      padding: 14px;
+      flex: 1;
+      min-height: 0;
+    }
+
+    .panel {
+      min-height: 0;
+      background: rgba(17, 24, 39, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 10px 35px rgba(2, 6, 23, 0.35);
+    }
+
+    .panel-header {
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      background: rgba(15, 23, 42, 0.7);
+    }
+
+    .panel-title {
+      font-size: 0.98rem;
+      font-weight: 700;
+    }
+
+    .file-meta {
+      color: var(--muted);
+      font-size: 0.86rem;
+      overflow-wrap: anywhere;
+    }
+
+    .panel-body {
+      flex: 1;
+      min-height: 0;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .dropzone {
+      margin: 16px;
+      border: 2px dashed rgba(125, 211, 252, 0.35);
+      border-radius: 18px;
+      padding: 24px;
+      min-height: 180px;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      background: rgba(15, 23, 42, 0.45);
+      color: var(--muted);
+      transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+    }
+
+    .dropzone.dragover {
+      border-color: rgba(56, 189, 248, 0.95);
+      background: rgba(8, 47, 73, 0.45);
+      transform: scale(1.01);
+    }
+
+    .dropzone strong {
+      color: var(--text);
+      display: block;
+      margin-bottom: 8px;
+      font-size: 1rem;
+    }
+
+    .dropzone small {
+      color: var(--muted);
+      display: block;
+      margin-top: 6px;
+      line-height: 1.45;
+    }
+
+    .browse-link {
+      color: #7dd3fc;
+      text-decoration: underline;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .image-wrap {
+      flex: 1;
+      min-height: 0;
+      overflow: auto;
+      padding: 12px;
+      display: none;
+      background: #0b1220;
+    }
+
+    .image-wrap.active {
+      display: block;
+    }
+
+    .image-wrap img {
+      display: block;
+      max-width: 100%;
+      height: auto;
+      margin: 0 auto;
+      background: white;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      padding: 12px 14px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+      background: rgba(15, 23, 42, 0.72);
+    }
+
+    .toolbar .spacer {
+      flex: 1;
+    }
+
+    .toolbar button {
+      padding: 8px 12px;
+      border-radius: 9px;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .table-wrap {
+      flex: 1;
+      min-height: 0;
+      overflow: auto;
+      background: #0b1220;
+      display: none;
+    }
+
+    .table-wrap.active {
+      display: block;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+      background: white;
+      color: #0f172a;
+    }
+
+    thead th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+      background: #e2e8f0;
+      color: #0f172a;
+      font-size: 0.84rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      border-bottom: 1px solid var(--surface-border);
+      padding: 10px 12px;
+      text-align: left;
+    }
+
+    tbody td {
+      border-bottom: 1px solid #e2e8f0;
+      vertical-align: top;
+      padding: 8px 10px;
+    }
+
+    tbody tr.active-row {
+      outline: 2px solid #38bdf8;
+      outline-offset: -2px;
+      background: #f0f9ff;
+    }
+
+    .col-static {
+      width: 100px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      color: #334155;
+      background: #f8fafc;
+    }
+
+    .col-line {
+      width: 88px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      color: #334155;
+      background: #f8fafc;
+    }
+
+    .editor-cell {
+      background: white;
+    }
+
+    .editor {
+      min-height: 2.2em;
+      outline: none;
+      border: 1px solid transparent;
+      border-radius: 8px;
+      padding: 6px 8px;
+      line-height: 1.45;
+      white-space: normal;
+      word-break: break-word;
+    }
+
+    .editor:focus {
+      border-color: #38bdf8;
+      background: #f8fdff;
+      box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.14);
+    }
+
+    .empty-state {
+      padding: 22px;
+      color: var(--muted);
+      text-align: center;
+      display: grid;
+      place-items: center;
+      height: 100%;
+    }
+
+    .status-bar {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      align-items: center;
+      padding: 10px 14px;
+      border-top: 1px solid rgba(148, 163, 184, 0.12);
+      color: var(--muted);
+      font-size: 0.82rem;
+      background: rgba(15, 23, 42, 0.72);
+    }
+
+    code.kbd {
+      background: rgba(148, 163, 184, 0.14);
+      border: 1px solid rgba(148, 163, 184, 0.16);
+      padding: 2px 6px;
+      border-radius: 6px;
+      color: var(--text);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.82rem;
+    }
+
+    .global-drop {
+      position: fixed;
+      inset: 0;
+      background: rgba(2, 6, 23, 0.72);
+      backdrop-filter: blur(3px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 50;
+      color: white;
+      text-align: center;
+      padding: 24px;
+    }
+
+    .global-drop.show {
+      display: flex;
+    }
+
+    .global-drop .box {
+      border: 2px dashed rgba(125, 211, 252, 0.7);
+      border-radius: 20px;
+      padding: 28px 34px;
+      background: rgba(15, 23, 42, 0.88);
+      max-width: 520px;
+    }
+
+    @media (max-width: 980px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      .panel {
+        min-height: 420px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="title-row">
+      <div>
+        <h1>OCR TSV Editor</h1>
+        <div class="subtitle">Drop an image on the left and its OCR TSV file on the right. Edit text inline, apply <b>bold</b> or <i>italic</i>, then save a new TSV.</div>
+      </div>
+      <div class="header-actions">
+        <button id="saveBtn" class="success" disabled>Save modified TSV</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="app">
+    <section class="panel" aria-label="Image panel">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">Image</div>
+          <div class="file-meta" id="imageMeta">No image loaded</div>
+        </div>
+        <div>
+          <button id="pickImageBtn">Choose image</button>
+          <input id="imageInput" type="file" accept="image/*" hidden />
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="dropzone" id="imageDropzone">
+          <div>
+            <strong>Drop image here</strong>
+            <div>or <span class="browse-link" data-target="imageInput">browse</span></div>
+            <small>Supported: PNG, JPG, JPEG, WEBP, GIF and other browser-readable image files.</small>
+          </div>
+        </div>
+        <div class="image-wrap" id="imageWrap">
+          <img id="imagePreview" alt="Uploaded image preview" />
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" aria-label="TSV panel">
+      <div class="panel-header">
+        <div>
+          <div class="panel-title">TSV editor</div>
+          <div class="file-meta" id="tsvMeta">No TSV loaded</div>
+        </div>
+        <div>
+          <button id="pickTsvBtn">Choose TSV</button>
+          <input id="tsvInput" type="file" accept=".tsv,text/tab-separated-values,text/plain" hidden />
+        </div>
+      </div>
+      <div class="panel-body">
+        <div class="dropzone" id="tsvDropzone">
+          <div>
+            <strong>Drop TSV here</strong>
+            <div>or <span class="browse-link" data-target="tsvInput">browse</span></div>
+            <small>The last column is treated as editable rich text. Existing &lt;b&gt; and &lt;i&gt; tags are preserved.</small>
+          </div>
+        </div>
+
+        <div class="toolbar">
+          <button type="button" id="boldBtn" title="Bold (Ctrl/Cmd+B)" disabled><b>B</b></button>
+          <button type="button" id="italicBtn" title="Italic (Ctrl/Cmd+I)" disabled><i>I</i></button>
+          <div class="spacer"></div>
+          <div class="hint">Click in a row, edit text directly, then use <code class="kbd">Ctrl/Cmd+B</code> or <code class="kbd">Ctrl/Cmd+I</code>.</div>
+        </div>
+
+        <div class="table-wrap" id="tableWrap">
+          <table id="tsvTable">
+            <thead>
+              <tr>
+                <th class="col-static">column_id</th>
+                <th class="col-line">line_number</th>
+                <th>text</th>
+              </tr>
+            </thead>
+            <tbody id="tsvBody"></tbody>
+          </table>
+        </div>
+
+        <div class="empty-state" id="tsvEmptyState">Load a TSV file to start editing.</div>
+      </div>
+      <div class="status-bar">
+        <span id="rowCount">Rows: 0</span>
+        <span id="saveStatus">No changes yet</span>
+      </div>
+    </section>
+  </main>
+
+  <div class="global-drop" id="globalDrop">
+    <div class="box">
+      <h2 style="margin-top: 0;">Drop files to load them</h2>
+      <p style="margin-bottom: 0; color: #cbd5e1;">Image files will be routed to the left panel. TSV files will be routed to the editor on the right.</p>
+    </div>
+  </div>
+
+  <script>
+    const state = {
+      imageFile: null,
+      imageURL: null,
+      tsvFile: null,
+      tsvHeaders: [],
+      tsvRows: [],
+      originalTSVName: 'edited.tsv',
+      dirty: false,
+      activeEditor: null,
+    };
+
+    const imageInput = document.getElementById('imageInput');
+    const tsvInput = document.getElementById('tsvInput');
+    const pickImageBtn = document.getElementById('pickImageBtn');
+    const pickTsvBtn = document.getElementById('pickTsvBtn');
+    const imageDropzone = document.getElementById('imageDropzone');
+    const tsvDropzone = document.getElementById('tsvDropzone');
+    const imageWrap = document.getElementById('imageWrap');
+    const imagePreview = document.getElementById('imagePreview');
+    const imageMeta = document.getElementById('imageMeta');
+    const tsvMeta = document.getElementById('tsvMeta');
+    const tsvBody = document.getElementById('tsvBody');
+    const tableWrap = document.getElementById('tableWrap');
+    const tsvEmptyState = document.getElementById('tsvEmptyState');
+    const saveBtn = document.getElementById('saveBtn');
+    const boldBtn = document.getElementById('boldBtn');
+    const italicBtn = document.getElementById('italicBtn');
+    const rowCount = document.getElementById('rowCount');
+    const saveStatus = document.getElementById('saveStatus');
+    const globalDrop = document.getElementById('globalDrop');
+
+    pickImageBtn.addEventListener('click', () => imageInput.click());
+    pickTsvBtn.addEventListener('click', () => tsvInput.click());
+    imageInput.addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (file) loadImageFile(file);
+      e.target.value = '';
+    });
+    tsvInput.addEventListener('change', (e) => {
+      const file = e.target.files?.[0];
+      if (file) loadTSVFile(file);
+      e.target.value = '';
+    });
+
+    document.querySelectorAll('.browse-link').forEach(link => {
+      link.addEventListener('click', () => {
+        const target = document.getElementById(link.dataset.target);
+        target?.click();
+      });
+    });
+
+    [
+      { zone: imageDropzone, handler: files => handleFiles(files, 'image') },
+      { zone: tsvDropzone, handler: files => handleFiles(files, 'tsv') },
+    ].forEach(({ zone, handler }) => {
+      ['dragenter', 'dragover'].forEach(evt => {
+        zone.addEventListener(evt, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          zone.classList.add('dragover');
+        });
+      });
+      ['dragleave', 'drop'].forEach(evt => {
+        zone.addEventListener(evt, (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          zone.classList.remove('dragover');
+        });
+      });
+      zone.addEventListener('drop', (e) => handler(e.dataTransfer.files));
+    });
+
+    let dragDepth = 0;
+    ['dragenter', 'dragover'].forEach(evt => {
+      window.addEventListener(evt, (e) => {
+        e.preventDefault();
+        dragDepth += evt === 'dragenter' ? 1 : 0;
+        globalDrop.classList.add('show');
+      });
+    });
+    ['dragleave', 'drop'].forEach(evt => {
+      window.addEventListener(evt, (e) => {
+        e.preventDefault();
+        if (evt === 'dragleave') {
+          dragDepth = Math.max(0, dragDepth - 1);
+          if (dragDepth === 0) globalDrop.classList.remove('show');
+        } else {
+          dragDepth = 0;
+          globalDrop.classList.remove('show');
+        }
+      });
+    });
+    window.addEventListener('drop', (e) => handleFiles(e.dataTransfer.files));
+
+    function handleFiles(fileList, preferredTarget = null) {
+      const files = Array.from(fileList || []);
+      if (!files.length) return;
+
+      let imageFile = null;
+      let tsvFile = null;
+
+      for (const file of files) {
+        if (!imageFile && isImageFile(file)) imageFile = file;
+        else if (!tsvFile && isTSVFile(file)) tsvFile = file;
+      }
+
+      if (preferredTarget === 'image' && !imageFile && files[0] && isImageFile(files[0])) imageFile = files[0];
+      if (preferredTarget === 'tsv' && !tsvFile && files[0] && isTSVFile(files[0])) tsvFile = files[0];
+
+      if (preferredTarget === 'image' && files[0] && !imageFile && !tsvFile && isTSVFile(files[0])) {
+        tsvFile = files[0];
+      }
+      if (preferredTarget === 'tsv' && files[0] && !tsvFile && !imageFile && isImageFile(files[0])) {
+        imageFile = files[0];
+      }
+
+      if (imageFile) loadImageFile(imageFile);
+      if (tsvFile) loadTSVFile(tsvFile);
+    }
+
+    function isImageFile(file) {
+      return (file.type && file.type.startsWith('image/')) || /\.(png|jpe?g|webp|gif|bmp|svg)$/i.test(file.name);
+    }
+
+    function isTSVFile(file) {
+      return /\.tsv$/i.test(file.name) || /tab-separated-values|text\/plain/.test(file.type || '');
+    }
+
+    function humanSize(bytes) {
+      if (!Number.isFinite(bytes)) return '';
+      const units = ['B', 'KB', 'MB', 'GB'];
+      let value = bytes;
+      let idx = 0;
+      while (value >= 1024 && idx < units.length - 1) {
+        value /= 1024;
+        idx += 1;
+      }
+      return `${value.toFixed(value >= 10 || idx === 0 ? 0 : 1)} ${units[idx]}`;
+    }
+
+    function loadImageFile(file) {
+      if (state.imageURL) URL.revokeObjectURL(state.imageURL);
+      state.imageFile = file;
+      state.imageURL = URL.createObjectURL(file);
+      imagePreview.src = state.imageURL;
+      imageWrap.classList.add('active');
+      imageDropzone.style.display = 'none';
+      imageMeta.textContent = `${file.name} · ${humanSize(file.size)}`;
+    }
+
+    async function loadTSVFile(file) {
+      const text = await file.text();
+      const parsed = parseTSV(text);
+      if (!parsed || parsed.rows.length === 0) {
+        alert('Could not parse the TSV file. Make sure it has a header row and tab-separated columns.');
+        return;
+      }
+
+      state.tsvFile = file;
+      state.originalTSVName = file.name;
+      state.tsvHeaders = parsed.headers;
+      state.tsvRows = parsed.rows;
+      state.dirty = false;
+      state.activeEditor = null;
+
+      renderTSV();
+      tsvMeta.textContent = `${file.name} · ${humanSize(file.size)}`;
+      tsvDropzone.style.display = 'none';
+      tableWrap.classList.add('active');
+      tsvEmptyState.style.display = 'none';
+      saveBtn.disabled = false;
+      boldBtn.disabled = false;
+      italicBtn.disabled = false;
+      updateStatus('Loaded TSV');
+    }
+
+    function parseTSV(text) {
+      const lines = text.replace(/^\uFEFF/, '').split(/\r?\n/).filter((line, index, arr) => !(index === arr.length - 1 && line === ''));
+      if (!lines.length) return null;
+
+      const headers = splitTSVLine(lines[0]);
+      if (!headers.length) return null;
+
+      const rows = lines.slice(1).map((line, idx) => {
+        const parts = splitTSVLine(line, headers.length);
+        const obj = {};
+        headers.forEach((header, i) => { obj[header] = parts[i] ?? ''; });
+        obj.__index = idx;
+        return obj;
+      });
+
+      return { headers, rows };
+    }
+
+    function splitTSVLine(line, expectedLength = null) {
+      const raw = line.split('\t');
+      if (!expectedLength || raw.length <= expectedLength) return raw;
+      const kept = raw.slice(0, expectedLength - 1);
+      kept.push(raw.slice(expectedLength - 1).join('\t'));
+      return kept;
+    }
+
+    function renderTSV() {
+      const headers = state.tsvHeaders;
+      const textKey = headers[headers.length - 1];
+      const firstKey = headers[0] || 'column_id';
+      const secondKey = headers[1] || 'line_number';
+
+      const headerCells = document.querySelectorAll('#tsvTable thead th');
+      headerCells[0].textContent = firstKey;
+      headerCells[1].textContent = secondKey;
+      headerCells[2].textContent = textKey;
+
+      tsvBody.innerHTML = '';
+      const fragment = document.createDocumentFragment();
+
+      state.tsvRows.forEach((row, rowIndex) => {
+        const tr = document.createElement('tr');
+        tr.dataset.rowIndex = String(rowIndex);
+
+        const td1 = document.createElement('td');
+        td1.className = 'col-static';
+        td1.textContent = row[firstKey] ?? '';
+
+        const td2 = document.createElement('td');
+        td2.className = 'col-line';
+        td2.textContent = row[secondKey] ?? '';
+
+        const td3 = document.createElement('td');
+        td3.className = 'editor-cell';
+        const editor = document.createElement('div');
+        editor.className = 'editor';
+        editor.contentEditable = 'true';
+        editor.spellcheck = false;
+        editor.dataset.rowIndex = String(rowIndex);
+        editor.innerHTML = normalizeIncomingMarkup(row[textKey] || '');
+
+        editor.addEventListener('focus', () => setActiveRow(rowIndex, editor));
+        editor.addEventListener('click', () => setActiveRow(rowIndex, editor));
+        editor.addEventListener('input', () => {
+          state.dirty = true;
+          updateStatus('Unsaved changes');
+        });
+        editor.addEventListener('keydown', handleEditorShortcuts);
+
+        td3.appendChild(editor);
+        tr.append(td1, td2, td3);
+        fragment.appendChild(tr);
+      });
+
+      tsvBody.appendChild(fragment);
+      rowCount.textContent = `Rows: ${state.tsvRows.length}`;
+    }
+
+    function setActiveRow(rowIndex, editor) {
+      state.activeEditor = editor;
+      document.querySelectorAll('#tsvBody tr').forEach(tr => tr.classList.remove('active-row'));
+      const row = document.querySelector(`#tsvBody tr[data-row-index="${rowIndex}"]`);
+      if (row) row.classList.add('active-row');
+    }
+
+    function handleEditorShortcuts(event) {
+      const key = event.key.toLowerCase();
+      if ((event.ctrlKey || event.metaKey) && key === 'b') {
+        event.preventDefault();
+        applyFormat('bold');
+      } else if ((event.ctrlKey || event.metaKey) && key === 'i') {
+        event.preventDefault();
+        applyFormat('italic');
+      }
+    }
+
+    [boldBtn, italicBtn].forEach(btn => {
+      btn.addEventListener('mousedown', (e) => e.preventDefault());
+    });
+    boldBtn.addEventListener('click', () => applyFormat('bold'));
+    italicBtn.addEventListener('click', () => applyFormat('italic'));
+
+    function applyFormat(command) {
+      if (!state.activeEditor) return;
+      state.activeEditor.focus();
+      document.execCommand(command, false, null);
+      state.dirty = true;
+      updateStatus('Unsaved changes');
+    }
+
+    saveBtn.addEventListener('click', saveTSV);
+
+    function saveTSV() {
+      if (!state.tsvRows.length) return;
+      const headers = state.tsvHeaders;
+      const textKey = headers[headers.length - 1];
+      const editors = Array.from(document.querySelectorAll('.editor'));
+
+      editors.forEach((editor, idx) => {
+        state.tsvRows[idx][textKey] = serializeEditorHTML(editor);
+      });
+
+      const lines = [headers.join('\t')];
+      for (const row of state.tsvRows) {
+        const values = headers.map(h => row[h] ?? '');
+        lines.push(values.join('\t'));
+      }
+      const output = lines.join('\n');
+      const blob = new Blob([output], { type: 'text/tab-separated-values;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      const downloadName = makeEditedName(state.originalTSVName);
+      a.href = url;
+      a.download = downloadName;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+      state.dirty = false;
+      updateStatus(`Saved as ${downloadName}`);
+    }
+
+    function makeEditedName(name) {
+      if (!name) return 'edited.tsv';
+      if (/\.tsv$/i.test(name)) return name.replace(/\.tsv$/i, '_edited.tsv');
+      return `${name}_edited.tsv`;
+    }
+
+    function normalizeIncomingMarkup(html) {
+      const wrapper = document.createElement('div');
+      wrapper.innerHTML = html;
+      sanitizeNodeTree(wrapper);
+      return wrapper.innerHTML;
+    }
+
+    function sanitizeNodeTree(root) {
+      const allowed = new Set(['B', 'I', 'BR', 'STRONG', 'EM']);
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT, null);
+      const toReplace = [];
+      while (walker.nextNode()) {
+        const node = walker.currentNode;
+        if (!allowed.has(node.tagName)) toReplace.push(node);
+      }
+      for (const node of toReplace) {
+        const parent = node.parentNode;
+        if (!parent) continue;
+        while (node.firstChild) parent.insertBefore(node.firstChild, node);
+        parent.removeChild(node);
+      }
+      root.querySelectorAll('strong').forEach(node => replaceTag(node, 'b'));
+      root.querySelectorAll('em').forEach(node => replaceTag(node, 'i'));
+      root.querySelectorAll('*').forEach(node => {
+        [...node.attributes].forEach(attr => node.removeAttribute(attr.name));
+      });
+    }
+
+    function replaceTag(node, tagName) {
+      const replacement = document.createElement(tagName);
+      while (node.firstChild) replacement.appendChild(node.firstChild);
+      node.parentNode?.replaceChild(replacement, node);
+    }
+
+    function serializeEditorHTML(editor) {
+      const clone = editor.cloneNode(true);
+      sanitizeNodeTree(clone);
+      const result = Array.from(clone.childNodes).map(serializeNode).join('')
+        .replace(/\u00A0/g, ' ')
+        .replace(/<b><\/b>/g, '')
+        .replace(/<i><\/i>/g, '');
+      return result;
+    }
+
+    function serializeNode(node) {
+      if (node.nodeType === Node.TEXT_NODE) {
+        return escapeHTML(node.textContent || '');
+      }
+      if (node.nodeType !== Node.ELEMENT_NODE) return '';
+      const tag = node.tagName.toLowerCase();
+      const content = Array.from(node.childNodes).map(serializeNode).join('');
+      if (tag === 'b') return `<b>${content}</b>`;
+      if (tag === 'i') return `<i>${content}</i>`;
+      if (tag === 'br') return '';
+      return content;
+    }
+
+    function escapeHTML(text) {
+      return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    function updateStatus(message) {
+      saveStatus.textContent = message;
+    }
+  </script>
+</body>
+</html>

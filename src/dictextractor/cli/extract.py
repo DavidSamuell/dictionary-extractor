@@ -207,6 +207,15 @@ Examples:
         "-p", "--page-offset", type=int, default=1,
         help="Page number assigned to the first image (increments per image).",
     )
+    parser.add_argument(
+        "--overwrite", action="store_true",
+        help="Re-process pages even if output already exists (disables resume).",
+    )
+    parser.add_argument(
+        "--stage", choices=["1", "2", "both"], default="both",
+        help="Run only stage 1, only stage 2, or both (default: both). "
+             "Stage-2-only requires existing Stage 1 TSV in the output directory.",
+    )
 
     args = parser.parse_args()
 
@@ -260,17 +269,33 @@ Examples:
 
     print(f"\nFound {total} image(s) in {input_dir}")
     print(f"Output directory: {output_dir}")
-    print(f"Strategy: {args.strategy} | Model: {args.model}")
+    print(f"Strategy: {args.strategy} | Model: {args.model} | Stage: {args.stage} | Overwrite: {args.overwrite}")
     print("=" * 60)
 
     for idx, image_file in enumerate(images):
         page_number = args.page_offset + idx
         page_dir = output_dir / image_file.stem
         out_tsv = page_dir / (image_file.stem + ".tsv")
+        stage1_tsv = page_dir / (image_file.stem + "_stage1.tsv")
 
         # ── Resume: skip already-processed pages ──────────────────────────────
-        if out_tsv.exists():
-            print(f"[{idx+1}/{total}] SKIP {image_file.name} → {page_dir.name}/ already exists")
+        if not args.overwrite:
+            if args.stage == "both" and out_tsv.exists():
+                print(f"[{idx+1}/{total}] SKIP {image_file.name} → {page_dir.name}/ already exists")
+                skipped += 1
+                continue
+            if args.stage == "1" and stage1_tsv.exists():
+                print(f"[{idx+1}/{total}] SKIP {image_file.name} → stage1 already exists")
+                skipped += 1
+                continue
+            if args.stage == "2" and out_tsv.exists():
+                print(f"[{idx+1}/{total}] SKIP {image_file.name} → stage2 already exists")
+                skipped += 1
+                continue
+
+        # ── Stage-2-only: verify stage 1 output exists ───────────────────────
+        if args.stage == "2" and not stage1_tsv.exists():
+            print(f"[{idx+1}/{total}] SKIP {image_file.name} → no stage1 TSV at {stage1_tsv}")
             skipped += 1
             continue
 
@@ -291,9 +316,8 @@ Examples:
             # Extract
             extract_kwargs = {}
             if args.strategy == "two_stage":
-                extract_kwargs["stage1_output_path"] = str(
-                    page_dir / (image_file.stem + "_stage1.tsv")
-                )
+                extract_kwargs["stage1_output_path"] = str(stage1_tsv)
+                extract_kwargs["run_stage"] = args.stage
 
             page = strategy.extract(
                 ocr_result, image_path,
@@ -301,12 +325,13 @@ Examples:
                 **extract_kwargs,
             )
 
-            # Save outputs
-            save_to_tsv(page, str(out_tsv))
-            if args.save_json:
-                save_to_json(page, str(out_tsv.with_suffix(".json")))
+            # Save outputs (skip for stage-1-only since there are no entries)
+            if args.stage != "1":
+                save_to_tsv(page, str(out_tsv))
+                if args.save_json:
+                    save_to_json(page, str(out_tsv.with_suffix(".json")))
+                print(f"  → {len(page.entries)} entries saved to {page_dir.name}/{out_tsv.name}")
 
-            print(f"  → {len(page.entries)} entries saved to {page_dir.name}/{out_tsv.name}")
             processed += 1
 
         except Exception as exc:

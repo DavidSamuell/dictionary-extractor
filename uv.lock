@@ -610,6 +610,7 @@ name = "dictextractor"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "grapheme" },
     { name = "litellm" },
     { name = "matplotlib" },
     { name = "opencv-python" },
@@ -632,6 +633,7 @@ paddle = [
 
 [package.metadata]
 requires-dist = [
+    { name = "grapheme" },
     { name = "litellm" },
     { name = "matplotlib" },
     { name = "opencv-python" },
@@ -935,6 +937,12 @@ sdist = { url = "https://files.pythonhosted.org/packages/a7/b2/4140c69c6a6643291
 wheels = [
     { url = "https://files.pythonhosted.org/packages/da/71/ae30dadffc90b9006d77af76b393cb9dfbfc9629f339fc1574a1c52e6806/future-1.0.0-py3-none-any.whl", hash = "sha256:929292d34f5872e70396626ef385ec22355a1fae8ad29e1a734c3e43f9fbc216", size = 491326, upload-time = "2024-02-21T11:52:35.956Z" },
 ]
+
+[[package]]
+name = "grapheme"
+version = "0.6.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/ce/e7/bbaab0d2a33e07c8278910c1d0d8d4f3781293dfbc70b5c38197159046bf/grapheme-0.6.0.tar.gz", hash = "sha256:44c2b9f21bbe77cfb05835fec230bd435954275267fea1858013b102f8603cca", size = 207306, upload-time = "2020-03-07T17:13:55.492Z" }
 
 [[package]]
 name = "h11"

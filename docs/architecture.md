@@ -18,7 +18,7 @@ src/
 
     preprocessing/
       __init__.py
-      pipeline.py
+      preprocess.py
       steps.py
 
     ocr/
@@ -27,6 +27,7 @@ src/
       paddle_traditional.py
       paddle_vl.py
       mathpix.py
+      mathpix_convert.py
       # Future:
       # tesseract.py
       # aws_textract.py
@@ -72,8 +73,10 @@ src/
       __init__.py
       extract.py
       evaluate.py
+      evaluate_stage1.py
       preprocess.py
       run_ocr.py
+      run_mathpix_convert.py
       annotate.py
 ```
 
@@ -102,10 +105,12 @@ Everything related to preparing a raw scanned image before it is passed to an OC
 
 | File | Contents |
 |---|---|
-| `pipeline.py` | `DictionaryPreprocessor` class — chains preprocessing steps in sequence, with optional step-by-step visualization |
+| `preprocess.py` | `DictionaryPreprocessor` class — chains preprocessing steps in sequence, with optional step-by-step visualization |
 | `steps.py` | Individual pure functions: `to_grayscale()`, `deskew()`, `denoise()`, `contrast_normalization()`, `sharpen()` |
 
 **Why it exists:** The preprocessing logic is currently duplicated across three files (`preprocessing.py`, `extract_dictionary.py`, and `paddle_ocr.py`) with slight variations. This consolidates it into one place. `steps.py` makes each step independently importable and testable.
+
+**Usage note:** Preprocessing is **off by default** in `cli/extract.py` (`--preprocess` is a boolean opt-in). When off, snippet/intro PDFs flow straight to the LLM as `application/pdf` inline data. When on, PDFs are rasterized to PNG (cached under `{output}/.rendered_snippets/` and `.rendered_intro/`) before the full cv2 chain runs.
 
 ---
 
@@ -119,6 +124,7 @@ Pluggable OCR backends. Every backend implements the same abstract interface fro
 | `paddle_traditional.py` | PaddleOCR detection + recognition pipeline (from `paddle_ocr.py`) |
 | `paddle_vl.py` | PaddleOCR Vision-Language model (from `paddle_ocr_vl.py`) |
 | `mathpix.py` | Mathpix reader — loads pre-existing `.docx` or `.txt` OCR output as an `OCRPageResult` |
+| `mathpix_convert.py` | Mathpix Convert PDF API client — submits a PDF, polls for completion, downloads the `.docx`. Used by `cli/run_mathpix_convert.py` to generate the artifacts that `mathpix.py` later reads. |
 
 **Planned backends by category:**
 
@@ -205,9 +211,15 @@ Thin command-line entry points. Each file has an `argparse`-based `main()` that 
 |---|---|---|
 | `extract.py` | `python -m dictextractor.cli.extract` | `src/extract_dictionary.py` main |
 | `evaluate.py` | `python -m dictextractor.cli.evaluate` | `src/evaluate_extraction.py` main |
+| `evaluate_stage1.py` | `python -m dictextractor.cli.evaluate_stage1` | Stage-1 transcription evaluator (CER/WER) |
 | `preprocess.py` | `python -m dictextractor.cli.preprocess` | `src/preprocessing.py` main |
 | `run_ocr.py` | `python -m dictextractor.cli.run_ocr` | `src/paddle_ocr.py` main |
+| `run_mathpix_convert.py` | `python -m dictextractor.cli.run_mathpix_convert` | Batch OCR of snippet PDFs via Mathpix Convert API |
 | `annotate.py` | `python -m dictextractor.cli.annotate` | `src/annotate_ocr_blocks.py` main |
+
+**`cli/extract.py` — batch mode:** supports both single-entry runs (`--input-image` + `--output`) and a batch mode (`--samples-dir <parent>`). In batch mode, every `{source}-{target...}` subfolder is processed using its default layout (`snippets/`, `introduction/`, `mathpix/`, `alphabet.txt`) and outputs land under `{entry}/outputs/stage-1/`. `--languages A B C` filters to specific subfolders.
+
+**`cli/run_mathpix_convert.py`:** walks a samples root (default `assets/dictionaries/samples-2`) and, for every entry folder missing a `mathpix/` subfolder, creates one and converts each PDF in `snippets/` to `page_N.docx` via the Mathpix Convert API. Requires `MATHPIX_APP_ID` and `MATHPIX_APP_KEY` (loaded from `.env`).
 
 **Why it exists:** Separating CLI wiring from library code means any module can be imported and used programmatically (in notebooks, tests, or other scripts) without going through `argparse`. The shell scripts in `scripts/` call these CLI entry points.
 
@@ -216,10 +228,10 @@ Thin command-line entry points. Each file has an `argparse`-based `main()` that 
 ## Data Flow
 
 ```
-Input Image
+Input snippet (image OR pdf)
     │
-    ▼ (optional)
-preprocessing/pipeline.py
+    ▼ (opt-in via --preprocess; PDFs rendered to PNG first)
+preprocessing/preprocess.py
     │ preprocessed image
     ▼
 ocr/[backend].py  (implements OCRBackend)
@@ -240,13 +252,15 @@ evaluation_report.txt / character_error_report.txt
 
 The `ocr/` backends all produce `OCRPageResult`. The `extraction/` strategies all consume `OCRPageResult` and produce `DictionaryPage`. This means any OCR backend can be paired with any extraction strategy without code changes.
 
+**Input formats:** `cli/extract.py` accepts both raster images (`.png`, `.jpg`, `.jpeg`, `.webp`) and PDFs in the snippets and introduction folders. When `--preprocess` is off (default), PDFs are passed through to the LLM as `application/pdf` inline data (`utils/image.py::resolve_mime_type` maps the extension). When `--preprocess` is on, PDFs are rasterized via PyMuPDF because the cv2 pipeline needs pixel input.
+
 ---
 
 ## Migration Map
 
 | Current file | Migrated to |
 |---|---|
-| `src/preprocessing.py` | `preprocessing/pipeline.py` + `preprocessing/steps.py` |
+| `src/preprocessing.py` | `preprocessing/preprocess.py` + `preprocessing/steps.py` |
 | `src/paddle_ocr.py` | `ocr/paddle_traditional.py` |
 | `src/paddle_ocr_vl.py` | `ocr/paddle_vl.py` |
 | `src/extract_dictionary.py` | `extraction/llm_manual.py` + `llm/client.py` + `llm/prompts.py` + `schemas/entry.py` + `utils/io.py` + `utils/image.py` + `cli/extract.py` |

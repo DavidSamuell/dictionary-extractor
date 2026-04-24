@@ -12,13 +12,21 @@ Measures how accurately the model recognizes individual characters and words, **
 
 Rows are aligned by their `(column_id, line_number)` key. Missing or extra rows in the prediction are counted as full-length errors.
 
-| Metric | Definition | Interpretation |
-|--------|-----------|----------------|
-| **CER** (Character Error Rate) | `total_char_edits / total_chars_gold` | Fraction of gold characters that need editing. 0 = perfect. |
-| **WER** (Word Error Rate) | `total_word_edits / total_words_gold` | Fraction of gold words that need editing. Treats each word as an atomic token and computes Levenshtein distance on the word sequence. |
-| **NED** (Normalized Edit Distance) | `total_char_edits / max(total_chars_gold, total_chars_pred)` | Edit distance normalized by the longer string. Symmetric — penalizes both insertions and deletions equally. |
+| Metric | Definition | Implementation | Interpretation |
+|--------|-----------|----------------|----------------|
+| **GCER** (Grapheme Character Error Rate) | `total_grapheme_edits / total_graphemes_gold` | Custom: `grapheme` (UAX #29) + `python-Levenshtein` | Primary OCR quality metric. Operates on user-perceived characters rather than raw code points — critical for scripts like Devanagari, Arabic, and Thai where one visual character spans multiple Unicode code points. Follows the OCR-D standard definition. 0 = perfect. |
+| **CER** (Character Error Rate) | `total_char_edits / total_chars_gold` | [`jiwer.process_characters`](https://jitsi.github.io/jiwer) | Traditional OCR metric operating on raw Unicode code points. Kept for comparability with benchmarks using the ISRI/ocreval convention. |
+| **WER** (Word Error Rate) | `total_word_edits / total_words_gold` | [`jiwer.process_words`](https://jitsi.github.io/jiwer) | Fraction of gold words that need editing. Whitespace tokenisation, consistent with the ISRI/ocreval word boundary convention. |
+| **BLEU** | Corpus-level BLEU-4 | [`sacrebleu`](https://github.com/mjpost/sacrebleu) `tokenize="intl"` | Translation-inspired fluency metric. Uses the Moses v14 international tokeniser, which handles Latin, Cyrillic, Arabic, and CJK scripts without relying on whitespace. Reported as a fraction (0–1). |
+| **NED** (Normalized Edit Distance) | `total_grapheme_edits / max(total_graphemes_gold, total_graphemes_pred)` | Custom: same grapheme-level edits as GCER | Symmetric variant of GCER — normalises by the *longer* string, penalizing both extra and missing content equally. |
 
-All three metrics are **micro-averaged** across lines: numerators and denominators are summed across all lines before division, so longer lines contribute proportionally more.
+All five metrics are **micro-averaged** across lines: numerators and denominators are summed across all lines before division, so longer lines contribute proportionally more. The exception is BLEU, which is computed as a single corpus-level score over all lines concatenated.
+
+### Metric choices and reproducibility
+
+- **GCER** aligns with the [OCR-D specification](https://ocr-d.de/en/spec/ocrd_eval.html), which explicitly defines CER at the grapheme-cluster level. No mainstream library exposes this natively, so it is computed with `grapheme` + `python-Levenshtein`.
+- **CER / WER** use `jiwer` (RapidFuzz C++ backend) for reproducibility and performance. The default jiwer transformations are bypassed; text is pre-cleaned once by `_clean()` (strip tags → NFC → collapse whitespace) before being passed to jiwer.
+- **BLEU** uses `sacrebleu` with `tokenize="intl"` for language-agnostic, reproducible measurement consistent with multilingual MT evaluation papers. The score is divided by 100 to normalize to the [0, 1] range used by the other metrics.
 
 ### Additional diagnostics
 
@@ -89,7 +97,8 @@ When evaluating multiple pages, metrics are aggregated as follows:
 
 | Component | Aggregation method |
 |-----------|--------------------|
-| Character quality (CER, WER, NED) | **Micro-average**: sum numerators and denominators across all pages. Longer pages contribute more. |
+| Character quality (GCER, CER, WER, NED) | **Micro-average**: sum numerators and denominators across all pages. Longer pages contribute more. |
+| Character quality (BLEU) | **Macro-average**: mean of per-page BLEU scores. Each page contributes equally. |
 | Markup quality (P/R/F1) | **Micro-average**: sum TP, FP, FN across all pages, then compute P/R/F1. |
 | Read order (NED, isolated error) | **Macro-average**: average per-page scores. Each page contributes equally regardless of length. |
 

@@ -23,35 +23,104 @@ _STRATEGIES = {
 }
 
 _IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".webp"}
-_TEXT_EXTS  = {".txt", ".md", ".docx"}
+_PDF_EXTS = {".pdf"}
+_TEXT_EXTS = {".txt", ".md", ".docx"}
+_PDF_RENDER_DPI = 300
 
 
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _collect_intro(intro_path: Path) -> Tuple[str, List[str]]:
-    """
-    Load intro context from a file or directory.
 
-    Returns:
-        (intro_text, intro_image_paths)
-        - intro_text: concatenated text from any .txt/.md/.docx files found
-        - intro_image_paths: sorted list of image paths found
+def _render_pdf_pages(
+    pdf_path: Path, cache_dir: Path, dpi: int = _PDF_RENDER_DPI
+) -> List[Path]:
+    """Render each page of ``pdf_path`` to a PNG under ``cache_dir``.
+
+    Returns the list of rendered image paths (one per page, in order).
+    Cached outputs are reused when newer than the source PDF.
     """
+    import pymupdf  # PyMuPDF; lazy-imported so image-only runs don't pay for it
+
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    doc = pymupdf.open(str(pdf_path))
+    results: List[Path] = []
+    try:
+        pdf_mtime = pdf_path.stat().st_mtime
+        for page_index in range(doc.page_count):
+            suffix = "" if doc.page_count == 1 else f"_p{page_index + 1}"
+            out_path = cache_dir / f"{pdf_path.stem}{suffix}.png"
+            if out_path.exists() and out_path.stat().st_mtime >= pdf_mtime:
+                results.append(out_path)
+                continue
+            pix = doc.load_page(page_index).get_pixmap(dpi=dpi)
+            pix.save(str(out_path))
+            results.append(out_path)
+    finally:
+        doc.close()
+    return results
+
+
+def _materialize_page_inputs(
+    input_dir: Path, cache_dir: Path, *, render_pdfs: bool
+) -> List[Path]:
+    """Return sorted page input paths from ``input_dir``.
+
+    When ``render_pdfs`` is True, PDFs are rasterized to PNG in ``cache_dir``
+    (required for cv2 preprocessing). When False, PDFs are passed through
+    as-is to the LLM (Gemini accepts ``application/pdf`` inline data).
+    """
+    collected: List[Path] = []
+    for f in sorted(input_dir.iterdir()):
+        if f.name.startswith((".", "~")):
+            continue
+        suffix = f.suffix.lower()
+        if suffix in _IMAGE_EXTS:
+            collected.append(f)
+        elif suffix in _PDF_EXTS:
+            if render_pdfs:
+                collected.extend(_render_pdf_pages(f, cache_dir))
+            else:
+                collected.append(f)
+    return sorted(collected)
+
+
+def _collect_intro(
+    intro_path: Path, pdf_cache_dir: Path, *, render_pdfs: bool
+) -> Tuple[str, List[str]]:
+    """
+    Load intro context from a file or directory. Supports images, PDFs,
+    and text files.
+
+    When ``render_pdfs`` is True, PDF intro pages are rendered to PNG via
+    ``pdf_cache_dir``; otherwise they are passed through as PDF paths for
+    the LLM to ingest directly.
+    """
+
+    def _as_vision_inputs(f: Path) -> List[str]:
+        if render_pdfs:
+            return [str(p) for p in _render_pdf_pages(f, pdf_cache_dir)]
+        return [str(f)]
+
     if intro_path.is_file():
-        if intro_path.suffix.lower() in _IMAGE_EXTS:
+        suffix = intro_path.suffix.lower()
+        if suffix in _IMAGE_EXTS:
             return "", [str(intro_path)]
+        if suffix in _PDF_EXTS:
+            return "", _as_vision_inputs(intro_path)
         return _read_text_file(intro_path), []
 
-    # Directory: collect all text and image files
     text_parts, image_paths = [], []
     for f in sorted(intro_path.iterdir()):
         if f.name.startswith((".", "~")):
             continue
-        if f.suffix.lower() in _IMAGE_EXTS:
+        suffix = f.suffix.lower()
+        if suffix in _IMAGE_EXTS:
             image_paths.append(str(f))
-        elif f.suffix.lower() in _TEXT_EXTS:
+        elif suffix in _PDF_EXTS:
+            image_paths.extend(_as_vision_inputs(f))
+        elif suffix in _TEXT_EXTS:
             text_parts.append(_read_text_file(f))
 
     return "\n\n".join(text_parts), image_paths
@@ -60,6 +129,7 @@ def _collect_intro(intro_path: Path) -> Tuple[str, List[str]]:
 def _read_text_file(path: Path) -> str:
     if path.suffix.lower() == ".docx":
         from dictextractor.utils.io import read_docx_text
+
         return read_docx_text(str(path))
     return path.read_text(encoding="utf-8")
 
@@ -80,20 +150,18 @@ def _build_ocr_result(image_path: str, ocr_file: Optional[Path]) -> OCRPageResul
     return OCRPageResult(source_image=image_path, backend="none", blocks=[])
 
 
-def _apply_preprocessing(image_path: str, mode: str, preprocess_dir: Path) -> str:
-    if mode == "none":
+def _apply_preprocessing(image_path: str, enabled: bool, preprocess_dir: Path) -> str:
+    """Run the full cv2 preprocessing pipeline when enabled; otherwise no-op."""
+    if not enabled:
         return image_path
-    from dictextractor.preprocessing.pipeline import DictionaryPreprocessor
+    from dictextractor.preprocessing.preprocess import DictionaryPreprocessor
+
     preprocessor = DictionaryPreprocessor(image_path, output_dir=str(preprocess_dir))
     preprocessor.step1_convert_to_grayscale()
-    if mode in ("deskew", "all"):
-        preprocessor.step2_deskew()
-    if mode in ("denoise", "all"):
-        preprocessor.step3_denoise()
-    if mode in ("contrast", "all"):
-        preprocessor.step4_contrast_normalization()
-    if mode in ("sharpen", "all"):
-        preprocessor.step5_sharpen()
+    preprocessor.step2_deskew()
+    preprocessor.step3_denoise()
+    preprocessor.step4_contrast_normalization()
+    preprocessor.step5_sharpen()
     out = preprocess_dir / f"preprocessed_{Path(image_path).name}"
     return preprocessor.save_result(str(out))
 
@@ -119,6 +187,7 @@ def _build_strategy(args, intro_text: str, intro_image_paths: List[str]):
 # Main
 # ---------------------------------------------------------------------------
 
+
 def main():
     parser = argparse.ArgumentParser(
         description="Batch-extract dictionary entries from a directory of page images.",
@@ -141,39 +210,70 @@ Examples:
         """,
     )
 
-    # Input
+    # Input — single-entry mode
     parser.add_argument(
-        "--input-image", dest="input_image", required=True,
-        help="Directory of page images (.png/.jpg/.jpeg)",
+        "--input-image",
+        dest="input_image",
+        help="Directory of page images (.png/.jpg/.jpeg). "
+        "Required unless --samples-dir is used.",
     )
     parser.add_argument(
-        "--ocr-text", dest="ocr_text",
+        "--ocr-text",
+        dest="ocr_text",
         help="Directory of OCR hint files (.docx/.txt/.md). "
-             "Each file must share the same stem as its matching image "
-             "(e.g. page_1.png → page_1.docx). Optional.",
+        "Each file must share the same stem as its matching image "
+        "(e.g. page_1.png → page_1.docx). Optional.",
+    )
+
+    # Batch mode — process every language subfolder under a samples root
+    parser.add_argument(
+        "--samples-dir",
+        dest="samples_dir",
+        help="Parent directory containing one subfolder per dictionary "
+        "(e.g. assets/dictionaries/samples-2). When set, every "
+        "subfolder is processed using its default layout "
+        "(snippets/, introduction/, mathpix/, alphabet.txt) and "
+        "outputs are written to {entry}/outputs/stage-1.",
+    )
+    parser.add_argument(
+        "--languages",
+        nargs="+",
+        default=None,
+        help="Optional list of language subfolder names to process when "
+        "--samples-dir is used (e.g. --languages Armenian-English "
+        "Yiddish-English). Defaults to every subfolder.",
     )
 
     # Output
     parser.add_argument(
-        "-o", "--output", required=True,
-        help="Output directory. One <stem>.tsv (+ <stem>_stage1.txt for two_stage) per page.",
+        "-o",
+        "--output",
+        help="Output directory. One <stem>.tsv (+ <stem>_stage1.txt for two_stage) per page. "
+        "Required unless --samples-dir is used.",
     )
     parser.add_argument(
-        "--json", action="store_true", dest="save_json",
+        "--json",
+        action="store_true",
+        dest="save_json",
         help="Also save a <stem>.json alongside each TSV.",
     )
 
     # Model / strategy
     parser.add_argument(
-        "-m", "--model", default="gemini/gemini-3-flash-preview",
+        "-m",
+        "--model",
+        default="gemini/gemini-3-flash-preview",
         help="Primary LLM model (Stage 1 for two_stage). Default: gemini/gemini-3-flash-preview",
     )
     parser.add_argument(
-        "--structure-model", default=None,
+        "--structure-model",
+        default=None,
         help="Stage 2 model for two_stage (defaults to --model).",
     )
     parser.add_argument(
-        "--strategy", choices=list(_STRATEGIES.keys()), default="two_stage",
+        "--strategy",
+        choices=list(_STRATEGIES.keys()),
+        default="two_stage",
         help="Extraction strategy (default: two_stage).",
     )
 
@@ -181,56 +281,142 @@ Examples:
     parser.add_argument(
         "--alphabet",
         help="Alphabet/legend file (.txt/.md) or image (.png/.jpg). "
-             "Sent to Stage 1 to prime the character inventory.",
+        "Sent to Stage 1 to prime the character inventory.",
     )
     parser.add_argument(
         "--intro",
         help="Dictionary introduction/preface — a file (.txt/.md/.docx) or a directory. "
-             "Text files are embedded in the Stage 2 system prompt; "
-             "images are sent as vision context. Loaded once, shared across all pages.",
+        "Text files are embedded in the Stage 2 system prompt; "
+        "images are sent as vision context. Loaded once, shared across all pages.",
     )
 
-    # Preprocessing
+    # Preprocessing — off by default. When on, PDFs are rendered to PNG first
+    # (cv2 can't read PDFs); when off, PDFs flow straight to the LLM as
+    # application/pdf inline data.
     parser.add_argument(
         "--preprocess",
-        choices=["none", "deskew", "denoise", "contrast", "sharpen", "all"],
-        default="none",
-        help="Preprocessing pipeline to apply to each image before extraction.",
+        action="store_true",
+        help="Enable the full cv2 preprocessing pipeline "
+        "(grayscale → deskew → denoise → contrast → sharpen). Off by default.",
     )
 
     # Batch control
     parser.add_argument(
-        "--limit", type=int, default=None,
+        "--limit",
+        type=int,
+        default=None,
         help="Process at most N images (useful for quick tests).",
     )
     parser.add_argument(
-        "-p", "--page-offset", type=int, default=1,
+        "-p",
+        "--page-offset",
+        type=int,
+        default=1,
         help="Page number assigned to the first image (increments per image).",
     )
     parser.add_argument(
-        "--overwrite", action="store_true",
+        "--overwrite",
+        action="store_true",
         help="Re-process pages even if output already exists (disables resume).",
     )
     parser.add_argument(
-        "--stage", choices=["1", "2", "both"], default="both",
+        "--stage",
+        choices=["1", "2", "both"],
+        default="both",
         help="Run only stage 1, only stage 2, or both (default: both). "
-             "Stage-2-only requires existing Stage 1 TSV in the output directory.",
+        "Stage-2-only requires existing Stage 1 TSV in the output directory.",
     )
 
     args = parser.parse_args()
 
+    # ── Dispatch: samples-dir batch mode vs. single-entry mode ────────────────
+    if args.samples_dir:
+        return _run_samples_dir(args, parser)
+
+    if not args.input_image or not args.output:
+        parser.error(
+            "--input-image and --output are required unless --samples-dir is used."
+        )
+
+    return _run_single_entry(args, parser)
+
+
+def _run_samples_dir(args, parser) -> int:
+    """Iterate over every language subfolder under ``args.samples_dir``."""
+    samples_root = Path(args.samples_dir)
+    if not samples_root.is_dir():
+        parser.error(f"--samples-dir must be a directory: {samples_root}")
+
+    all_entries = sorted(p for p in samples_root.iterdir() if p.is_dir())
+    if args.languages:
+        requested = set(args.languages)
+        available = {p.name for p in all_entries}
+        missing = requested - available
+        if missing:
+            parser.error(
+                f"--languages references unknown subfolders: {sorted(missing)}. "
+                f"Available: {sorted(available)}"
+            )
+        entries = [p for p in all_entries if p.name in requested]
+    else:
+        entries = all_entries
+
+    if not entries:
+        print(f"No entry subfolders found under {samples_root}")
+        return 1
+
+    print(
+        f"Batch mode: processing {len(entries)} entr{'y' if len(entries) == 1 else 'ies'} under {samples_root}"
+    )
+
+    any_failure = False
+    for entry_dir in entries:
+        snippets_dir = entry_dir / "snippets"
+        if not snippets_dir.is_dir():
+            print(f"[skip] {entry_dir.name}: no snippets/ folder")
+            continue
+
+        intro_dir = entry_dir / "introduction"
+        mathpix_dir = entry_dir / "mathpix"
+        alphabet_file = entry_dir / "alphabet.txt"
+        output_dir = entry_dir / "outputs" / "stage-1"
+
+        args.input_image = str(snippets_dir)
+        args.ocr_text = str(mathpix_dir) if mathpix_dir.is_dir() else None
+        args.intro = str(intro_dir) if intro_dir.is_dir() else None
+        args.alphabet = str(alphabet_file) if alphabet_file.exists() else None
+        args.output = str(output_dir)
+
+        print("\n" + "#" * 60)
+        print(f"# Entry: {entry_dir.name}")
+        print("#" * 60)
+        rc = _run_single_entry(args, parser)
+        if rc != 0:
+            any_failure = True
+
+    return 1 if any_failure else 0
+
+
+def _run_single_entry(args, parser) -> int:
+    """Run extraction for a single entry (one --input-image directory)."""
     # ── Validate input dir ─────────────────────────────────────────────────────
     input_dir = Path(args.input_image)
     if not input_dir.is_dir():
         parser.error(f"--input-image must be a directory: {input_dir}")
 
-    # ── Collect and sort images ────────────────────────────────────────────────
-    images = sorted(
-        f for f in input_dir.iterdir()
-        if f.suffix.lower() in _IMAGE_EXTS and not f.name.startswith(".")
+    # ── Output dir (set up early so we can cache rendered PDF pages) ──────────
+    output_dir = Path(args.output)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    preprocess_dir = output_dir / ".preprocessed"
+    snippets_cache_dir = output_dir / ".rendered_snippets"
+    intro_cache_dir = output_dir / ".rendered_intro"
+
+    # ── Collect snippet pages (images + PDFs; render only when preprocessing) ─
+    images = _materialize_page_inputs(
+        input_dir, snippets_cache_dir, render_pdfs=args.preprocess
     )
     if not images:
-        print(f"No images found in {input_dir}")
+        print(f"No images or PDFs found in {input_dir}")
         return 1
 
     if args.limit:
@@ -250,13 +436,12 @@ Examples:
         if not intro_path.exists():
             print(f"Warning: --intro path not found: {args.intro}")
         else:
-            intro_text, intro_image_paths = _collect_intro(intro_path)
-            print(f"Intro: {len(intro_text)} chars of text, {len(intro_image_paths)} images loaded.")
-
-    # ── Output dir ─────────────────────────────────────────────────────────────
-    output_dir = Path(args.output)
-    output_dir.mkdir(parents=True, exist_ok=True)
-    preprocess_dir = output_dir / ".preprocessed"
+            intro_text, intro_image_paths = _collect_intro(
+                intro_path, intro_cache_dir, render_pdfs=args.preprocess
+            )
+            print(
+                f"Intro: {len(intro_text)} chars of text, {len(intro_image_paths)} images loaded."
+            )
 
     # ── Strategy (instantiated once, shared across pages) ─────────────────────
     strategy = _build_strategy(args, intro_text, intro_image_paths)
@@ -269,7 +454,9 @@ Examples:
 
     print(f"\nFound {total} image(s) in {input_dir}")
     print(f"Output directory: {output_dir}")
-    print(f"Strategy: {args.strategy} | Model: {args.model} | Stage: {args.stage} | Overwrite: {args.overwrite}")
+    print(
+        f"Strategy: {args.strategy} | Model: {args.model} | Stage: {args.stage} | Overwrite: {args.overwrite}"
+    )
     print("=" * 60)
 
     for idx, image_file in enumerate(images):
@@ -281,31 +468,43 @@ Examples:
         # ── Resume: skip already-processed pages ──────────────────────────────
         if not args.overwrite:
             if args.stage == "both" and out_tsv.exists():
-                print(f"[{idx+1}/{total}] SKIP {image_file.name} → {page_dir.name}/ already exists")
+                print(
+                    f"[{idx+1}/{total}] SKIP {image_file.name} → {page_dir.name}/ already exists"
+                )
                 skipped += 1
                 continue
             if args.stage == "1" and stage1_tsv.exists():
-                print(f"[{idx+1}/{total}] SKIP {image_file.name} → stage1 already exists")
+                print(
+                    f"[{idx+1}/{total}] SKIP {image_file.name} → stage1 already exists"
+                )
                 skipped += 1
                 continue
             if args.stage == "2" and out_tsv.exists():
-                print(f"[{idx+1}/{total}] SKIP {image_file.name} → stage2 already exists")
+                print(
+                    f"[{idx+1}/{total}] SKIP {image_file.name} → stage2 already exists"
+                )
                 skipped += 1
                 continue
 
         # ── Stage-2-only: verify stage 1 output exists ───────────────────────
         if args.stage == "2" and not stage1_tsv.exists():
-            print(f"[{idx+1}/{total}] SKIP {image_file.name} → no stage1 TSV at {stage1_tsv}")
+            print(
+                f"[{idx+1}/{total}] SKIP {image_file.name} → no stage1 TSV at {stage1_tsv}"
+            )
             skipped += 1
             continue
 
-        print(f"\n[{idx+1}/{total}] Processing: {image_file.name}  (page {page_number})")
+        print(
+            f"\n[{idx+1}/{total}] Processing: {image_file.name}  (page {page_number})"
+        )
         page_dir.mkdir(parents=True, exist_ok=True)
 
         try:
             # Preprocessing
             preprocess_dir.mkdir(parents=True, exist_ok=True)
-            image_path = _apply_preprocessing(str(image_file), args.preprocess, preprocess_dir)
+            image_path = _apply_preprocessing(
+                str(image_file), args.preprocess, preprocess_dir
+            )
 
             # OCR hint
             ocr_file = _find_ocr_file(ocr_dir, image_file.stem) if ocr_dir else None
@@ -320,7 +519,8 @@ Examples:
                 extract_kwargs["run_stage"] = args.stage
 
             page = strategy.extract(
-                ocr_result, image_path,
+                ocr_result,
+                image_path,
                 page_number=page_number,
                 **extract_kwargs,
             )
@@ -330,13 +530,16 @@ Examples:
                 save_to_tsv(page, str(out_tsv))
                 if args.save_json:
                     save_to_json(page, str(out_tsv.with_suffix(".json")))
-                print(f"  → {len(page.entries)} entries saved to {page_dir.name}/{out_tsv.name}")
+                print(
+                    f"  → {len(page.entries)} entries saved to {page_dir.name}/{out_tsv.name}"
+                )
 
             processed += 1
 
         except Exception as exc:
             print(f"  ERROR processing {image_file.name}: {exc}")
             import traceback
+
             traceback.print_exc()
             failed += 1
 
@@ -373,7 +576,9 @@ def _write_run_usage(output_dir: Path) -> None:
     }
 
     out = output_dir / "run_usage.json"
-    out.write_text(json.dumps(run_summary, indent=2, ensure_ascii=False), encoding="utf-8")
+    out.write_text(
+        json.dumps(run_summary, indent=2, ensure_ascii=False), encoding="utf-8"
+    )
     cost_str = f"  Total estimated cost: ${total_cost:.4f}" if cost_available else ""
     print(f"Run usage saved → {out}{cost_str}")
 

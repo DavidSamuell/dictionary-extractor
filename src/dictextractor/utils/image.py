@@ -52,5 +52,6 @@ def resolve_mime_type(image_path: str) -> str:
         ".jpeg": "image/jpeg",
         ".gif": "image/gif",
         ".webp": "image/webp",
+        ".pdf": "application/pdf",
     }
     return mime_map.get(ext, "image/png")

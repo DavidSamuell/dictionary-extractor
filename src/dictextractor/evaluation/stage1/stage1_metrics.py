@@ -2,7 +2,7 @@
 Stage1Metrics: dataclass for all Stage 1 OCR evaluation results.
 
 Three evaluation dimensions:
-1. Character recognition quality  (GCER, WER, NED on tag-stripped text)
+1. Character recognition quality  (GCER, CER, WER, BLEU, NED on tag-stripped text)
 2. Markup/typography preservation (bold/italic precision, recall, F1)
 3. Structure preservation         (read-order NED)
 """
@@ -39,9 +39,14 @@ class CharacterQualityMetrics:
     """Aggregated character-recognition quality."""
 
     gcer: float = 0.0  # Grapheme Character Error Rate (UAX #29 grapheme clusters)
+    cer: float = 0.0  # Character Error Rate (raw Unicode code points)
     wer: float = 0.0  # Word Error Rate
+    bleu: float = 0.0  # BLEU score (word-level, corpus-level smoothed)
     ned: float = 0.0  # Normalized Edit Distance
 
+    total_graphemes_gold: int = 0
+    total_graphemes_pred: int = 0
+    total_grapheme_edits: int = 0
     total_chars_gold: int = 0
     total_chars_pred: int = 0
     total_char_edits: int = 0

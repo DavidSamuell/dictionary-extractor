@@ -6,7 +6,7 @@ Usage: python -m dictextractor.cli.preprocess [options]
 import argparse
 from pathlib import Path
 
-from dictextractor.preprocessing.pipeline import DictionaryPreprocessor
+from dictextractor.preprocessing.preprocess import DictionaryPreprocessor
 
 
 def main():

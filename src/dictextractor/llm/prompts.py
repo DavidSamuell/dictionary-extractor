@@ -149,9 +149,23 @@ def stage_1_user(alphabet_text: str = "", ocr_hint: str = "") -> str:
     parts = []
     if alphabet_text:
         parts.append(
-            f"<alphabet>\n{alphabet_text}\n</alphabet>\n\n"
-            "Use the alphabet above as the authoritative character set. "
-            "Every character in the image should match one of these characters exactly."
+            f"""<alphabet>\n{alphabet_text}\n</alphabet>\n\n
+            The <alphabet> is a reference guide, not a strict whitelist. It may be 
+            incomplete or not perfectly match this document's script variant.
+
+            Rules:
+            1. Prefer <alphabet> matches over visually similar characters from other scripts.
+            2. For combinatorial scripts (Indic conjuncts, Ethiopic syllables, Hangul 
+            blocks, Arabic ligatures, pointed Hebrew/Syriac), treat <alphabet> 
+            entries as base components and form composites using the script's 
+            standard rules (virama, vowel diacritics, contextual forms).
+            3. If a glyph is clearly a legitimate character of the target script but 
+            not in <alphabet> (archaic letters, extensions, related-language 
+            characters), transcribe it correctly anyway — do not force-fit.
+            4. Preserve diacritics, tone marks, case, and period-specific orthography 
+            exactly as shown.
+            5. Mark truly unidentifiable glyphs as [?].
+            """
         )
     if ocr_hint:
         parts.append(
@@ -159,7 +173,7 @@ def stage_1_user(alphabet_text: str = "", ocr_hint: str = "") -> str:
             "The OCR reference above may contain errors but can help you identify ambiguous character shapes."
         )
     parts.append(
-        "Now transcribe every line of text from the dictionary page image exactly as it appears. "
+        "Now transcribe every line of text from the dictionary page image exactly as it appears.` "
         "Preserve all diacritics and special characters."
     )
     return "\n\n".join(parts)

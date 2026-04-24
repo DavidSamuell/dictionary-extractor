@@ -106,8 +106,13 @@ class Stage1Evaluator:
             "page_id": m.page_id,
             "character_quality": {
                 "GCER": round(cq.gcer, 6),
+                "CER": round(cq.cer, 6),
                 "WER": round(cq.wer, 6),
+                "BLEU": round(cq.bleu, 6),
                 "NED": round(cq.ned, 6),
+                "total_graphemes_gold": cq.total_graphemes_gold,
+                "total_graphemes_pred": cq.total_graphemes_pred,
+                "total_grapheme_edits": cq.total_grapheme_edits,
                 "total_chars_gold": cq.total_chars_gold,
                 "total_chars_pred": cq.total_chars_pred,
                 "total_char_edits": cq.total_char_edits,
@@ -164,7 +169,7 @@ class Stage1Evaluator:
 
     # -- Per-component CSV column definitions --
 
-    _CHAR_CSV_COLS = ["page_id", "GCER", "WER", "NED"]
+    _CHAR_CSV_COLS = ["page_id", "GCER", "CER", "WER", "BLEU", "NED"]
 
     _MARKUP_CSV_COLS = [
         "page_id",
@@ -183,7 +188,9 @@ class Stage1Evaluator:
         return {
             "page_id": m.page_id,
             "GCER": round(cq.gcer, 6),
+            "CER": round(cq.cer, 6),
             "WER": round(cq.wer, 6),
+            "BLEU": round(cq.bleu, 6),
             "NED": round(cq.ned, 6),
         }
 
@@ -236,7 +243,9 @@ class Stage1Evaluator:
             char_rows.append({
                 "page_id": "__aggregate__",
                 "GCER": agg["character_quality"]["GCER"],
+                "CER": agg["character_quality"]["CER"],
                 "WER": agg["character_quality"]["WER"],
+                "BLEU": agg["character_quality"]["BLEU"],
                 "NED": agg["character_quality"]["NED"],
             })
             markup_rows.append({
@@ -303,7 +312,9 @@ class Stage1Evaluator:
             "",
             "  Character Recognition Quality:",
             f"    GCER: {cq.gcer:.4f}  ({cq.gcer*100:.2f}%)",
+            f"    CER:  {cq.cer:.4f}  ({cq.cer*100:.2f}%)",
             f"    WER:  {cq.wer:.4f}  ({cq.wer*100:.2f}%)",
+            f"    BLEU: {cq.bleu:.4f}",
             f"    NED:  {cq.ned:.4f}",
             f"    Lines: {cq.matched_lines} matched, {cq.missing_lines} missing, {cq.extra_lines} extra",
             "",
@@ -326,7 +337,9 @@ class Stage1Evaluator:
             "",
             "  Character Recognition Quality:",
             f"    GCER: {agg['character_quality']['GCER']:.4f}",
+            f"    CER:  {agg['character_quality']['CER']:.4f}",
             f"    WER:  {agg['character_quality']['WER']:.4f}",
+            f"    BLEU: {agg['character_quality']['BLEU']:.4f}",
             f"    NED:  {agg['character_quality']['NED']:.4f}",
             "",
             "  Markup / Typography Preservation:",
@@ -342,15 +355,19 @@ class Stage1Evaluator:
     def _aggregate(results: list[Stage1Metrics]) -> dict:
         """Micro-average across all pages."""
         # Character quality: micro-average using totals
+        total_grapheme_edits = sum(m.character_quality.total_grapheme_edits for m in results)
+        total_graphemes_gold = sum(m.character_quality.total_graphemes_gold for m in results)
+        total_graphemes_pred = sum(m.character_quality.total_graphemes_pred for m in results)
         total_char_edits = sum(m.character_quality.total_char_edits for m in results)
         total_chars_gold = sum(m.character_quality.total_chars_gold for m in results)
-        total_chars_pred = sum(m.character_quality.total_chars_pred for m in results)
         total_word_edits = sum(m.character_quality.total_word_edits for m in results)
         total_words_gold = sum(m.character_quality.total_words_gold for m in results)
 
-        agg_gcer = total_char_edits / total_chars_gold if total_chars_gold else 0.0
+        agg_gcer = total_grapheme_edits / total_graphemes_gold if total_graphemes_gold else 0.0
+        agg_cer = total_char_edits / total_chars_gold if total_chars_gold else 0.0
         agg_wer = total_word_edits / total_words_gold if total_words_gold else 0.0
-        agg_ned = total_char_edits / max(total_chars_gold, total_chars_pred, 1)
+        agg_bleu = sum(m.character_quality.bleu for m in results) / len(results)
+        agg_ned = total_grapheme_edits / max(total_graphemes_gold, total_graphemes_pred, 1)
 
         # Markup: sum TP/FP/FN
         bold_tp = sum(m.markup_quality.bold.true_positives for m in results)
@@ -377,7 +394,9 @@ class Stage1Evaluator:
         return {
             "character_quality": {
                 "GCER": round(agg_gcer, 6),
+                "CER": round(agg_cer, 6),
                 "WER": round(agg_wer, 6),
+                "BLEU": round(agg_bleu, 6),
                 "NED": round(agg_ned, 6),
             },
             "markup_quality": {

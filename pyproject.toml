@@ -20,6 +20,9 @@ dependencies = [
     "scikit-learn",
     "python-Levenshtein",
     "grapheme",
+    "jiwer",
+    "sacrebleu",
+    "pymupdf>=1.27.2.2",
 ]
 
 [project.optional-dependencies]
@@ -35,6 +38,7 @@ dictextractor-preprocess = "dictextractor.cli.preprocess:main"
 dictextractor-run-ocr   = "dictextractor.cli.run_ocr:main"
 dictextractor-annotate  = "dictextractor.cli.annotate:main"
 dictextractor-eval-s1   = "dictextractor.cli.evaluate_stage1:main"
+dictextractor-mathpix-convert = "dictextractor.cli.run_mathpix_convert:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/dictextractor"]

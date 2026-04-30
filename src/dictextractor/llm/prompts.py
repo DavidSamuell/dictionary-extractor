@@ -186,9 +186,7 @@ STAGE_2_SYSTEM = """\
 You are a linguistic expert parsing dictionary pages into structured data.
 
 Your inputs:
-1. A TSV transcription of the page (column_id, line_number, text) — use this for
-   reading order and spatial position. It was produced by a separate OCR stage.
-   The text column preserves visual formatting from the original page:
+1. A TSV transcription of the page (column_id, line_number, text) — use this for reading order and spatial position. It was produced by a separate OCR stage. The text column preserves visual formatting from the original page:
      <b>...</b> = bold text (typically headwords or entry starts)
      <i>...</i> = italic text (typically POS tags, examples, or cross-references)
    Use these tags as strong signals for identifying entry boundaries and field types.
@@ -196,8 +194,8 @@ Your inputs:
    entry boundaries and character accuracy.
 3. (Optional) Introduction pages from the dictionary — these explain the dictionary's
    conventions: how entries are structured, what abbreviations mean, how to read
-   POS tags, cross-references, etc. Use them to understand the entry format before
-   parsing.
+   POS tags, semantic-domain markers, etc. Use them to understand the entry format
+   before parsing.
 
 Your task:
 1. Study the introduction pages (if provided) to understand the dictionary's
@@ -208,35 +206,115 @@ Your task:
    boundaries — a new <b>...</b> headword typically signals a new entry.
    Multiple consecutive lines in the same column can belong to a single entry.
 4. For each entry, extract ONLY the fields that are actually present. Leave
-   fields as "" or [] if they do not appear in that specific entry.
+   string fields as "" and list fields as [] when not present.
 5. Strip <b> and <i> tags from the extracted field values — they are structural
    hints, not part of the content.
 
-Field reference:
-  headword           — the headword word or phrase (all diacritics preserved)
-  pos                — part-of-speech abbreviation if present, else ""
-  target_translation — primary translation in the target language
-  literal_definition — literal meaning if present, else ""
-  grammar_notes      — grammatical inflections, tense markers, cross-refs, else ""
-  examples           — example sentences/phrases if present, else []
+Splitting subentries (IMPORTANT):
+  A single visual entry block can contain MULTIPLE distinct headwords/subwords —
+  for example, variant spellings, derived forms, run-on subentries, or numbered
+  sub-senses with their own translations. When this happens you MUST emit one
+  DictionaryEntry per subword, NOT a single combined entry. Indicators include but not limited to:
+    - Multiple bolded forms inside one entry block.
+    - Numbered sense markers (1., 2., I., II.) each introducing a different
+      meaning of a related but distinct headform.
+    - Run-on derivatives or compounds listed under a main lemma but bolded
+      separately.
+  If subentries inherit context (POS, semantic domain) from the parent lemma,
+  copy that context into each split entry so each one is self-contained.
+
+Examples handling (IMPORTANT):
+  The `examples` field is ALWAYS a list of strings, never a single string.
+    - 0 examples → []
+    - 1 example  → ["one example string"]
+    - N examples → one separate string per example, in the order they appear.
+  Do NOT concatenate multiple examples into a single string with separators.
+  Each illustrative phrase, sentence, or usage citation gets its own list element.
+
+Field semantics: see the response schema (each field carries its own description).
+The handling rules above (subentry splitting, examples-as-list) and the rules
+below override anything ambiguous in the schema descriptions.
+
+No-reasoning-in-fields (CRITICAL):
+  Field values must contain ONLY the extracted dictionary text. Do NOT write
+  deliberation, hedging, self-correction, or chain-of-thought INSIDE any field
+  value. Forbidden patterns inside field strings include (non-exhaustive):
+    "wait", "let me", "I will", "I'm writing", "actually", "hmm",
+    "on second thought", "restart", "chain of thought", "thought block",
+    "per rules", "applied here", "rule above".
+  Do all reasoning in the dedicated thinking channel, never in the JSON.
+  If you are uncertain whether a field applies, leave it empty ("") or [].
+  Never narrate the uncertainty in the value itself.
 
 Rules:
 - Preserve ALL phonetic symbols exactly (ŋ, æ, ʌ, ə, ь, etc.).
 - Prioritise what you see in the page image over the transcription for character accuracy.
 - Do NOT invent or hallucinate fields not visible in the source.
 - Process each column independently — entries do not span columns.
+- Emit clean JSON only. No commentary, no preamble, no postamble, no notes
+  inside string values.
 """
 
 
-def stage_2_user(transcribed_text: str, intro_text: str = "") -> str:
+EXTRA_FIELDS_DISCOVERY_BLOCK = """\
+<extra_fields_discovery>
+Discovery mode is ENABLED for this run.
+
+In addition to the canonical fields (headword, pos, meaning_description,
+semantic_domain, examples), scan the page and the introduction (if provided)
+for any OTHER fields that the dictionary CONSISTENTLY and STRUCTURALLY marks
+on its entries — for example:
+  - etymology (origin, root, source language)
+  - ipa or pronunciation guides
+  - inflectional forms (plural, genitive, past tense, aspect pair, etc.)
+  - gender / noun class / tone class
+  - register / style markers (formal, slang, archaic, dialectal)
+  - cross-references (synonyms, antonyms, "see also")
+  - usage notes that the dictionary itself flags with a dedicated marker
+
+For each such field you find on a given entry, add an item to that entry's
+`extra_fields` map:
+  - Key: a short snake_case English label (e.g. "etymology", "ipa",
+    "plural_form", "gender", "register", "see_also").
+  - Value: the extracted text as a string. If the dictionary lists multiple
+    values (e.g. two cross-references), join them with "; ".
+  - Reuse the SAME key across entries when the same field reappears, so
+    downstream consumers can group consistently.
+
+Strict rules for `extra_fields`:
+  - ONLY include fields that the dictionary visibly marks with a dedicated
+    convention (italic abbreviation, special symbol, fixed position, etc.).
+    Do NOT invent fields, do NOT add freeform commentary, do NOT duplicate
+    canonical fields here.
+  - If an entry has no qualifying extra fields, leave its `extra_fields` as {}.
+  - Field semantics must be consistent across the whole page — pick the key
+    based on what the field IS, not where it appears.
+</extra_fields_discovery>"""
+
+
+EXTRA_FIELDS_DISABLED_LINE = (
+    "Discovery mode is DISABLED. Leave `extra_fields` as {} for every entry."
+)
+
+
+def stage_2_user(
+    transcribed_text: str,
+    intro_text: str = "",
+    discover_extra_fields: bool = False,
+) -> str:
     """
     Build the user-turn prompt for Stage 2 structuring.
 
     All dynamic data goes here to keep the system prompt fixed.
 
     Args:
-        transcribed_text: TSV output from Stage 1 (column_id \\t line_number \\t text).
-        intro_text: Optional introduction/preface text extracted from the dictionary.
+        transcribed_text:        TSV output from Stage 1 (column_id \\t line_number \\t text).
+        intro_text:              Optional introduction/preface text extracted from the dictionary.
+        discover_extra_fields:   When True, instruct the LLM to populate
+                                 ``DictionaryEntry.extra_fields`` with any
+                                 dictionary-marked fields beyond the canonical
+                                 schema. When False, instruct it to leave
+                                 ``extra_fields`` as ``{}``.
     """
     parts = []
 
@@ -256,11 +334,19 @@ def stage_2_user(transcribed_text: str, intro_text: str = "") -> str:
         "</transcription>"
     )
 
-    parts.append(
+    if discover_extra_fields:
+        parts.append(EXTRA_FIELDS_DISCOVERY_BLOCK)
+
+    closing = (
         "Parse all dictionary entries from the transcription and the attached images.\n"
         "The first image is the dictionary page. Any additional images are pages from "
         "the dictionary's introduction — study them to understand entry structure and conventions.\n"
-        "Only populate a field if it is actually present in that entry."
+        "Only populate a field if it is actually present in that entry. "
+        "If a single entry block contains multiple subwords/subentries, emit each "
+        "as its own entry. Examples must always be a list of strings (one per example)."
     )
+    if not discover_extra_fields:
+        closing += "\n" + EXTRA_FIELDS_DISABLED_LINE
+    parts.append(closing)
 
     return "\n\n".join(parts)

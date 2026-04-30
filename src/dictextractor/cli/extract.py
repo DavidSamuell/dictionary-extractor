@@ -13,7 +13,7 @@ from dictextractor.schemas.ocr_result import OCRPageResult
 from dictextractor.extraction.llm_manual import ManualLLMExtraction
 from dictextractor.extraction.llm_join import JoinLLMExtraction
 from dictextractor.extraction.llm_two_stage import TwoStageLLMExtraction
-from dictextractor.utils.io import save_to_tsv, save_to_json
+from dictextractor.utils.io import save_to_json, json_to_tsv
 
 
 _STRATEGIES = {
@@ -179,6 +179,8 @@ def _build_strategy(args, intro_text: str, intro_image_paths: List[str]):
             alphabet_path=args.alphabet or None,
             intro_text=intro_text,
             intro_image_paths=intro_image_paths,
+            discover_extra_fields=getattr(args, "discover_extra_fields", False),
+            stage2_reasoning_effort=getattr(args, "stage2_reasoning_effort", "medium"),
         )
     raise ValueError(f"Unknown strategy: {args.strategy}")
 
@@ -248,16 +250,11 @@ Examples:
     parser.add_argument(
         "-o",
         "--output",
-        help="Output directory. One <stem>.tsv (+ <stem>_stage1.txt for two_stage) per page. "
+        help="Output directory. Per page: <stem>.json (canonical) and "
+        "<stem>.tsv (rendered from the JSON, with one column per discovered "
+        "extra field). For two_stage runs also: <stem>_stage1.tsv. "
         "Required unless --samples-dir is used.",
     )
-    parser.add_argument(
-        "--json",
-        action="store_true",
-        dest="save_json",
-        help="Also save a <stem>.json alongside each TSV.",
-    )
-
     # Model / strategy
     parser.add_argument(
         "-m",
@@ -288,6 +285,25 @@ Examples:
         help="Dictionary introduction/preface — a file (.txt/.md/.docx) or a directory. "
         "Text files are embedded in the Stage 2 system prompt; "
         "images are sent as vision context. Loaded once, shared across all pages.",
+    )
+    parser.add_argument(
+        "--discover-extra-fields",
+        action="store_true",
+        dest="discover_extra_fields",
+        help="Stage 2 only. Instruct the LLM to also extract any "
+        "structurally-marked fields beyond the canonical schema "
+        "(etymology, IPA, plural form, gender, register, cross-refs, etc.) "
+        "into each entry's `extra_fields` map. Off by default.",
+    )
+    parser.add_argument(
+        "--reasoning",
+        choices=["low", "medium", "high"],
+        default="medium",
+        dest="stage2_reasoning_effort",
+        help="Reasoning effort for the Stage 2 LLM call (default: medium). "
+        "High reasoning has been observed to leak chain-of-thought into "
+        "JSON string fields on dense pages — drop to low for problematic "
+        "inputs, bump to high only when needed.",
     )
 
     # Preprocessing — off by default. When on, PDFs are rendered to PNG first
@@ -379,7 +395,7 @@ def _run_samples_dir(args, parser) -> int:
         intro_dir = entry_dir / "introduction"
         mathpix_dir = entry_dir / "mathpix"
         alphabet_file = entry_dir / "alphabet.txt"
-        output_dir = entry_dir / "outputs" / "stage-1"
+        output_dir = entry_dir / "outputs"
 
         args.input_image = str(snippets_dir)
         args.ocr_text = str(mathpix_dir) if mathpix_dir.is_dir() else None
@@ -405,8 +421,13 @@ def _run_single_entry(args, parser) -> int:
         parser.error(f"--input-image must be a directory: {input_dir}")
 
     # ── Output dir (set up early so we can cache rendered PDF pages) ──────────
+    # Stage 1 artifacts (transcription TSV + raw/input JSONs) live under
+    # <output>/stage-1/<page>/.  Stage 2 artifacts (final TSV + JSON +
+    # raw/input/usage JSONs) live under <output>/stage-2/<page>/.
     output_dir = Path(args.output)
     output_dir.mkdir(parents=True, exist_ok=True)
+    stage1_dir = output_dir / "stage-1"
+    stage2_dir = output_dir / "stage-2"
     preprocess_dir = output_dir / ".preprocessed"
     snippets_cache_dir = output_dir / ".rendered_snippets"
     intro_cache_dir = output_dir / ".rendered_intro"
@@ -461,15 +482,17 @@ def _run_single_entry(args, parser) -> int:
 
     for idx, image_file in enumerate(images):
         page_number = args.page_offset + idx
-        page_dir = output_dir / image_file.stem
-        out_tsv = page_dir / (image_file.stem + ".tsv")
-        stage1_tsv = page_dir / (image_file.stem + "_stage1.tsv")
+        stem = image_file.stem
+        stage1_page_dir = stage1_dir / stem
+        stage2_page_dir = stage2_dir / stem
+        stage1_tsv = stage1_page_dir / (stem + "_stage1.tsv")
+        out_tsv = stage2_page_dir / (stem + ".tsv")
 
         # ── Resume: skip already-processed pages ──────────────────────────────
         if not args.overwrite:
             if args.stage == "both" and out_tsv.exists():
                 print(
-                    f"[{idx+1}/{total}] SKIP {image_file.name} → {page_dir.name}/ already exists"
+                    f"[{idx+1}/{total}] SKIP {image_file.name} → stage-2/{stem}/ already exists"
                 )
                 skipped += 1
                 continue
@@ -497,7 +520,10 @@ def _run_single_entry(args, parser) -> int:
         print(
             f"\n[{idx+1}/{total}] Processing: {image_file.name}  (page {page_number})"
         )
-        page_dir.mkdir(parents=True, exist_ok=True)
+        if args.stage in ("1", "both"):
+            stage1_page_dir.mkdir(parents=True, exist_ok=True)
+        if args.stage in ("2", "both"):
+            stage2_page_dir.mkdir(parents=True, exist_ok=True)
 
         try:
             # Preprocessing
@@ -516,6 +542,7 @@ def _run_single_entry(args, parser) -> int:
             extract_kwargs = {}
             if args.strategy == "two_stage":
                 extract_kwargs["stage1_output_path"] = str(stage1_tsv)
+                extract_kwargs["stage2_output_path"] = str(out_tsv)
                 extract_kwargs["run_stage"] = args.stage
 
             page = strategy.extract(
@@ -527,11 +554,11 @@ def _run_single_entry(args, parser) -> int:
 
             # Save outputs (skip for stage-1-only since there are no entries)
             if args.stage != "1":
-                save_to_tsv(page, str(out_tsv))
-                if args.save_json:
-                    save_to_json(page, str(out_tsv.with_suffix(".json")))
+                out_json = out_tsv.with_suffix(".json")
+                save_to_json(page, str(out_json))
+                json_to_tsv(str(out_json), str(out_tsv))
                 print(
-                    f"  → {len(page.entries)} entries saved to {page_dir.name}/{out_tsv.name}"
+                    f"  → {len(page.entries)} entries saved to stage-2/{stem}/{out_tsv.name}"
                 )
 
             processed += 1

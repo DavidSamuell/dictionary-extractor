@@ -20,7 +20,10 @@ Stage 1 is a copying/transcription task — creativity and inference are harmful
 
 Stage 2 requires understanding multi-column layouts, abbreviations, cross-references,
 and mapping ambiguous text spans to typed schema fields.
-  → reasoning_effort="high"  (maps to thinking_level: high on Gemini 3)
+  → reasoning_effort="medium" by default (maps to thinking_level: medium on Gemini 3).
+  Tunable via the strategy ctor / CLI: too-high reasoning has been observed to
+  leak chain-of-thought into JSON string fields under structured output, so we
+  default to medium and only bump up explicitly when needed.
 
 Structured output rationale
 ---------------------------
@@ -144,12 +147,16 @@ class TwoStageLLMExtraction(ExtractionStrategy):
         alphabet_path: Optional[str] = None,
         intro_text: str = "",
         intro_image_paths: Optional[List[str]] = None,
+        discover_extra_fields: bool = False,
+        stage2_reasoning_effort: str = "medium",
     ):
         self.transcribe_model = transcribe_model
         self.structure_model = structure_model or transcribe_model
         self.alphabet_path = alphabet_path
         self.intro_text = intro_text
         self.intro_image_paths = intro_image_paths or []
+        self.discover_extra_fields = discover_extra_fields
+        self.stage2_reasoning_effort = stage2_reasoning_effort
 
     @property
     def name(self) -> str:
@@ -166,6 +173,7 @@ class TwoStageLLMExtraction(ExtractionStrategy):
         page_number: int = 1,
         intro_text: Optional[str] = None,
         stage1_output_path: Optional[str] = None,
+        stage2_output_path: Optional[str] = None,
         run_stage: str = "both",
         **kwargs,
     ) -> DictionaryPage:
@@ -178,9 +186,15 @@ class TwoStageLLMExtraction(ExtractionStrategy):
             image_path:          Path to the dictionary page image.
             page_number:         Page number for provenance.
             intro_text:          Override for the instance-level intro_text (if provided).
-            stage1_output_path:  If given, the Stage 1 transcription is written to this
-                                 path as a UTF-8 .txt file before Stage 2 runs.
-                                 Useful for inspection and avoiding repeat API calls.
+            stage1_output_path:  Path for the Stage 1 transcription TSV (e.g.
+                                 ``<...>/stage-1/<page>/<page>_stage1.tsv``). The Stage 1
+                                 raw/input JSONs are written next to it.
+                                 Stage-2-only reads the transcription from this path.
+            stage2_output_path:  Path for the final Stage 2 TSV (e.g.
+                                 ``<...>/stage-2/<page>/<page>.tsv``). The Stage 2
+                                 raw/input/usage JSONs are derived from this path's
+                                 stem. If omitted, Stage 2 artifacts fall back to
+                                 living next to ``stage1_output_path`` (legacy layout).
             run_stage:           "1" = stage 1 only, "2" = stage 2 only, "both" = full pipeline.
                                  Stage-2-only reads transcription from stage1_output_path.
         """
@@ -221,6 +235,16 @@ class TwoStageLLMExtraction(ExtractionStrategy):
             print("=" * 60)
             print(f"Stage 2 only: loaded existing transcription from {stage1_output_path}")
 
+        # Resolve where Stage 2 artifacts live:
+        #   - explicit stage2_output_path → use it (its stem becomes the artifact prefix).
+        #   - else fall back to stage1 dir with the "_stage1" suffix stripped (legacy).
+        stage2_base: Optional[Path] = None
+        if stage2_output_path:
+            stage2_base = Path(stage2_output_path)
+        elif stage1_output_path:
+            s1 = Path(stage1_output_path)
+            stage2_base = s1.with_name(s1.stem.replace("_stage1", "") + s1.suffix)
+
         # ── Stage 2: structuring ───────────────────────────────────────────────
         if run_stage in ("2", "both"):
             print("Stage 2: Structuring transcribed text …")
@@ -229,15 +253,11 @@ class TwoStageLLMExtraction(ExtractionStrategy):
             )
             print(f"Extracted {len(entries)} entries.")
 
-            if stage1_output_path:
-                base = Path(stage1_output_path)
-                raw2_path = base.with_name(
-                    base.stem.replace("_stage1", "") + "_stage2_raw.json"
-                )
+            if stage2_base:
+                stage2_base.parent.mkdir(parents=True, exist_ok=True)
+                raw2_path = stage2_base.with_name(stage2_base.stem + "_stage2_raw.json")
                 raw2_path.write_text(stage2_raw, encoding="utf-8")
-                input2_path = base.with_name(
-                    base.stem.replace("_stage1", "") + "_stage2_input.json"
-                )
+                input2_path = stage2_base.with_name(stage2_base.stem + "_stage2_input.json")
                 input2_path.write_text(
                     json.dumps(stage2_msgs, indent=2, ensure_ascii=False),
                     encoding="utf-8",
@@ -245,8 +265,7 @@ class TwoStageLLMExtraction(ExtractionStrategy):
                 print(f"Stage 2 raw saved → {raw2_path.name}  |  input → {input2_path.name}")
 
         # ── Per-page usage summary ────────────────────────────────────────────
-        if stage1_output_path and (stage1_usage or stage2_usage):
-            base = Path(stage1_output_path)
+        if stage2_base and (stage1_usage or stage2_usage):
             total_cost = _sum_costs(
                 stage1_usage.get("cost_usd"), stage2_usage.get("cost_usd")
             )
@@ -255,9 +274,8 @@ class TwoStageLLMExtraction(ExtractionStrategy):
                 "stage2": stage2_usage or None,
                 "total_cost_usd": total_cost,
             }
-            usage_path = base.with_name(
-                base.stem.replace("_stage1", "") + "_usage.json"
-            )
+            stage2_base.parent.mkdir(parents=True, exist_ok=True)
+            usage_path = stage2_base.with_name(stage2_base.stem + "_usage.json")
             usage_path.write_text(
                 json.dumps(page_usage, indent=2, ensure_ascii=False),
                 encoding="utf-8",
@@ -328,6 +346,7 @@ class TwoStageLLMExtraction(ExtractionStrategy):
         user_text = stage_2_user(
             transcribed_text=transcribed_text,
             intro_text=intro_text,
+            discover_extra_fields=self.discover_extra_fields,
         )
 
         content: list = [
@@ -352,7 +371,7 @@ class TwoStageLLMExtraction(ExtractionStrategy):
             model=self.structure_model,
             messages=messages,
             response_schema=EntriesResponse,
-            reasoning_effort="high",
+            reasoning_effort=self.stage2_reasoning_effort,
         )
         return result.entries, raw, usage, _sanitize_messages(messages)
 

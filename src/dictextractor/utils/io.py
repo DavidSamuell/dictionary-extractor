@@ -63,46 +63,35 @@ def load_tsv(filepath: str) -> List[Dict[str, str]]:
 # Writers
 # ---------------------------------------------------------------------------
 
-TSV_FIELDNAMES = [
+CANONICAL_TSV_FIELDS = [
     "Headword",
-    "Entry_Type",
     "POS",
-    "Target_Translation",
-    "Literal_Definition",
-    "Grammar_Notes",
+    "Meaning_Description",
+    "Semantic_Domain",
     "Examples",
 ]
 
 
-def save_to_tsv(dictionary_page, output_path: str, append: bool = False) -> None:
-    """
-    Write a DictionaryPage to a TSV file.
+def _key_to_column(key: str) -> str:
+    """snake_case extra-field key → Title_Case_Underscore TSV header."""
+    return "_".join(part.capitalize() for part in key.split("_") if part)
 
-    Args:
-        dictionary_page: DictionaryPage instance with .entries list.
-        output_path: Destination file path.
-        append: If True, append without writing a header (unless file is new).
-    """
-    mode = "a" if append else "w"
-    file_exists = Path(output_path).exists() and append
 
-    with open(output_path, mode, newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=TSV_FIELDNAMES, delimiter="\t")
-        if not file_exists:
-            writer.writeheader()
-        for entry in dictionary_page.entries:
-            writer.writerow(
-                {
-                    "Headword": entry.headword,
-                    "Entry_Type": entry.entry_type,
-                    "POS": entry.pos,
-                    "Target_Translation": entry.target_translation,
-                    "Literal_Definition": entry.literal_definition,
-                    "Grammar_Notes": entry.grammar_notes,
-                    "Examples": " | ".join(entry.examples) if entry.examples else "",
-                }
-            )
-    print(f"Saved {len(dictionary_page.entries)} entries to {output_path}")
+def _collect_extra_keys(entries: List[Dict]) -> List[str]:
+    """
+    Union of all extra_fields keys across entries, in first-appearance order.
+    Skips keys whose Title_Case form would collide with a canonical column.
+    """
+    canonical = set(CANONICAL_TSV_FIELDS)
+    seen: Dict[str, None] = {}
+    for entry in entries:
+        for k in (entry.get("extra_fields") or {}).keys():
+            if not k or k in seen:
+                continue
+            if _key_to_column(k) in canonical:
+                continue
+            seen[k] = None
+    return list(seen.keys())
 
 
 def save_to_json(dictionary_page, output_path: str) -> None:
@@ -125,7 +114,13 @@ def save_to_json(dictionary_page, output_path: str) -> None:
 
 def json_to_tsv(json_path: str, output_path: Optional[str] = None) -> str:
     """
-    Convert a dictionary JSON file (array of entry dicts) to TSV.
+    Render a TSV file from a saved entries-JSON file.
+
+    The TSV always contains the canonical columns (Headword, POS,
+    Meaning_Description, Semantic_Domain, Examples). When entries carry
+    discovered ``extra_fields``, each unique key gets its own additional
+    column (snake_case key → Title_Case header), in first-appearance order
+    across the entries.
 
     Args:
         json_path: Path to the input JSON file.
@@ -143,21 +138,25 @@ def json_to_tsv(json_path: str, output_path: Optional[str] = None) -> str:
     with open(json_path, "r", encoding="utf-8") as f:
         entries = json.load(f)
 
+    extra_keys = _collect_extra_keys(entries)
+    extra_columns = [_key_to_column(k) for k in extra_keys]
+    fieldnames = CANONICAL_TSV_FIELDS + extra_columns
+
     with open(output_path, "w", newline="", encoding="utf-8") as f:
-        writer = csv.DictWriter(f, fieldnames=TSV_FIELDNAMES, delimiter="\t")
+        writer = csv.DictWriter(f, fieldnames=fieldnames, delimiter="\t")
         writer.writeheader()
         for entry in entries:
-            writer.writerow(
-                {
-                    "Headword": entry.get("headword") or entry.get("headword_phrase", ""),
-                    "Entry_Type": entry.get("entry_type", ""),
-                    "POS": entry.get("pos", ""),
-                    "Target_Translation": entry.get("target_translation") or entry.get("translation_ru", ""),
-                    "Literal_Definition": entry.get("literal_definition") or entry.get("literal_meaning", ""),
-                    "Grammar_Notes": entry.get("grammar_notes", ""),
-                    "Examples": " | ".join(entry.get("examples", [])) if entry.get("examples") else "",
-                }
-            )
+            extras = entry.get("extra_fields") or {}
+            row = {
+                "Headword": entry.get("headword") or entry.get("headword_phrase", ""),
+                "POS": entry.get("pos", ""),
+                "Meaning_Description": entry.get("meaning_description", ""),
+                "Semantic_Domain": entry.get("semantic_domain", ""),
+                "Examples": " | ".join(entry.get("examples", [])) if entry.get("examples") else "",
+            }
+            for key, column in zip(extra_keys, extra_columns):
+                row[column] = extras.get(key, "")
+            writer.writerow(row)
 
-    print(f"Converted {len(entries)} entries from {json_path} to {output_path}")
+    print(f"Rendered {len(entries)} entries → {output_path} ({len(extra_columns)} extra columns)")
     return str(output_path)

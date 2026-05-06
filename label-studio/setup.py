@@ -199,11 +199,21 @@ def setup_project_for_entry(
     entry_dir: Path,
     render_dir: Path,
     *,
+    storage_root: str | None = None,
     overwrite: bool = False,
 ) -> int | None:
     """Create a Label Studio project for one dictionary entry.
 
     Returns the project ID on success, None if skipped.
+
+    Args:
+        client: Label Studio API client.
+        entry_dir: Root directory for this language (contains snippets/ and outputs/).
+        render_dir: Local directory where PNGs are rendered to.
+        storage_root: Path passed to Label Studio's local-file storage API.
+            Defaults to the resolved render_dir. Set to the server-side path
+            when running against a remote VM (e.g. /data/label-studio/images).
+        overwrite: If True, recreate the project even if it already exists.
     """
     entry_name = entry_dir.name
     stage1_dir = entry_dir / "outputs" / "stage-1"
@@ -238,11 +248,10 @@ def setup_project_for_entry(
     entry_render_dir = render_dir / entry_name
     entry_render_dir.mkdir(parents=True, exist_ok=True)
 
-    # Connect local file storage so /data/local-files/ URLs resolve
-    storage = client.create_local_storage(
-        project_id,
-        str(entry_render_dir.resolve()),
-    )
+    # Connect local file storage so /data/local-files/ URLs resolve.
+    # Use the server-side storage_root when targeting a remote VM.
+    storage_path = f"{storage_root}/{entry_name}" if storage_root else str(entry_render_dir.resolve())
+    storage = client.create_local_storage(project_id, storage_path)
     if storage:
         logger.info("  Local storage connected (id=%s)", storage.get("id"))
     tasks: list[dict] = []
@@ -331,7 +340,18 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--render-dir",
         type=Path,
         default=Path(".label-studio-renders"),
-        help="Directory for rendered PNG page images",
+        help="Local directory for rendered PNG page images",
+    )
+    parser.add_argument(
+        "--storage-root",
+        type=str,
+        default=None,
+        help=(
+            "Path passed to Label Studio's local-file storage API. "
+            "Defaults to the resolved --render-dir. "
+            "Set this to the VM-side path when running against a remote server "
+            "(e.g. /data/label-studio/images)."
+        ),
     )
     parser.add_argument("--overwrite", action="store_true", help="Recreate existing projects")
     return parser.parse_args(argv)
@@ -367,7 +387,11 @@ def main(argv: list[str] | None = None) -> int:
     created = 0
     for entry_dir in entries:
         project_id = setup_project_for_entry(
-            client, entry_dir, args.render_dir, overwrite=args.overwrite,
+            client,
+            entry_dir,
+            args.render_dir,
+            storage_root=args.storage_root,
+            overwrite=args.overwrite,
         )
         if project_id is not None:
             created += 1

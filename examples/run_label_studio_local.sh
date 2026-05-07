@@ -1,15 +1,26 @@
-# Start Label Studio with local file serving enabled
-# Then run the setup script to create/update projects
+#!/usr/bin/env bash
+# Start local Label Studio, then create/update projects.
+
+set -euo pipefail
+
+if [[ -f .env ]]; then
+    set -a
+    source .env
+    set +a
+fi
+
+export LABEL_STUDIO_TOKEN="${LS_ACCESS_TOKEN:?Set LS_ACCESS_TOKEN in .env}"
+export LABEL_STUDIO_AUTH_SCHEME="Bearer"
 
 LABEL_STUDIO_LOCAL_FILES_SERVING_ENABLED=true \
 LABEL_STUDIO_LOCAL_FILES_DOCUMENT_ROOT="$(pwd)/.label-studio-renders" \
-LABEL_STUDIO_HOST=https://sudie-unfelted-neriah.ngrok-free.dev \
-label-studio --enable-legacy-api-token &
+uv run label-studio --port 8080 &
 
 # Wait for Label Studio to finish starting up
 sleep 5
 
-python label-studio/setup.py \
+uv run python label-studio/setup.py \
     --samples-dir assets/dictionaries/samples-2 \
-    --ls-token cce752c0343c343e6e1958ef12117fb466581a4a \
-    --render-dir .label-studio-renders
+    --render-dir .label-studio-renders \
+    --overwrite \
+    --connect-local-storage

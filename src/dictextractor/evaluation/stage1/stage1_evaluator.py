@@ -18,6 +18,17 @@ from dictextractor.evaluation.stage1.stage1_metrics import Stage1Metrics
 
 Row = Dict[str, str]
 
+# column_id values that are page-level metadata, not body content.
+# These rows are excluded from every Stage 1 metric — predictions emit them but
+# existing gold TSVs predate the change, so including them would inflate
+# extra_lines / FP counts on predictions only.
+_METADATA_COLUMN_IDS = {"header", "footer"}
+
+
+def _strip_metadata(rows: List[Row]) -> List[Row]:
+    """Drop rows whose column_id is `header` or `footer`."""
+    return [r for r in rows if r.get("column_id") not in _METADATA_COLUMN_IDS]
+
 
 class Stage1Evaluator:
     """Evaluate a single predicted Stage 1 TSV against a gold TSV."""
@@ -45,8 +56,8 @@ class Stage1Evaluator:
         gold_path: str | Path,
         page_id: str = "",
     ) -> Stage1Metrics:
-        pred_rows = self.load_tsv(pred_path)
-        gold_rows = self.load_tsv(gold_path)
+        pred_rows = _strip_metadata(self.load_tsv(pred_path))
+        gold_rows = _strip_metadata(self.load_tsv(gold_path))
 
         char_q = compute_character_quality(pred_rows, gold_rows)
         markup_q = compute_markup_quality(pred_rows, gold_rows)

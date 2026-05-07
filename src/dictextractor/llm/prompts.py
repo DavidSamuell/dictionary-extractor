@@ -115,16 +115,30 @@ Return ONLY a valid JSON array.
 STAGE_1_SYSTEM = """\
 You are a precise OCR transcription system specialising in historical and minority-language dictionaries.
 
-Step 1 — Detect columns.
-  Examine the page layout. Most dictionary pages use one or two columns; some use three.
-  Identify each column region (left, center, right) before transcribing.
+Step 1 — Detect page-level header and footer (if present).
+  Many dictionary pages have a running title, page number, chapter abbreviation,
+  or alphabetic letter band at the very top, and/or page numbers, footnotes, or
+  decorative rules at the very bottom. These are NOT dictionary entries.
+    - Top metadata → emit one string per visible line into the `header` list.
+    - Bottom metadata → emit one string per visible line into the `footer` list.
+    - If a region has no metadata, leave its list empty.
+  Headers and footers can sit ANYWHERE horizontally (centred, spanning columns,
+  or aligned to one side). Do NOT force them into a column — always treat them
+  as page-level. The first dictionary entry of the page belongs in a column,
+  not in `header`.
 
-Step 2 — Transcribe each column separately, left to right.
+Step 2 — Detect body columns.
+  After excluding header/footer regions, examine the body layout. Most dictionary
+  pages use one or two columns; some use three. Identify each column region
+  (left, center, right) before transcribing.
+
+Step 3 — Transcribe each column separately, left to right.
   For every column, list every visible line top to bottom, exactly as it appears.
-  Never mix a line from one column into another column's list.
+  Never mix a line from one column into another column's list. Do NOT include
+  header or footer text inside any column.
 
 You may or may not given a ocr reference text wrap around by <ocr_reference>...</ocr_reference>, it comes from a standard OCR result of the page. This text is a reference for the character shapes and should be used to help you transcribe the page. However, prioritise the visual image over OCR text — standard OCR may miss or misinterpret certain phonetic characters.
-Rules that apply to every line:
+Rules that apply to every line (header, footer, and column lines alike):
 - Preserve ALL diacritics, stress marks, and special phonetic symbols exactly.
 - Preserve visual formatting: wrap bold text in <b>...</b> and italic text in <i>...</i>.
   Only mark formatting you are confident about — when in doubt, leave text plain.
@@ -133,6 +147,19 @@ Rules that apply to every line:
 - Do NOT skip any line, even if it looks like a sub-entry, continuation, or cross-reference.
 - Do NOT correct apparent typos or inconsistencies.
 - For single-column pages, output one column with column_id='single'.
+- Hyphenated line breaks: when a word is split across two physical lines with
+  a trailing hyphen (typesetting wrap), emit the two parts as TWO SEPARATE
+  lines exactly as printed, INCLUDING the trailing hyphen. NEVER join them.
+  This is one of the most common inconsistencies; be strict about it.
+    Example — the page shows:
+        intelligi-
+        ble, adj. clear, comprehensible.
+    You MUST emit two lines:
+        "intelligi-"
+        "ble, adj. clear, comprehensible."
+    NOT one merged line "intelligible, adj. clear, comprehensible." and NOT
+    a single line "intelligi-ble, adj. ...". Stage 2 will rejoin hyphenated
+    words when it forms entry text — your job is faithful copy only.
 """
 
 
@@ -190,6 +217,10 @@ Your inputs:
      <b>...</b> = bold text (typically headwords or entry starts)
      <i>...</i> = italic text (typically POS tags, examples, or cross-references)
    Use these tags as strong signals for identifying entry boundaries and field types.
+   Rows whose `column_id` is `header` or `footer` (with empty `line_number`)
+   are page-level metadata — running titles, page numbers, chapter abbreviations,
+   decorative rules, etc. IGNORE these rows. They are NOT dictionary entries
+   and must NOT produce any DictionaryEntry output.
 2. An image of the actual dictionary page — use this for visual verification of
    entry boundaries and character accuracy.
 3. (Optional) Introduction pages from the dictionary — these explain the dictionary's
@@ -251,6 +282,14 @@ Rules:
 - Prioritise what you see in the page image over the transcription for character accuracy.
 - Do NOT invent or hallucinate fields not visible in the source.
 - Process each column independently — entries do not span columns.
+- Hyphenated line breaks: Stage 1 deliberately preserves typesetting hyphens —
+  consecutive transcription rows like "intelligi-" / "ble, adj. clear" are ONE
+  word "intelligible". When a field's text spans such a break you MUST rejoin
+  it: drop the trailing hyphen and the line boundary so the field value reads
+  naturally ("intelligible, adj. clear"), not "intelligi-ble" or
+  "intelligi- ble". Apply this to headword, meaning_description, examples,
+  and any extra_fields value. Genuine intra-word hyphens (compound words like
+  "self-aware", or hyphens that do NOT sit at end-of-line) must be preserved.
 - Emit clean JSON only. No commentary, no preamble, no postamble, no notes
   inside string values.
 """

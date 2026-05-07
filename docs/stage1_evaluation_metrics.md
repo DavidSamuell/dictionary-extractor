@@ -2,6 +2,8 @@
 
 Stage 1 evaluation measures how well a vision-language model (VLM) transcribes a dictionary page image into structured, tagged text. The evaluation compares a **predicted** TSV (model output) against a **gold** TSV (human-verified ground truth), both sharing the same format: `column_id | line_number | text`.
 
+**Header / footer rows are excluded from every metric.** Stage 1 emits page-level metadata (running titles, page numbers, chapter abbreviations, footnotes) into rows with `column_id="header"` or `column_id="footer"` and empty `line_number`. These rows are dropped before computing character quality, markup quality, and read-order metrics — they are not transcription content, and existing gold TSVs predate the header/footer split. Backfill the golds and re-enable inclusion later if you want explicit metadata accuracy tracking.
+
 We evaluate three independent quality dimensions:
 
 ---

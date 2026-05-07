@@ -100,19 +100,41 @@ class TranscriptionResponse(BaseModel):
     """
     Structured output schema for Stage 1 transcription.
 
-    Columns are ordered left → right. Within each column, lines are ordered
-    top → bottom. This column-first ordering ensures that continuation lines
-    of the same entry stay together, regardless of page layout.
+    Page-level metadata (header, footer) is captured in dedicated fields,
+    separate from the body content. Body content is split into columns,
+    ordered left → right. Within each column, lines are ordered top → bottom.
 
     For single-column pages use one column with column_id='single'.
     """
 
+    header: List[str] = Field(
+        default=[],
+        description=(
+            "Page-level header text appearing ABOVE the body columns — e.g. "
+            "running title, page number, chapter abbreviation, alphabetic letter "
+            "band. One string per visible line (top to bottom). Headers may sit "
+            "anywhere horizontally (centred, spanning columns); they are NEVER "
+            "part of a column. Empty list if the page has no header. "
+            "Do NOT include the first dictionary entry here."
+        ),
+    )
     columns: List[ColumnTranscription] = Field(
         description=(
-            "Columns detected on the page, ordered left to right. "
+            "Body columns detected on the page, ordered left to right. "
             "Transcribe each column fully (top to bottom) before moving to the next. "
-            "Never mix lines from different columns in the same column entry."
+            "Never mix lines from different columns in the same column entry. "
+            "Do NOT include header or footer text inside any column."
         )
+    )
+    footer: List[str] = Field(
+        default=[],
+        description=(
+            "Page-level footer text appearing BELOW the body columns — e.g. "
+            "page number, footnote, decorative rule, copyright line. One string "
+            "per visible line (top to bottom). Footers may sit anywhere "
+            "horizontally; they are NEVER part of a column. Empty list if the "
+            "page has no footer."
+        ),
     )
 
 

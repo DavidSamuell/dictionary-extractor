@@ -101,26 +101,36 @@ def _sanitize_messages(messages: list) -> list:
 
 def _transcription_to_tsv(result: TranscriptionResponse) -> str:
     """
-    Flatten a column-aware TranscriptionResponse into a TSV string.
+    Flatten a TranscriptionResponse into a TSV string.
 
     Format: column_id \\t line_number \\t text
-    Line numbers reset to 1 at the start of each column.
 
-    This format is passed verbatim to Stage 2 — each line is unambiguously
-    labelled with its column and position, so the structuring LLM never needs
-    to infer column boundaries from separator text.
+    Header rows: column_id="header", line_number empty, one row per header line.
+    Body rows:   column_id in {"left","center","right","single"}, line_number 1..N
+                 within each column.
+    Footer rows: column_id="footer", line_number empty, one row per footer line.
 
-    Example output for a two-column page:
+    Header/footer are page-level metadata (running title, page number, chapter
+    abbreviation, etc.); Stage 2 ignores them, and Stage 1 evaluation excludes
+    them from character/markup/read-order metrics.
+
+    Example output for a two-column page with a header and a footer:
         column_id\\tline_number\\ttext
+        header\\t\\tCHUKCHI-RUSSIAN DICTIONARY    A
         left\\t1\\tac-úkwʌn (сущ.) кремень
         left\\t2\\tбукв. жирный камень
         right\\t1\\tac-ékwəŋ (гл.) дробить
         right\\t2\\tсм. ac/æc
+        footer\\t\\t— 12 —
     """
     rows = ["column_id\tline_number\ttext"]
+    for line in result.header or []:
+        rows.append(f"header\t\t{line}")
     for col in result.columns:
         for i, line in enumerate(col.lines, start=1):
             rows.append(f"{col.column_id}\t{i}\t{line}")
+    for line in result.footer or []:
+        rows.append(f"footer\t\t{line}")
     return "\n".join(rows)
 
 

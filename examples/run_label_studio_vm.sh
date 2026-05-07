@@ -15,24 +15,32 @@
 
 set -euo pipefail
 
+if [[ -f .env ]]; then
+    set -a
+    source .env
+    set +a
+fi
+
 # ── Configuration ────────────────────────────────────────────────────────────
 VM_HOST="216.158.235.114"               # e.g. 172.26.134.174 or Tailscale IP
 VM_REPO_ROOT="/var/www/app/dictionary-extractor"   # where the repo is cloned on the VM
 
 LS_URL="http://${VM_HOST}:8080"
-LS_TOKEN="<label-studio-api-token>"        # token from the VM's Label Studio
+export LABEL_STUDIO_TOKEN="${VM_LS_TOKEN:?Set VM_LS_TOKEN in .env}"
+export LABEL_STUDIO_AUTH_SCHEME="${VM_LS_AUTH_SCHEME:-PAT}" # PAT, Bearer, Token, or auto
 
 LOCAL_RENDER_DIR=".label-studio-renders"
 SAMPLES_DIR="assets/dictionaries/samples-2"
 # ─────────────────────────────────────────────────────────────────────────────
 
 echo "==> Rendering PNGs and creating Label Studio projects on ${LS_URL} ..."
-python label-studio/setup.py \
+uv run python label-studio/setup.py \
     --samples-dir  "${SAMPLES_DIR}" \
     --ls-url       "${LS_URL}" \
-    --ls-token     "${LS_TOKEN}" \
     --render-dir   "${LOCAL_RENDER_DIR}" \
-    --storage-root "${VM_REPO_ROOT}/${LOCAL_RENDER_DIR}"
+    --storage-root "${VM_REPO_ROOT}/${LOCAL_RENDER_DIR}" \
+    --overwrite \
+    --languages Amharic-English
 
 echo ""
 echo "==> Projects created. Now commit and push the rendered images:"

@@ -25,6 +25,7 @@ import logging
 import os
 import shutil
 import sys
+from collections import Counter
 from pathlib import Path
 
 import requests
@@ -35,14 +36,28 @@ logging.basicConfig(
     datefmt="%H:%M:%S",
 )
 logger = logging.getLogger(__name__)
+AUTH_SCHEMES = {"auto", "Token", "Bearer", "PAT"}
 
-LABEL_CONFIG = """\
+# Per-layout body section schema.
+#   layout key  -> [(section title, task-data field name, textarea rows), ...]
+# header / footer slots are added separately by _build_label_config.
+_LAYOUT_SECTIONS: dict[str, list[tuple[str, str, int]]] = {
+    "single":    [("Body", "body_text", 30)],
+    "two_col":   [("Left Column", "left_text", 20),
+                  ("Right Column", "right_text", 20)],
+    "three_col": [("Left Column", "left_text", 18),
+                  ("Middle Column", "middle_text", 18),
+                  ("Right Column", "right_text", 18)],
+}
+
+_LABEL_CONFIG_TEMPLATE = """\
 <View>
   <Style>
     .container { display: flex; gap: 16px; height: 90vh; }
     .left-panel { flex: 1; overflow: auto; border: 1px solid #ddd; border-radius: 8px; padding: 8px; background: #fafafa; }
     .right-panel { flex: 1; overflow: auto; }
     .col-header { font-weight: 700; font-size: 14px; margin: 12px 0 4px; color: #333; border-bottom: 2px solid #4a86e8; padding-bottom: 4px; }
+    .meta-header { font-weight: 700; font-size: 14px; margin: 12px 0 4px; color: #555; border-bottom: 2px dashed #999; padding-bottom: 4px; }
     .instructions { font-size: 13px; color: #666; margin-bottom: 12px; padding: 8px; background: #fff8e1; border-radius: 4px; border-left: 3px solid #ffc107; }
   </Style>
 
@@ -57,26 +72,43 @@ LABEL_CONFIG = """\
     <View className="right-panel">
       <Header value="OCR Transcription — Post-Edit" size="4"/>
       <View className="instructions">
-        <HyperText name="help" value="Compare with the original page on the left. Fix any character errors, missing text, or formatting issues in the transcription boxes below."/>
+        <HyperText name="help" value="Compare with the original page on the left. Fix any character errors, missing text, or formatting issues in the transcription boxes below. Leave Header / Footer blank if the page has none."/>
       </View>
 
-      <View className="col-header">
-        <Header value="Left Column" size="5"/>
+      <View className="meta-header">
+        <Header value="Header (page-level metadata above the columns)" size="5"/>
       </View>
-      <TextArea name="left_text" toName="page_image"
-                value="$left_text" rows="20" editable="true"
+      <TextArea name="header_text" toName="page_image"
+                value="$header_text" rows="3" editable="true"
                 maxSubmissions="1" showSubmitButton="false"/>
 
-      <View className="col-header">
-        <Header value="Right Column" size="5"/>
+__BODY_SECTIONS__
+
+      <View className="meta-header">
+        <Header value="Footer (page-level metadata below the columns)" size="5"/>
       </View>
-      <TextArea name="right_text" toName="page_image"
-                value="$right_text" rows="20" editable="true"
+      <TextArea name="footer_text" toName="page_image"
+                value="$footer_text" rows="3" editable="true"
                 maxSubmissions="1" showSubmitButton="false"/>
     </View>
   </View>
 </View>
 """
+
+
+def _build_label_config(layout: str) -> str:
+    """Assemble a Label Studio XML config for the given page layout."""
+    sections = _LAYOUT_SECTIONS[layout]
+    body_xml = "\n\n".join(
+        f'      <View className="col-header">\n'
+        f'        <Header value="{title}" size="5"/>\n'
+        f'      </View>\n'
+        f'      <TextArea name="{field}" toName="page_image"\n'
+        f'                value="${field}" rows="{rows}" editable="true"\n'
+        f'                maxSubmissions="1" showSubmitButton="false"/>'
+        for title, field, rows in sections
+    )
+    return _LABEL_CONFIG_TEMPLATE.replace("__BODY_SECTIONS__", body_xml)
 
 
 def _render_pdf_to_png(pdf_path: Path, output_dir: Path, dpi: int = 200) -> list[Path]:
@@ -108,45 +140,179 @@ def _render_pdf_to_png(pdf_path: Path, output_dir: Path, dpi: int = 200) -> list
     return results
 
 
-def _read_stage1_tsv(tsv_path: Path) -> dict[str, str]:
-    """Read a stage-1 TSV and return {left_text, right_text} as joined strings."""
-    left_lines: list[str] = []
-    right_lines: list[str] = []
-
+def _parse_tsv_buckets(tsv_path: Path) -> dict[str, list[str]]:
+    """Bucket every TSV row by its raw column_id (header/left/middle/right/
+    footer/single). `center` is normalised to `middle`. Unknown ids are
+    dropped. Older TSVs without header/footer simply yield empty buckets.
+    """
+    buckets: dict[str, list[str]] = {
+        "header": [], "left": [], "middle": [], "right": [], "footer": [],
+        "single": [],
+    }
+    aliases = {"center": "middle"}
     with tsv_path.open("r", encoding="utf-8") as f:
         reader = csv.DictReader(f, delimiter="\t")
         for row in reader:
             col = row.get("column_id", "").strip()
             text = row.get("text", "").strip()
-            if col == "left":
-                left_lines.append(text)
-            elif col == "right":
-                right_lines.append(text)
+            target = col if col in buckets else aliases.get(col)
+            if target:
+                buckets[target].append(text)
+    return buckets
 
+
+def _detect_layout(stage1_dir: Path) -> str:
+    """Pick 'single' / 'two_col' / 'three_col' from the dominant page layout.
+
+    Each page votes once based on which body buckets are non-empty:
+      middle present     → three_col
+      left or right only → two_col
+      only single        → single
+    Ties resolve to the first layout encountered. Default for empty input
+    is two_col (the safe middle-ground that won't strand any text).
+    """
+    counts: Counter[str] = Counter()
+    for page_dir in sorted(stage1_dir.iterdir()):
+        if not page_dir.is_dir():
+            continue
+        tsv_files = list(page_dir.glob("*_stage1.tsv"))
+        if not tsv_files:
+            continue
+        b = _parse_tsv_buckets(tsv_files[0])
+        if b["middle"]:
+            counts["three_col"] += 1
+        elif b["left"] or b["right"]:
+            counts["two_col"] += 1
+        elif b["single"]:
+            counts["single"] += 1
+    if not counts:
+        return "two_col"
+    return counts.most_common(1)[0][0]
+
+
+def _build_task_data(buckets: dict[str, list[str]], layout: str) -> dict[str, str]:
+    """Project the raw buckets into the task-data fields the chosen layout's
+    label config expects. Off-layout rows are folded somewhere reasonable so
+    no body text is silently dropped:
+      - layout=single:    every body bucket → body_text
+      - layout=two_col:   single → left, middle → left
+      - layout=three_col: single → left
+    """
+    header = "\n".join(buckets["header"])
+    footer = "\n".join(buckets["footer"])
+    if layout == "single":
+        body = (buckets["single"] + buckets["left"]
+                + buckets["middle"] + buckets["right"])
+        return {
+            "header_text": header,
+            "body_text": "\n".join(body),
+            "footer_text": footer,
+        }
+    if layout == "three_col":
+        left = buckets["left"] + buckets["single"]
+        return {
+            "header_text": header,
+            "left_text": "\n".join(left),
+            "middle_text": "\n".join(buckets["middle"]),
+            "right_text": "\n".join(buckets["right"]),
+            "footer_text": footer,
+        }
+    # two_col (default)
+    left = buckets["left"] + buckets["single"]
+    right = buckets["right"] + buckets["middle"]
     return {
-        "left_text": "\n".join(left_lines),
-        "right_text": "\n".join(right_lines),
+        "header_text": header,
+        "left_text": "\n".join(left),
+        "right_text": "\n".join(right),
+        "footer_text": footer,
     }
 
 
 class LabelStudioClient:
     """Thin wrapper around Label Studio HTTP API."""
 
-    def __init__(self, base_url: str, token: str) -> None:
+    def __init__(
+        self,
+        base_url: str,
+        token: str,
+        auth_scheme: str = "auto",
+        access_token: str | None = None,
+    ) -> None:
         self.base_url = base_url.rstrip("/")
+        self.token = token
+        self.auth_scheme = auth_scheme
+        self._active_auth_scheme = "Token" if auth_scheme == "auto" else auth_scheme
+        self._tried_bearer = False
+        self._tried_pat_refresh = False
         self.session = requests.Session()
-        self.session.headers.update({"Authorization": f"Token {token}"})
+        if access_token:
+            self._set_bearer_token(access_token)
+        elif auth_scheme == "PAT":
+            self._refresh_pat_access_token()
+        else:
+            self._set_auth_header()
 
     def _url(self, path: str) -> str:
         return f"{self.base_url}{path}"
 
+    def _request(self, method: str, path: str, **kwargs: object) -> requests.Response:
+        """Send an API request, refreshing PAT access tokens on 401 responses."""
+        response = self.session.request(method, self._url(path), **kwargs)
+        retry_count = 0
+        while response.status_code == 401 and retry_count < 3:
+            if not self._prepare_auth_retry():
+                break
+            retry_count += 1
+            response = self.session.request(method, self._url(path), **kwargs)
+        return response
+
+    def _set_auth_header(self) -> None:
+        self.session.headers.update({"Authorization": f"{self._active_auth_scheme} {self.token}"})
+
+    def _set_bearer_token(self, token: str) -> None:
+        self._active_auth_scheme = "Bearer"
+        self.session.headers.update({"Authorization": f"Bearer {token}"})
+
+    def _refresh_pat_access_token(self) -> None:
+        resp = self.session.post(self._url("/api/token/refresh/"), json={"refresh": self.token})
+        resp.raise_for_status()
+        access_token = resp.json().get("access")
+        if not isinstance(access_token, str) or not access_token:
+            raise RuntimeError("Label Studio token refresh response did not include an access token")
+        self._tried_pat_refresh = True
+        self._set_bearer_token(access_token)
+
+    def _prepare_auth_retry(self) -> bool:
+        if self.auth_scheme == "PAT":
+            logger.info("Bearer auth failed; refreshing PAT access token")
+            self._refresh_pat_access_token()
+            return True
+        if self.auth_scheme != "auto":
+            return False
+        if not self._tried_bearer:
+            logger.info("Legacy token auth failed; retrying with Bearer auth")
+            self._tried_bearer = True
+            self._active_auth_scheme = "Bearer"
+            self._set_auth_header()
+            return True
+        logger.info("Bearer auth failed; refreshing PAT before retrying")
+        self._refresh_pat_access_token()
+        return True
+
     def list_projects(self) -> list[dict]:
-        resp = self.session.get(self._url("/api/projects/"), params={"page_size": 1000})
+        resp = self._request("GET", "/api/projects/", params={"page_size": 1000})
         resp.raise_for_status()
         return resp.json().get("results", [])
 
+    def delete_project(self, project_id: int) -> bool:
+        resp = self._request("DELETE", f"/api/projects/{project_id}/")
+        if resp.ok:
+            return True
+        logger.warning("Failed to delete project %d: %s", project_id, resp.text[:200])
+        return False
+
     def create_project(self, title: str, label_config: str, description: str = "") -> dict | None:
-        resp = self.session.post(self._url("/api/projects/"), json={
+        resp = self._request("POST", "/api/projects/", json={
             "title": title,
             "description": description,
             "label_config": label_config,
@@ -160,8 +326,9 @@ class LabelStudioClient:
         return resp.json()
 
     def import_tasks(self, project_id: int, tasks: list[dict]) -> dict:
-        resp = self.session.post(
-            self._url(f"/api/projects/{project_id}/import"),
+        resp = self._request(
+            "POST",
+            f"/api/projects/{project_id}/import",
             json=tasks,
         )
         resp.raise_for_status()
@@ -169,8 +336,9 @@ class LabelStudioClient:
 
     def create_local_storage(self, project_id: int, document_root: str) -> dict | None:
         """Create a local file storage connection for the project."""
-        resp = self.session.post(
-            self._url("/api/storages/localfiles"),
+        resp = self._request(
+            "POST",
+            "/api/storages/localfiles",
             json={
                 "path": document_root,
                 "project": project_id,
@@ -180,14 +348,15 @@ class LabelStudioClient:
         )
         if resp.ok:
             return resp.json()
-        logger.warning("Failed to create local storage: %s", resp.text[:200])
+        logger.warning("Failed to create local storage: %s", resp.text[:1000])
         return None
 
     def upload_file(self, project_id: int, file_path: Path) -> str:
         """Upload a file and return its serving URL."""
         with file_path.open("rb") as f:
-            resp = self.session.post(
-                self._url(f"/api/projects/{project_id}/import"),
+            resp = self._request(
+                "POST",
+                f"/api/projects/{project_id}/import",
                 files={"file": (file_path.name, f, "image/png")},
             )
         resp.raise_for_status()
@@ -200,6 +369,7 @@ def setup_project_for_entry(
     render_dir: Path,
     *,
     storage_root: str | None = None,
+    connect_local_storage: bool = False,
     overwrite: bool = False,
 ) -> int | None:
     """Create a Label Studio project for one dictionary entry.
@@ -213,6 +383,9 @@ def setup_project_for_entry(
         storage_root: Path passed to Label Studio's local-file storage API.
             Defaults to the resolved render_dir. Set to the server-side path
             when running against a remote VM (e.g. /data/label-studio/images).
+            Only used when connect_local_storage is True.
+        connect_local_storage: If True, create a Label Studio local storage
+            connection. Not required for /data/local-files/?d=... task URLs.
         overwrite: If True, recreate the project even if it already exists.
     """
     entry_name = entry_dir.name
@@ -226,18 +399,36 @@ def setup_project_for_entry(
         logger.warning("Skipping %s: no snippets/ folder", entry_name)
         return None
 
-    existing = {p["title"]: p["id"] for p in client.list_projects()}
+    # Group by title because Label Studio allows duplicate project names —
+    # past runs without proper overwrite handling may have created several.
+    existing: dict[str, list[int]] = {}
+    for p in client.list_projects():
+        existing.setdefault(p["title"], []).append(p["id"])
+
     project_title = f"Post-Edit: {entry_name}"
     if len(project_title) > 50:
         project_title = entry_name[:50]
 
-    if project_title in existing and not overwrite:
-        logger.info("Project '%s' already exists (id=%d), skipping", project_title, existing[project_title])
-        return existing[project_title]
+    matching_ids = existing.get(project_title, [])
+    if matching_ids and not overwrite:
+        logger.info(
+            "Project '%s' already exists (id=%d), skipping",
+            project_title,
+            matching_ids[0],
+        )
+        return matching_ids[0]
+
+    if matching_ids and overwrite:
+        for pid in matching_ids:
+            if client.delete_project(pid):
+                logger.info("Deleted existing project '%s' (id=%d)", project_title, pid)
+
+    layout = _detect_layout(stage1_dir)
+    logger.info("Detected layout '%s' for %s", layout, entry_name)
 
     project = client.create_project(
         title=project_title,
-        label_config=LABEL_CONFIG,
+        label_config=_build_label_config(layout),
         description=f"Post-editing OCR transcription for {entry_name} dictionary pages.",
     )
     if project is None:
@@ -248,12 +439,14 @@ def setup_project_for_entry(
     entry_render_dir = render_dir / entry_name
     entry_render_dir.mkdir(parents=True, exist_ok=True)
 
-    # Connect local file storage so /data/local-files/ URLs resolve.
-    # Use the server-side storage_root when targeting a remote VM.
-    storage_path = f"{storage_root}/{entry_name}" if storage_root else str(entry_render_dir.resolve())
-    storage = client.create_local_storage(project_id, storage_path)
-    if storage:
-        logger.info("  Local storage connected (id=%s)", storage.get("id"))
+    if connect_local_storage:
+        # Task URLs below use /data/local-files/?d=..., which only requires
+        # Label Studio's local-file-serving env vars. A storage connection is
+        # optional and mainly useful if you want Label Studio to sync files.
+        storage_path = storage_root if storage_root else str(entry_render_dir.resolve())
+        storage = client.create_local_storage(project_id, storage_path)
+        if storage:
+            logger.info("  Local storage connected (id=%s)", storage.get("id"))
     tasks: list[dict] = []
 
     page_dirs = sorted(d for d in stage1_dir.iterdir() if d.is_dir())
@@ -286,14 +479,14 @@ def setup_project_for_entry(
                 shutil.copy2(pdf_path, dest)
             image_path = dest
 
-        texts = _read_stage1_tsv(tsv_path)
+        buckets = _parse_tsv_buckets(tsv_path)
+        text_fields = _build_task_data(buckets, layout)
 
         # Local file URL: path relative to LABEL_STUDIO_LOCAL_FILES_DOCUMENT_ROOT
         task = {
             "data": {
                 "image_url": f"/data/local-files/?d={entry_name}/{image_path.name}",
-                "left_text": texts["left_text"],
-                "right_text": texts["right_text"],
+                **text_fields,
                 "page_name": page_stem,
                 "language": entry_name,
             },
@@ -337,6 +530,17 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="Label Studio API token (legacy or PAT)",
     )
     parser.add_argument(
+        "--ls-access-token",
+        default=os.getenv("LABEL_STUDIO_ACCESS_TOKEN"),
+        help="Optional short-lived Label Studio access token for Bearer auth.",
+    )
+    parser.add_argument(
+        "--ls-auth-scheme",
+        choices=sorted(AUTH_SCHEMES),
+        default=os.getenv("LABEL_STUDIO_AUTH_SCHEME", "auto"),
+        help="Authorization scheme: auto, Token, Bearer, or PAT (refresh token -> access token).",
+    )
+    parser.add_argument(
         "--render-dir",
         type=Path,
         default=Path(".label-studio-renders"),
@@ -348,9 +552,17 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=None,
         help=(
             "Path passed to Label Studio's local-file storage API. "
-            "Defaults to the resolved --render-dir. "
+            "Only used with --connect-local-storage. Defaults to the resolved --render-dir. "
             "Set this to the VM-side path when running against a remote server "
             "(e.g. /data/label-studio/images)."
+        ),
+    )
+    parser.add_argument(
+        "--connect-local-storage",
+        action="store_true",
+        help=(
+            "Create a Label Studio local storage connection. "
+            "Not required for /data/local-files/?d=... image URLs."
         ),
     )
     parser.add_argument("--overwrite", action="store_true", help="Recreate existing projects")
@@ -368,16 +580,26 @@ def main(argv: list[str] | None = None) -> int:
         logger.error("Samples directory not found: %s", args.samples_dir)
         return 1
 
-    client = LabelStudioClient(args.ls_url, args.ls_token)
-
     try:
+        client = LabelStudioClient(
+            args.ls_url,
+            args.ls_token,
+            args.ls_auth_scheme,
+            access_token=args.ls_access_token,
+        )
         projects = client.list_projects()
         logger.info("Connected to Label Studio (%d existing projects)", len(projects))
-    except requests.HTTPError as e:
+    except (requests.HTTPError, RuntimeError) as e:
         logger.error("Failed to connect to Label Studio: %s", e)
         return 1
 
-    entries = sorted(p for p in args.samples_dir.iterdir() if p.is_dir())
+    # Create in reverse-alphabetical order so Label Studio's default
+    # newest-first dashboard sort renders them A→Z.
+    entries = sorted(
+        (p for p in args.samples_dir.iterdir() if p.is_dir()),
+        key=lambda p: p.name,
+        reverse=True,
+    )
     if args.languages:
         requested = set(args.languages)
         entries = [e for e in entries if e.name in requested]
@@ -391,6 +613,7 @@ def main(argv: list[str] | None = None) -> int:
             entry_dir,
             args.render_dir,
             storage_root=args.storage_root,
+            connect_local_storage=args.connect_local_storage,
             overwrite=args.overwrite,
         )
         if project_id is not None:

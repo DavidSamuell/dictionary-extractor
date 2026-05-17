@@ -14,4 +14,7 @@ uv run dictextractor-extract \
     --model gemini/gemini-3-flash-preview \
     --samples-dir assets/dictionaries/samples-2 \
     --stage 1 \
-    --overwrite
+    --overwrite \
+    --languages Sisaali-English \
+    --stage-1-guides assets/dictionaries/samples-2/Sisaali-English/guides.md
+

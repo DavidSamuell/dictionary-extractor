@@ -160,6 +160,21 @@ Provisions one Label Studio project per language pair, uploads page images, and 
 
 Use `--discover-extra-fields` on Stage 2 to populate `extra_fields`; otherwise it stays empty.
 
+### Per-run prompt overrides
+
+Pass `--stage-1-guides <path>` and/or `--stage-2-guides <path>` to append the contents of a `.txt`/`.md`/`.docx` file verbatim to the corresponding user prompt, under a `USER DEFINED GUIDELINES` header. Useful for one-off or per-language tweaks (e.g. "ignore page numbers", "treat `;` as a sense separator") without touching `src/dictextractor/llm/prompts.py`.
+
+```bash
+uv run dictextractor-extract \
+    --strategy two_stage --stage 2 \
+    --samples-dir assets/dictionaries/samples-2 \
+    --languages Chepang-English \
+    --stage-2-guides assets/dictionaries/samples-2/Chepang-English/guides_s2.md \
+    --overwrite
+```
+
+Flags are optional — leaving them unset is identical to today's behaviour. The header section is omitted entirely when the file is not provided.
+
 ## CLI reference
 
 All entry points are registered as console scripts (run with `uv run <name>`):

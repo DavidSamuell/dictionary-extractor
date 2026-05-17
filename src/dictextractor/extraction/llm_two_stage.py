@@ -159,6 +159,8 @@ class TwoStageLLMExtraction(ExtractionStrategy):
         intro_image_paths: Optional[List[str]] = None,
         discover_extra_fields: bool = False,
         stage2_reasoning_effort: str = "medium",
+        stage1_guides: str = "",
+        stage2_guides: str = "",
     ):
         self.transcribe_model = transcribe_model
         self.structure_model = structure_model or transcribe_model
@@ -167,6 +169,8 @@ class TwoStageLLMExtraction(ExtractionStrategy):
         self.intro_image_paths = intro_image_paths or []
         self.discover_extra_fields = discover_extra_fields
         self.stage2_reasoning_effort = stage2_reasoning_effort
+        self.stage1_guides = stage1_guides
+        self.stage2_guides = stage2_guides
 
     @property
     def name(self) -> str:
@@ -317,6 +321,7 @@ class TwoStageLLMExtraction(ExtractionStrategy):
         user_text = stage_1_user(
             alphabet_text=alphabet_text,
             ocr_hint=ocr_hint,
+            guides=self.stage1_guides,
         )
 
         content: list = [{"type": "text", "text": user_text}]
@@ -357,6 +362,7 @@ class TwoStageLLMExtraction(ExtractionStrategy):
             transcribed_text=transcribed_text,
             intro_text=intro_text,
             discover_extra_fields=self.discover_extra_fields,
+            guides=self.stage2_guides,
         )
 
         content: list = [

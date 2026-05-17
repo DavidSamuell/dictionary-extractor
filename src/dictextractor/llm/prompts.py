@@ -163,7 +163,11 @@ Rules that apply to every line (header, footer, and column lines alike):
 """
 
 
-def stage_1_user(alphabet_text: str = "", ocr_hint: str = "") -> str:
+def stage_1_user(
+    alphabet_text: str = "",
+    ocr_hint: str = "",
+    guides: str = "",
+) -> str:
     """
     Build the user-turn prompt for Stage 1 transcription.
 
@@ -172,6 +176,8 @@ def stage_1_user(alphabet_text: str = "", ocr_hint: str = "") -> str:
                        Used to prime the model on the character inventory.
         ocr_hint: Optional existing OCR output (.txt / .md / .docx text) as a
                   secondary reference for character shapes only.
+        guides:   Optional user-defined guidelines appended verbatim under a
+                  ``USER DEFINED GUIDELINES`` header at the end of the prompt.
     """
     parts = []
     if alphabet_text:
@@ -203,6 +209,8 @@ def stage_1_user(alphabet_text: str = "", ocr_hint: str = "") -> str:
         "Now transcribe every line of text from the dictionary page image exactly as it appears.` "
         "Preserve all diacritics and special characters."
     )
+    if guides:
+        parts.append(f"USER DEFINED GUIDELINES\n{guides}")
     return "\n\n".join(parts)
 
 
@@ -340,6 +348,7 @@ def stage_2_user(
     transcribed_text: str,
     intro_text: str = "",
     discover_extra_fields: bool = False,
+    guides: str = "",
 ) -> str:
     """
     Build the user-turn prompt for Stage 2 structuring.
@@ -354,6 +363,9 @@ def stage_2_user(
                                  dictionary-marked fields beyond the canonical
                                  schema. When False, instruct it to leave
                                  ``extra_fields`` as ``{}``.
+        guides:                  Optional user-defined guidelines appended verbatim
+                                 under a ``USER DEFINED GUIDELINES`` header at the
+                                 end of the prompt.
     """
     parts = []
 
@@ -387,5 +399,8 @@ def stage_2_user(
     if not discover_extra_fields:
         closing += "\n" + EXTRA_FIELDS_DISABLED_LINE
     parts.append(closing)
+
+    if guides:
+        parts.append(f"USER DEFINED GUIDELINES\n{guides}")
 
     return "\n\n".join(parts)

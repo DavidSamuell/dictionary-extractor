@@ -181,6 +181,8 @@ def _build_strategy(args, intro_text: str, intro_image_paths: List[str]):
             intro_image_paths=intro_image_paths,
             discover_extra_fields=getattr(args, "discover_extra_fields", False),
             stage2_reasoning_effort=getattr(args, "stage2_reasoning_effort", "medium"),
+            stage1_guides=getattr(args, "stage1_guides_text", ""),
+            stage2_guides=getattr(args, "stage2_guides_text", ""),
         )
     raise ValueError(f"Unknown strategy: {args.strategy}")
 
@@ -305,6 +307,20 @@ Examples:
         "JSON string fields on dense pages — drop to low for problematic "
         "inputs, bump to high only when needed.",
     )
+    parser.add_argument(
+        "--stage-1-guides",
+        dest="stage1_guides_path",
+        help="Path to a .txt/.md/.docx file of extra rules appended verbatim to "
+        "the Stage 1 user prompt under a 'USER DEFINED GUIDELINES' header. "
+        "Optional — leave unset to use the default prompt.",
+    )
+    parser.add_argument(
+        "--stage-2-guides",
+        dest="stage2_guides_path",
+        help="Path to a .txt/.md/.docx file of extra rules appended verbatim to "
+        "the Stage 2 user prompt under a 'USER DEFINED GUIDELINES' header. "
+        "Optional — leave unset to use the default prompt.",
+    )
 
     # Preprocessing — off by default. When on, PDFs are rendered to PNG first
     # (cv2 can't read PDFs); when off, PDFs flow straight to the LLM as
@@ -344,6 +360,20 @@ Examples:
     )
 
     args = parser.parse_args()
+
+    # ── Load user-defined guides (if any) once, shared across all pages ──────
+    args.stage1_guides_text = ""
+    if getattr(args, "stage1_guides_path", None):
+        p = Path(args.stage1_guides_path)
+        if not p.exists():
+            parser.error(f"--stage-1-guides path not found: {p}")
+        args.stage1_guides_text = _read_text_file(p)
+    args.stage2_guides_text = ""
+    if getattr(args, "stage2_guides_path", None):
+        p = Path(args.stage2_guides_path)
+        if not p.exists():
+            parser.error(f"--stage-2-guides path not found: {p}")
+        args.stage2_guides_text = _read_text_file(p)
 
     # ── Dispatch: samples-dir batch mode vs. single-entry mode ────────────────
     if args.samples_dir:

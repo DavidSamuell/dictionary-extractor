@@ -14,7 +14,7 @@ VM_HOST="216.158.235.114"
 LS_URL="http://${VM_HOST}:8080"
 SAMPLES_DIR="assets/dictionaries/samples-2"
 
-export LABEL_STUDIO_TOKEN="${VM_LS_TOKEN:?Set VM_LS_TOKEN in .env}"
+export LABEL_STUDIO_TOKEN="${VM_ACCESS_TOKEN:?Set VM_ACCESS_TOKEN in .env}"
 export LABEL_STUDIO_AUTH_SCHEME="${VM_LS_AUTH_SCHEME:-PAT}" # PAT, Bearer, Token, or auto
 
 uv run python scripts/export_label_studio_gold.py \

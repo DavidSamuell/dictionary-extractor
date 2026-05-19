@@ -175,7 +175,9 @@ def _detect_layout(stage1_dir: Path) -> str:
     for page_dir in sorted(stage1_dir.iterdir()):
         if not page_dir.is_dir():
             continue
-        tsv_files = list(page_dir.glob("*_stage1.tsv"))
+        tsv_files = sorted(
+            p for p in page_dir.glob("*_stage1.tsv") if not p.name.startswith("._")
+        )
         if not tsv_files:
             continue
         b = _parse_tsv_buckets(tsv_files[0])
@@ -334,13 +336,18 @@ class LabelStudioClient:
         resp.raise_for_status()
         return resp.json()
 
-    def create_local_storage(self, project_id: int, document_root: str) -> dict | None:
-        """Create a local file storage connection for the project."""
+    def create_local_storage(self, project_id: int, storage_path: str) -> dict | None:
+        """Create a local file import-storage connection for the project.
+
+        ``storage_path`` must be a strict subdirectory of
+        ``LABEL_STUDIO_LOCAL_FILES_DOCUMENT_ROOT`` (Label Studio rejects paths
+        that are equal to the document root).
+        """
         resp = self._request(
             "POST",
             "/api/storages/localfiles",
             json={
-                "path": document_root,
+                "path": storage_path,
                 "project": project_id,
                 "use_blob_urls": True,
                 "title": "Page Renders",
@@ -348,7 +355,7 @@ class LabelStudioClient:
         )
         if resp.ok:
             return resp.json()
-        logger.warning("Failed to create local storage: %s", resp.text[:1000])
+        logger.error("Failed to create local storage: %s", resp.text[:1000])
         return None
 
     def upload_file(self, project_id: int, file_path: Path) -> str:
@@ -361,6 +368,21 @@ class LabelStudioClient:
             )
         resp.raise_for_status()
         return resp.json()
+
+
+def _entry_storage_path(
+    storage_root: str | None, render_dir: Path, entry_name: str
+) -> str:
+    """Server-side Local Files storage path for one dictionary entry.
+
+    Label Studio requires this to be a subdirectory of
+    ``LABEL_STUDIO_LOCAL_FILES_DOCUMENT_ROOT`` (typically the parent of
+    per-language render folders).
+    """
+    entry_render = render_dir / entry_name
+    if storage_root:
+        return f"{storage_root.rstrip('/')}/{entry_name}"
+    return str(entry_render.resolve())
 
 
 def setup_project_for_entry(
@@ -380,12 +402,13 @@ def setup_project_for_entry(
         client: Label Studio API client.
         entry_dir: Root directory for this language (contains snippets/ and outputs/).
         render_dir: Local directory where PNGs are rendered to.
-        storage_root: Path passed to Label Studio's local-file storage API.
-            Defaults to the resolved render_dir. Set to the server-side path
-            when running against a remote VM (e.g. /data/label-studio/images).
+        storage_root: Parent of per-language render dirs on the Label Studio
+            host (``LABEL_STUDIO_LOCAL_FILES_DOCUMENT_ROOT``). Each project
+            registers ``<storage_root>/<entry_name>`` as import storage.
             Only used when connect_local_storage is True.
-        connect_local_storage: If True, create a Label Studio local storage
-            connection. Not required for /data/local-files/?d=... task URLs.
+        connect_local_storage: If True, register a per-project Local Files
+            import storage (required for /data/local-files/?d=... image URLs
+            on a remote Label Studio instance).
         overwrite: If True, recreate the project even if it already exists.
     """
     entry_name = entry_dir.name
@@ -440,18 +463,23 @@ def setup_project_for_entry(
     entry_render_dir.mkdir(parents=True, exist_ok=True)
 
     if connect_local_storage:
-        # Task URLs below use /data/local-files/?d=..., which only requires
-        # Label Studio's local-file-serving env vars. A storage connection is
-        # optional and mainly useful if you want Label Studio to sync files.
-        storage_path = storage_root if storage_root else str(entry_render_dir.resolve())
+        storage_path = _entry_storage_path(storage_root, render_dir, entry_name)
         storage = client.create_local_storage(project_id, storage_path)
         if storage:
-            logger.info("  Local storage connected (id=%s)", storage.get("id"))
+            logger.info("  Local storage connected: %s (id=%s)", storage_path, storage.get("id"))
+        else:
+            logger.error(
+                "  Local storage not connected — images will not load. "
+                "Add Local Files source in project settings with path: %s",
+                storage_path,
+            )
     tasks: list[dict] = []
 
     page_dirs = sorted(d for d in stage1_dir.iterdir() if d.is_dir())
     for page_dir in page_dirs:
-        tsv_files = list(page_dir.glob("*_stage1.tsv"))
+        tsv_files = sorted(
+            p for p in page_dir.glob("*_stage1.tsv") if not p.name.startswith("._")
+        )
         if not tsv_files:
             continue
 
@@ -482,7 +510,8 @@ def setup_project_for_entry(
         buckets = _parse_tsv_buckets(tsv_path)
         text_fields = _build_task_data(buckets, layout)
 
-        # Local file URL: path relative to LABEL_STUDIO_LOCAL_FILES_DOCUMENT_ROOT
+        # ?d= is relative to LABEL_STUDIO_LOCAL_FILES_DOCUMENT_ROOT (the parent
+        # of per-language render dirs). Import storage uses the subdir only.
         task = {
             "data": {
                 "image_url": f"/data/local-files/?d={entry_name}/{image_path.name}",
@@ -551,18 +580,18 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         type=str,
         default=None,
         help=(
-            "Path passed to Label Studio's local-file storage API. "
-            "Only used with --connect-local-storage. Defaults to the resolved --render-dir. "
-            "Set this to the VM-side path when running against a remote server "
-            "(e.g. /data/label-studio/images)."
+            "LABEL_STUDIO_LOCAL_FILES_DOCUMENT_ROOT on the Label Studio host "
+            "(parent of per-language render subdirs). Each project registers "
+            "<storage_root>/<entry_name> as Local Files storage."
         ),
     )
     parser.add_argument(
         "--connect-local-storage",
         action="store_true",
         help=(
-            "Create a Label Studio local storage connection. "
-            "Not required for /data/local-files/?d=... image URLs."
+            "Register Local Files import storage on each project (required for "
+            "/data/local-files/?d=... image URLs on remote Label Studio). "
+            "Implied when --storage-root is set."
         ),
     )
     parser.add_argument("--overwrite", action="store_true", help="Recreate existing projects")
@@ -606,6 +635,8 @@ def main(argv: list[str] | None = None) -> int:
 
     logger.info("Processing %d dictionary entries", len(entries))
 
+    connect_storage = args.connect_local_storage or bool(args.storage_root)
+
     created = 0
     for entry_dir in entries:
         project_id = setup_project_for_entry(
@@ -613,7 +644,7 @@ def main(argv: list[str] | None = None) -> int:
             entry_dir,
             args.render_dir,
             storage_root=args.storage_root,
-            connect_local_storage=args.connect_local_storage,
+            connect_local_storage=connect_storage,
             overwrite=args.overwrite,
         )
         if project_id is not None:

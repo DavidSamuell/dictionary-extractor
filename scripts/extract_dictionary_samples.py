@@ -20,7 +20,7 @@ from pathlib import Path
 logger = logging.getLogger(__name__)
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-DEFAULT_CSV = REPO_ROOT / "assets" / "dictionaries" / "full dictionaries" / " dictionary_metadata.csv"
+DEFAULT_CSV = REPO_ROOT / "assets" / "dictionaries" / "full dictionaries" / "dictionary_metadata.csv"
 DEFAULT_PDF_DIR = REPO_ROOT / "assets" / "dictionaries" / "full dictionaries"
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "assets" / "dictionaries" / "samples-2"
 
@@ -32,6 +32,16 @@ def sanitize_language_token(token: str) -> str:
     as a single path component.
     """
     return token.strip().replace("/", "_")
+
+
+def row_pdf_name(row: dict[str, str]) -> str:
+    """PDF stem from metadata row.
+
+    The CSV's first column holds the pdf stem but often has no header (leading
+    comma in the file), so DictReader keys it as ``""`` rather than
+    ``pdf_name``.
+    """
+    return (row.get("pdf_name") or row.get("") or "").strip()
 
 
 def build_folder_name(source_language: str, target_language: str) -> str:
@@ -103,9 +113,12 @@ def process_row(
     overwrite: bool,
 ) -> None:
     """Extract introduction and snippet pages for a single metadata row."""
-    pdf_name = row["pdf_name"].strip()
-    source_language = row["source_language"].strip()
-    target_language = row["target_language"].strip()
+    pdf_name = row_pdf_name(row)
+    source_language = (row.get("source_language") or "").strip()
+    target_language = (row.get("target_language") or "").strip()
+    if not pdf_name:
+        logger.warning("Skipping row with empty pdf name (source=%s)", source_language)
+        return
     intro_spec = (row.get("introduction") or "").strip()
     snippet_spec = (row.get("pages") or "").strip()
 
@@ -183,14 +196,27 @@ def main(argv: list[str] | None = None) -> int:
 
     args.output_dir.mkdir(parents=True, exist_ok=True)
 
+    processed = skipped_empty = 0
     with args.csv.open(newline="", encoding="utf-8") as fh:
         reader = csv.DictReader(fh)
         for row in reader:
-            if not (row.get("pdf_name") or "").strip():
+            if not row_pdf_name(row):
+                skipped_empty += 1
                 continue
             process_row(row, args.pdf_dir, args.output_dir, overwrite=args.overwrite)
+            processed += 1
 
-    logger.info("Done. Output at %s", args.output_dir)
+    if processed == 0:
+        logger.warning(
+            "No rows processed (%d skipped with empty pdf name). "
+            "Check that the CSV first column contains pdf stems.",
+            skipped_empty,
+        )
+    logger.info(
+        "Done. %d dictionaries processed, output at %s",
+        processed,
+        args.output_dir,
+    )
     return 0
 
 

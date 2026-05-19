@@ -39,8 +39,9 @@ uv run python label-studio/setup.py \
     --ls-url       "${LS_URL}" \
     --render-dir   "${LOCAL_RENDER_DIR}" \
     --storage-root "${VM_REPO_ROOT}/${LOCAL_RENDER_DIR}" \
-    --languages Khmer-English \
-    # --overwrite \ 
+    --connect-local-storage \
+    # --languages Sanskrit-English \
+    # --overwrite
 
 echo ""
 echo "==> Projects created. Now commit and push the rendered images:"

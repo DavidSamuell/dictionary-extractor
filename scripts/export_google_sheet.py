@@ -23,7 +23,7 @@ DEFAULT_SHEET_URL = (
     "1UeG5ZNLuf-rJYb_5sR2PBuHaR4Ks586SpsnVX6WiNgI/edit?usp=sharing"
 )
 DEFAULT_OUTPUT = (
-    REPO_ROOT / "assets" / "dictionaries" / "full dictionaries" / " dictionary_metadata.csv"
+    REPO_ROOT / "assets" / "dictionaries" / "full dictionaries" / "dictionary_metadata.csv"
 )
 
 _SPREADSHEET_ID_RE = re.compile(r"/spreadsheets/d/([a-zA-Z0-9_-]+)")

@@ -22,5 +22,4 @@ uv run dictextractor-extract \
     --strategy two_stage \
     --model gemini/gemini-3-flash-preview \
     --samples-dir assets/dictionaries/samples-2 \
-    --stage 1 \
-    --languages Khmer-English
+    --stage 1

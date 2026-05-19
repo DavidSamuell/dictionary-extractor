@@ -30,6 +30,7 @@ sleep 5
 uv run python label-studio/setup.py \
     --samples-dir assets/dictionaries/samples-2 \
     --render-dir .label-studio-renders \
+    --storage-root "$(pwd)/.label-studio-renders" \
     --connect-local-storage
 
 echo "Label Studio is running on http://localhost:8080. Press Ctrl-C to stop it."

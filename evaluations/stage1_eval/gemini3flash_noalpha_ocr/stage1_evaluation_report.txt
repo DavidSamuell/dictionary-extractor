@@ -1,0 +1,420 @@
+========================================================================
+STAGE 1 OCR EVALUATION REPORT
+========================================================================
+
+--- Canala-English/page_12 ---
+
+  Character Recognition Quality:
+    TextEdit: 0.0208
+    GCER: 0.0180  (1.80%)
+    WER:  0.0751  (7.51%)
+    Spans: 84 matched, 0 missing, 0 extra
+
+  Markup / Typography Preservation:
+    Typography (bold+italic pooled) — F1: 0.0000  (TP=0 FP=92 FN=0)
+    Bold   — P: 0.0000  R: 0.0000  F1: 0.0000  (TP=0 FP=92 FN=0)
+    Italic — P: 0.0000  R: 0.0000  F1: 0.0000  (TP=0 FP=0 FN=0)
+
+  Read Order (Structure Preservation):
+    ReadOrderEdit: 0.0000
+
+--- Canala-English/page_30 ---
+
+  Character Recognition Quality:
+    TextEdit: 0.0106
+    GCER: 0.0109  (1.09%)
+    WER:  0.0346  (3.46%)
+    Spans: 84 matched, 0 missing, 0 extra
+
+  Markup / Typography Preservation:
+    Typography (bold+italic pooled) — F1: 0.0000  (TP=0 FP=94 FN=0)
+    Bold   — P: 0.0000  R: 0.0000  F1: 0.0000  (TP=0 FP=94 FN=0)
+    Italic — P: 0.0000  R: 0.0000  F1: 0.0000  (TP=0 FP=0 FN=0)
+
+  Read Order (Structure Preservation):
+    ReadOrderEdit: 0.0000
+
+--- Canala-English/page_64 ---
+
+  Character Recognition Quality:
+    TextEdit: 0.0343
+    GCER: 0.0333  (3.33%)
+    WER:  0.1275  (12.75%)
+    Spans: 84 matched, 0 missing, 0 extra
+
+  Markup / Typography Preservation:
+    Typography (bold+italic pooled) — F1: 0.0000  (TP=0 FP=167 FN=0)
+    Bold   — P: 0.0000  R: 0.0000  F1: 0.0000  (TP=0 FP=167 FN=0)
+    Italic — P: 0.0000  R: 0.0000  F1: 0.0000  (TP=0 FP=0 FN=0)
+
+  Read Order (Structure Preservation):
+    ReadOrderEdit: 0.0000
+
+--- Chepang-English/page_103 ---
+
+  Character Recognition Quality:
+    TextEdit: 0.0416
+    GCER: 0.0404  (4.04%)
+    WER:  0.1686  (16.86%)
+    Spans: 84 matched, 0 missing, 0 extra
+
+  Markup / Typography Preservation:
+    Typography (bold+italic pooled) — F1: 0.9118  (TP=155 FP=16 FN=14)
+    Bold   — P: 0.8559  R: 0.8716  F1: 0.8636  (TP=95 FP=16 FN=14)
+    Italic — P: 1.0000  R: 1.0000  F1: 1.0000  (TP=60 FP=0 FN=0)
+
+  Read Order (Structure Preservation):
+    ReadOrderEdit: 0.0000
+
+--- Chepang-English/page_304 ---
+
+  Character Recognition Quality:
+    TextEdit: 0.0153
+    GCER: 0.0153  (1.53%)
+    WER:  0.0738  (7.38%)
+    Spans: 85 matched, 0 missing, 0 extra
+
+  Markup / Typography Preservation:
+    Typography (bold+italic pooled) — F1: 0.9820  (TP=164 FP=4 FN=2)
+    Bold   — P: 0.9630  R: 0.9811  F1: 0.9720  (TP=104 FP=4 FN=2)
+    Italic — P: 1.0000  R: 1.0000  F1: 1.0000  (TP=60 FP=0 FN=0)
+
+  Read Order (Structure Preservation):
+    ReadOrderEdit: 0.0000
+
+--- Chepang-English/page_37 ---
+
+  Character Recognition Quality:
+    TextEdit: 0.0598
+    GCER: 0.0683  (6.83%)
+    WER:  0.2269  (22.69%)
+    Spans: 84 matched, 0 missing, 1 extra
+
+  Markup / Typography Preservation:
+    Typography (bold+italic pooled) — F1: 0.8591  (TP=128 FP=13 FN=29)
+    Bold   — P: 0.8687  R: 0.7478  F1: 0.8037  (TP=86 FP=13 FN=29)
+    Italic — P: 1.0000  R: 1.0000  F1: 1.0000  (TP=42 FP=0 FN=0)
+
+  Read Order (Structure Preservation):
+    ReadOrderEdit: 0.0118
+
+--- Chukchi-Russian/page_26 ---
+
+  Character Recognition Quality:
+    TextEdit: 0.0427
+    GCER: 0.0430  (4.30%)
+    WER:  0.1846  (18.46%)
+    Spans: 33 matched, 0 missing, 0 extra
+
+  Markup / Typography Preservation:
+    Typography (bold+italic pooled) — F1: 1.0000  (TP=41 FP=0 FN=0)
+    Bold   — P: 1.0000  R: 1.0000  F1: 1.0000  (TP=29 FP=0 FN=0)
+    Italic — P: 1.0000  R: 1.0000  F1: 1.0000  (TP=12 FP=0 FN=0)
+
+  Read Order (Structure Preservation):
+    ReadOrderEdit: 0.0000
+
+--- Chukchi-Russian/page_3 ---
+
+  Character Recognition Quality:
+    TextEdit: 0.0172
+    GCER: 0.0186  (1.86%)
+    WER:  0.1250  (12.50%)
+    Spans: 33 matched, 0 missing, 0 extra
+
+  Markup / Typography Preservation:
+    Typography (bold+italic pooled) — F1: 1.0000  (TP=56 FP=0 FN=0)
+    Bold   — P: 1.0000  R: 1.0000  F1: 1.0000  (TP=39 FP=0 FN=0)
+    Italic — P: 1.0000  R: 1.0000  F1: 1.0000  (TP=17 FP=0 FN=0)
+
+  Read Order (Structure Preservation):
+    ReadOrderEdit: 0.0000
+
+--- Chukchi-Russian/page_48 ---
+
+  Character Recognition Quality:
+    TextEdit: 0.0411
+    GCER: 0.0461  (4.61%)
+    WER:  0.2945  (29.45%)
+    Spans: 34 matched, 0 missing, 0 extra
+
+  Markup / Typography Preservation:
+    Typography (bold+italic pooled) — F1: 0.9828  (TP=57 FP=1 FN=1)
+    Bold   — P: 0.9737  R: 0.9737  F1: 0.9737  (TP=37 FP=1 FN=1)
+    Italic — P: 1.0000  R: 1.0000  F1: 1.0000  (TP=20 FP=0 FN=0)
+
+  Read Order (Structure Preservation):
+    ReadOrderEdit: 0.0000
+
+--- Efik-English/page_13 ---
+
+  Character Recognition Quality:
+    TextEdit: 0.0257
+    GCER: 0.0311  (3.11%)
+    WER:  0.0477  (4.77%)
+    Spans: 92 matched, 0 missing, 0 extra
+
+  Markup / Typography Preservation:
+    Typography (bold+italic pooled) — F1: 0.0439  (TP=7 FP=103 FN=202)
+    Bold   — P: 0.0435  R: 0.0385  F1: 0.0408  (TP=1 FP=22 FN=25)
+    Italic — P: 0.0690  R: 0.0328  F1: 0.0444  (TP=6 FP=81 FN=177)
+
+  Read Order (Structure Preservation):
+    ReadOrderEdit: 0.0000
+
+--- Efik-English/page_25 ---
+
+  Character Recognition Quality:
+    TextEdit: 0.0084
+    GCER: 0.0087  (0.87%)
+    WER:  0.0683  (6.83%)
+    Spans: 102 matched, 0 missing, 0 extra
+
+  Markup / Typography Preservation:
+    Typography (bold+italic pooled) — F1: 0.9231  (TP=198 FP=9 FN=24)
+    Bold   — P: 0.9429  R: 0.6226  F1: 0.7500  (TP=33 FP=2 FN=20)
+    Italic — P: 0.9593  R: 0.9763  F1: 0.9677  (TP=165 FP=7 FN=4)
+
+  Read Order (Structure Preservation):
+    ReadOrderEdit: 0.0000
+
+--- Efik-English/page_32 ---
+
+  Character Recognition Quality:
+    TextEdit: 0.0065
+    GCER: 0.0074  (0.74%)
+    WER:  0.0349  (3.49%)
+    Spans: 102 matched, 0 missing, 0 extra
+
+  Markup / Typography Preservation:
+    Typography (bold+italic pooled) — F1: 0.6932  (TP=87 FP=10 FN=67)
+    Bold   — P: 0.8649  R: 1.0000  F1: 0.9275  (TP=32 FP=5 FN=0)
+    Italic — P: 0.9167  R: 0.4508  F1: 0.6044  (TP=55 FP=5 FN=67)
+
+  Read Order (Structure Preservation):
+    ReadOrderEdit: 0.0000
+
+--- Evenki-Russian/page_1 ---
+
+  Character Recognition Quality:
+    TextEdit: 0.0025
+    GCER: 0.0024  (0.24%)
+    WER:  0.0131  (1.31%)
+    Spans: 104 matched, 0 missing, 0 extra
+
+  Markup / Typography Preservation:
+    Typography (bold+italic pooled) — F1: 0.9984  (TP=317 FP=1 FN=0)
+    Bold   — P: 0.9907  R: 1.0000  F1: 0.9953  (TP=106 FP=1 FN=0)
+    Italic — P: 1.0000  R: 1.0000  F1: 1.0000  (TP=211 FP=0 FN=0)
+
+  Read Order (Structure Preservation):
+    ReadOrderEdit: 0.0000
+
+--- Evenki-Russian/page_2 ---
+
+  Character Recognition Quality:
+    TextEdit: 0.0063
+    GCER: 0.0078  (0.78%)
+    WER:  0.0350  (3.50%)
+    Spans: 82 matched, 0 missing, 0 extra
+
+  Markup / Typography Preservation:
+    Typography (bold+italic pooled) — F1: 0.9400  (TP=196 FP=1 FN=24)
+    Bold   — P: 0.9882  R: 0.7925  F1: 0.8796  (TP=84 FP=1 FN=22)
+    Italic — P: 1.0000  R: 0.9825  F1: 0.9912  (TP=112 FP=0 FN=2)
+
+  Read Order (Structure Preservation):
+    ReadOrderEdit: 0.0000
+
+--- Evenki-Russian/page_3 ---
+
+  Character Recognition Quality:
+    TextEdit: 0.0105
+    GCER: 0.0096  (0.96%)
+    WER:  0.0483  (4.83%)
+    Spans: 104 matched, 0 missing, 0 extra
+
+  Markup / Typography Preservation:
+    Typography (bold+italic pooled) — F1: 0.9570  (TP=278 FP=13 FN=12)
+    Bold   — P: 0.9036  R: 0.9036  F1: 0.9036  (TP=75 FP=8 FN=8)
+    Italic — P: 0.9760  R: 0.9807  F1: 0.9783  (TP=203 FP=5 FN=4)
+
+  Read Order (Structure Preservation):
+    ReadOrderEdit: 0.0000
+
+--- Na-English-Chinese/page_186 ---
+
+  Character Recognition Quality:
+    TextEdit: 0.0429
+    GCER: 0.0149  (1.49%)
+    WER:  0.0790  (7.90%)
+    Spans: 84 matched, 1 missing, 1 extra
+
+  Markup / Typography Preservation:
+    Typography (bold+italic pooled) — F1: 0.6786  (TP=19 FP=15 FN=3)
+    Bold   — P: 0.5588  R: 0.8636  F1: 0.6786  (TP=19 FP=15 FN=3)
+    Italic — P: 0.0000  R: 0.0000  F1: 0.0000  (TP=0 FP=0 FN=0)
+
+  Read Order (Structure Preservation):
+    ReadOrderEdit: 0.0118
+
+--- Na-English-Chinese/page_19 ---
+
+  Character Recognition Quality:
+    TextEdit: 0.0043
+    GCER: 0.0045  (0.45%)
+    WER:  0.0300  (3.00%)
+    Spans: 87 matched, 0 missing, 0 extra
+
+  Markup / Typography Preservation:
+    Typography (bold+italic pooled) — F1: 0.0428  (TP=8 FP=358 FN=0)
+    Bold   — P: 0.0398  R: 1.0000  F1: 0.0766  (TP=8 FP=193 FN=0)
+    Italic — P: 0.0000  R: 0.0000  F1: 0.0000  (TP=0 FP=165 FN=0)
+
+  Read Order (Structure Preservation):
+    ReadOrderEdit: 0.0000
+
+--- Na-English-Chinese/page_321 ---
+
+  Character Recognition Quality:
+    TextEdit: 0.0000
+    GCER: 0.0000  (0.00%)
+    WER:  0.0000  (0.00%)
+    Spans: 83 matched, 0 missing, 0 extra
+
+  Markup / Typography Preservation:
+    Typography (bold+italic pooled) — F1: 0.3590  (TP=14 FP=50 FN=0)
+    Bold   — P: 0.2188  R: 1.0000  F1: 0.3590  (TP=14 FP=50 FN=0)
+    Italic — P: 0.0000  R: 0.0000  F1: 0.0000  (TP=0 FP=0 FN=0)
+
+  Read Order (Structure Preservation):
+    ReadOrderEdit: 0.0000
+
+--- Reel-English/page_17 ---
+
+  Character Recognition Quality:
+    TextEdit: 0.0000
+    GCER: 0.0000  (0.00%)
+    WER:  0.0000  (0.00%)
+    Spans: 45 matched, 0 missing, 0 extra
+
+  Markup / Typography Preservation:
+    Typography (bold+italic pooled) — F1: 0.9744  (TP=76 FP=2 FN=2)
+    Bold   — P: 0.9683  R: 0.9683  F1: 0.9683  (TP=61 FP=2 FN=2)
+    Italic — P: 1.0000  R: 1.0000  F1: 1.0000  (TP=15 FP=0 FN=0)
+
+  Read Order (Structure Preservation):
+    ReadOrderEdit: 0.0000
+
+--- Reel-English/page_47 ---
+
+  Character Recognition Quality:
+    TextEdit: 0.0000
+    GCER: 0.0000  (0.00%)
+    WER:  0.0000  (0.00%)
+    Spans: 46 matched, 0 missing, 0 extra
+
+  Markup / Typography Preservation:
+    Typography (bold+italic pooled) — F1: 1.0000  (TP=102 FP=0 FN=0)
+    Bold   — P: 1.0000  R: 1.0000  F1: 1.0000  (TP=92 FP=0 FN=0)
+    Italic — P: 1.0000  R: 1.0000  F1: 1.0000  (TP=10 FP=0 FN=0)
+
+  Read Order (Structure Preservation):
+    ReadOrderEdit: 0.0000
+
+--- Reel-English/page_89 ---
+
+  Character Recognition Quality:
+    TextEdit: 0.0000
+    GCER: 0.0000  (0.00%)
+    WER:  0.0000  (0.00%)
+    Spans: 45 matched, 0 missing, 0 extra
+
+  Markup / Typography Preservation:
+    Typography (bold+italic pooled) — F1: 1.0000  (TP=80 FP=0 FN=0)
+    Bold   — P: 1.0000  R: 1.0000  F1: 1.0000  (TP=67 FP=0 FN=0)
+    Italic — P: 1.0000  R: 1.0000  F1: 1.0000  (TP=13 FP=0 FN=0)
+
+  Read Order (Structure Preservation):
+    ReadOrderEdit: 0.0000
+
+--- Ritharngu-English/page_185 ---
+
+  Character Recognition Quality:
+    TextEdit: 0.0289
+    GCER: 0.0159  (1.59%)
+    WER:  0.0679  (6.79%)
+    Spans: 78 matched, 0 missing, 1 extra
+
+  Markup / Typography Preservation:
+    Typography (bold+italic pooled) — F1: 0.9262  (TP=113 FP=1 FN=17)
+    Bold   — P: 0.9846  R: 1.0000  F1: 0.9922  (TP=64 FP=1 FN=0)
+    Italic — P: 1.0000  R: 0.7424  F1: 0.8522  (TP=49 FP=0 FN=17)
+
+  Read Order (Structure Preservation):
+    ReadOrderEdit: 0.0127
+
+--- Ritharngu-English/page_205 ---
+
+  Character Recognition Quality:
+    TextEdit: 0.0137
+    GCER: 0.0141  (1.41%)
+    WER:  0.0721  (7.21%)
+    Spans: 83 matched, 0 missing, 0 extra
+
+  Markup / Typography Preservation:
+    Typography (bold+italic pooled) — F1: 0.9565  (TP=143 FP=0 FN=13)
+    Bold   — P: 1.0000  R: 0.9885  F1: 0.9942  (TP=86 FP=0 FN=1)
+    Italic — P: 1.0000  R: 0.8261  F1: 0.9048  (TP=57 FP=0 FN=12)
+
+  Read Order (Structure Preservation):
+    ReadOrderEdit: 0.0000
+
+--- Ritharngu-English/page_232 ---
+
+  Character Recognition Quality:
+    TextEdit: 0.0153
+    GCER: 0.0156  (1.56%)
+    WER:  0.0742  (7.42%)
+    Spans: 85 matched, 0 missing, 0 extra
+
+  Markup / Typography Preservation:
+    Typography (bold+italic pooled) — F1: 0.9333  (TP=105 FP=0 FN=15)
+    Bold   — P: 1.0000  R: 0.9571  F1: 0.9781  (TP=67 FP=0 FN=3)
+    Italic — P: 1.0000  R: 0.7600  F1: 0.8636  (TP=38 FP=0 FN=12)
+
+  Read Order (Structure Preservation):
+    ReadOrderEdit: 0.0000
+
+--- Shilluk-English/page_28 ---
+
+  Character Recognition Quality:
+    TextEdit: 0.0016
+    GCER: 0.0016  (0.16%)
+    WER:  0.0100  (1.00%)
+    Spans: 52 matched, 0 missing, 0 extra
+
+  Markup / Typography Preservation:
+    Typography (bold+italic pooled) — F1: 0.9684  (TP=92 FP=0 FN=6)
+    Bold   — P: 1.0000  R: 0.9077  F1: 0.9516  (TP=59 FP=0 FN=6)
+    Italic — P: 1.0000  R: 1.0000  F1: 1.0000  (TP=33 FP=0 FN=0)
+
+  Read Order (Structure Preservation):
+    ReadOrderEdit: 0.0000
+
+========================================================================
+AGGREGATE (25 pages)
+========================================================================
+
+  Character Recognition Quality:
+    TextEdit: 0.0177
+    GCER: 0.0163
+    WER:  0.0672
+
+  Markup / Typography Preservation:
+    Typography (bold+italic pooled) — F1: 0.7791
+    Bold   — P: 0.6468  R: 0.9024  F1: 0.7535
+    Italic — P: 0.8175  R: 0.7997  F1: 0.8085
+
+  Read Order (Structure Preservation):
+    ReadOrderEdit: 0.0014

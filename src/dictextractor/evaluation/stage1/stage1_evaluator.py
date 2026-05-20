@@ -8,9 +8,13 @@ and read-order evaluations, then generates JSON + human-readable reports.
 import csv
 import io
 import json
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Literal, Optional, Tuple, Union
 
+MetricsProfile = Literal["full", "minimal"]
+
+from dictextractor.evaluation.stage1.alignment import align_rows
 from dictextractor.evaluation.stage1.character_quality import compute_character_quality
 from dictextractor.evaluation.stage1.markup_quality import compute_markup_quality
 from dictextractor.evaluation.stage1.read_order import compute_read_order
@@ -18,10 +22,20 @@ from dictextractor.evaluation.stage1.stage1_metrics import Stage1Metrics
 
 Row = Dict[str, str]
 
+
+@dataclass(frozen=True)
+class EvalTask:
+    """One predicted vs gold evaluation unit under ``samples_dir``."""
+
+    experiment: str
+    pred_path: Path
+    gold_path: Path
+    page_id: str
+
 # column_id values that are page-level metadata, not body content.
 # These rows are excluded from every Stage 1 metric — predictions emit them but
 # existing gold TSVs predate the change, so including them would inflate
-# extra_lines / FP counts on predictions only.
+# extra spans / FP counts on predictions only.
 _METADATA_COLUMN_IDS = {"header", "footer"}
 
 
@@ -32,6 +46,42 @@ def _strip_metadata(rows: List[Row]) -> List[Row]:
 
 class Stage1Evaluator:
     """Evaluate a single predicted Stage 1 TSV against a gold TSV."""
+
+    _FULL_METRIC_CSV_COLS = [
+        "TextEdit", "GCER", "WER",
+        "typography_f1",
+        "bold_precision", "bold_recall", "bold_f1",
+        "italic_precision", "italic_recall", "italic_f1",
+        "ReadOrderEdit",
+    ]
+
+    _MINIMAL_METRIC_CSV_COLS = [
+        "TextEdit", "GCER", "WER", "typography_f1", "ReadOrderEdit",
+    ]
+
+    def __init__(
+        self,
+        metrics_profile: MetricsProfile = "full",
+        *,
+        alignment_threshold: float = 0.5,
+        alignment_max_span_rows: int = 3,
+    ) -> None:
+        if metrics_profile not in ("full", "minimal"):
+            raise ValueError(
+                f"metrics_profile must be 'full' or 'minimal', got {metrics_profile!r}"
+            )
+        self.metrics_profile = metrics_profile
+        self.alignment_threshold = alignment_threshold
+        self.alignment_max_span_rows = alignment_max_span_rows
+
+    def _metric_csv_cols(self) -> List[str]:
+        if self.metrics_profile == "minimal":
+            return list(self._MINIMAL_METRIC_CSV_COLS)
+        return list(self._FULL_METRIC_CSV_COLS)
+
+    @staticmethod
+    def _pick_columns(row: dict, columns: List[str]) -> dict:
+        return {col: row[col] for col in columns}
 
     # ------------------------------------------------------------------
     # I/O
@@ -59,9 +109,15 @@ class Stage1Evaluator:
         pred_rows = _strip_metadata(self.load_tsv(pred_path))
         gold_rows = _strip_metadata(self.load_tsv(gold_path))
 
-        char_q = compute_character_quality(pred_rows, gold_rows)
-        markup_q = compute_markup_quality(pred_rows, gold_rows)
-        read_o = compute_read_order(pred_rows, gold_rows, character_ned=char_q.ned)
+        alignment = align_rows(
+            pred_rows,
+            gold_rows,
+            threshold=self.alignment_threshold,
+            max_span_rows=self.alignment_max_span_rows,
+        )
+        char_q = compute_character_quality(alignment)
+        markup_q = compute_markup_quality(alignment)
+        read_o = compute_read_order(alignment)
 
         return Stage1Metrics(
             page_id=page_id,
@@ -71,37 +127,95 @@ class Stage1Evaluator:
         )
 
     # ------------------------------------------------------------------
-    # Batch evaluation
+    # Batch / experiment evaluation
     # ------------------------------------------------------------------
 
-    def evaluate_batch(self, samples_dir: str | Path) -> List[Stage1Metrics]:
-        """Find all *_stage1.tsv / *_stage1_GOLD.tsv pairs under *samples_dir*."""
+    @staticmethod
+    def discover_tasks(
+        samples_dir: str | Path,
+        experiments: Optional[List[str]] = None,
+        languages: Optional[List[str]] = None,
+    ) -> List[EvalTask]:
+        """List every (experiment, page) pair whose gold and prediction both exist.
+
+        Layout (per language root under ``samples_dir``):
+            <lang>/outputs/stage-1-gold/<stem>/<stem>_stage1_GOLD.tsv   (gold)
+            <lang>/outputs/stage-1/<experiment>/<stem>/<stem>_stage1.tsv (pred)
+
+        When ``experiments`` is ``None``, every non-hidden experiment subfolder
+        under each language's ``outputs/stage-1/`` is included.
+        """
         samples_dir = Path(samples_dir)
-        results: List[Stage1Metrics] = []
+        tasks: List[EvalTask] = []
+        selected_languages = set(languages) if languages else None
 
-        for gold_path in sorted(samples_dir.rglob("*_stage1_GOLD.tsv")):
-            pred_path = gold_path.parent / gold_path.name.replace(
-                "_stage1_GOLD.tsv", "_stage1.tsv"
-            )
-            if not pred_path.exists():
-                print(f"  [skip] No predicted file for {gold_path}")
+        golds_by_lang: Dict[Path, List[Path]] = {}
+        for gold_path in sorted(
+            samples_dir.glob("*/outputs/stage-1-gold/*/*_stage1_GOLD.tsv")
+        ):
+            parents = list(gold_path.parents)
+            if selected_languages and parents[3].name not in selected_languages:
                 continue
+            golds_by_lang.setdefault(parents[3], []).append(gold_path)
 
-            # Derive a human-readable page id from the path
-            # e.g. "Evenki-Russian/page_1"
-            try:
-                rel = gold_path.relative_to(samples_dir)
-                # pattern: <Language>/outputs/2-stage/<page_dir>/...
-                parts = rel.parts
-                lang = parts[0]
-                page_dir = parts[3] if len(parts) > 3 else parts[-2]
-                page_id = f"{lang}/{page_dir}"
-            except (IndexError, ValueError):
-                page_id = gold_path.stem
+        for lang_dir, gold_paths in sorted(golds_by_lang.items()):
+            stage1_root = lang_dir / "outputs" / "stage-1"
+            available = (
+                sorted(
+                    p.name for p in stage1_root.iterdir()
+                    if p.is_dir() and not p.name.startswith(".")
+                )
+                if stage1_root.is_dir() else []
+            )
+            if experiments is None:
+                exp_names = available
+                if not exp_names:
+                    print(f"  [skip] no experiments under {stage1_root}")
+                    continue
+            else:
+                exp_names = [e for e in experiments if e in available]
+                for missing in (set(experiments) - set(available)):
+                    print(
+                        f"  [warn] experiment {missing!r} not found under {stage1_root}"
+                    )
 
-            metrics = self.evaluate(pred_path, gold_path, page_id=page_id)
-            results.append(metrics)
+            for exp in exp_names:
+                for gold_path in gold_paths:
+                    stem = gold_path.parent.name
+                    pred_path = stage1_root / exp / stem / f"{stem}_stage1.tsv"
+                    if not pred_path.exists():
+                        print(
+                            f"  [skip] no prediction for {lang_dir.name}/{stem} "
+                            f"in experiment {exp!r} ({pred_path})"
+                        )
+                        continue
+                    page_id = f"{lang_dir.name}/{stem}"
+                    tasks.append(
+                        EvalTask(
+                            experiment=exp,
+                            pred_path=pred_path,
+                            gold_path=gold_path,
+                            page_id=page_id,
+                        )
+                    )
 
+        return tasks
+
+    def evaluate_experiments(
+        self,
+        samples_dir: str | Path,
+        experiments: Optional[List[str]] = None,
+        languages: Optional[List[str]] = None,
+    ) -> List[Tuple[str, Stage1Metrics]]:
+        """Pair each gold TSV with every requested experiment's prediction and
+        evaluate. See ``discover_tasks`` for path conventions.
+        """
+        results: List[Tuple[str, Stage1Metrics]] = []
+        for task in self.discover_tasks(samples_dir, experiments, languages):
+            metrics = self.evaluate(
+                task.pred_path, task.gold_path, page_id=task.page_id
+            )
+            results.append((task.experiment, metrics))
         return results
 
     # ------------------------------------------------------------------
@@ -116,22 +230,17 @@ class Stage1Evaluator:
         return {
             "page_id": m.page_id,
             "character_quality": {
+                "TextEdit": round(cq.text_edit, 6),
                 "GCER": round(cq.gcer, 6),
-                "CER": round(cq.cer, 6),
                 "WER": round(cq.wer, 6),
-                "BLEU": round(cq.bleu, 6),
-                "NED": round(cq.ned, 6),
                 "total_graphemes_gold": cq.total_graphemes_gold,
                 "total_graphemes_pred": cq.total_graphemes_pred,
                 "total_grapheme_edits": cq.total_grapheme_edits,
-                "total_chars_gold": cq.total_chars_gold,
-                "total_chars_pred": cq.total_chars_pred,
-                "total_char_edits": cq.total_char_edits,
                 "total_words_gold": cq.total_words_gold,
                 "total_word_edits": cq.total_word_edits,
-                "matched_lines": cq.matched_lines,
-                "missing_lines": cq.missing_lines,
-                "extra_lines": cq.extra_lines,
+                "matched_spans": cq.matched_spans,
+                "missing_spans": cq.missing_spans,
+                "extra_spans": cq.extra_spans,
             },
             "markup_quality": {
                 "bold": {
@@ -150,13 +259,19 @@ class Stage1Evaluator:
                     "fp": mq.italic.false_positives,
                     "fn": mq.italic.false_negatives,
                 },
+                "typography": {
+                    "precision": round(mq.typography.precision, 4),
+                    "recall": round(mq.typography.recall, 4),
+                    "f1": round(mq.typography.f1, 4),
+                    "tp": mq.typography.true_positives,
+                    "fp": mq.typography.false_positives,
+                    "fn": mq.typography.false_negatives,
+                },
             },
             "read_order": {
-                "NED": round(ro.ned, 6),
+                "ReadOrderEdit": round(ro.read_order_edit, 6),
                 "edit_distance": ro.edit_distance,
                 "max_length": ro.max_length,
-                "character_NED_baseline": round(ro.character_ned, 6),
-                "isolated_order_error": round(ro.isolated_order_error, 6),
             },
         }
 
@@ -180,29 +295,30 @@ class Stage1Evaluator:
 
     # -- Per-component CSV column definitions --
 
-    _CHAR_CSV_COLS = ["page_id", "GCER", "CER", "WER", "BLEU", "NED"]
+    def _char_csv_cols(self) -> List[str]:
+        return ["page_id", "TextEdit", "GCER", "WER"]
 
-    _MARKUP_CSV_COLS = [
-        "page_id",
-        "bold_precision", "bold_recall", "bold_f1",
-        "italic_precision", "italic_recall", "italic_f1",
-    ]
+    def _markup_csv_cols(self) -> List[str]:
+        if self.metrics_profile == "minimal":
+            return ["page_id", "typography_f1"]
+        return [
+            "page_id",
+            "typography_f1",
+            "bold_precision", "bold_recall", "bold_f1",
+            "italic_precision", "italic_recall", "italic_f1",
+        ]
 
-    _ORDER_CSV_COLS = [
-        "page_id", "read_order_NED", "character_NED_baseline",
-        "isolated_order_error",
-    ]
+    def _order_csv_cols(self) -> List[str]:
+        return ["page_id", "ReadOrderEdit"]
 
     @staticmethod
     def _char_csv_row(m: Stage1Metrics) -> dict:
         cq = m.character_quality
         return {
             "page_id": m.page_id,
+            "TextEdit": round(cq.text_edit, 6),
             "GCER": round(cq.gcer, 6),
-            "CER": round(cq.cer, 6),
             "WER": round(cq.wer, 6),
-            "BLEU": round(cq.bleu, 6),
-            "NED": round(cq.ned, 6),
         }
 
     @staticmethod
@@ -210,6 +326,7 @@ class Stage1Evaluator:
         mq = m.markup_quality
         return {
             "page_id": m.page_id,
+            "typography_f1": round(mq.typography.f1, 4),
             "bold_precision": round(mq.bold.precision, 4),
             "bold_recall": round(mq.bold.recall, 4),
             "bold_f1": round(mq.bold.f1, 4),
@@ -223,9 +340,7 @@ class Stage1Evaluator:
         ro = m.read_order
         return {
             "page_id": m.page_id,
-            "read_order_NED": round(ro.ned, 6),
-            "character_NED_baseline": round(ro.character_ned, 6),
-            "isolated_order_error": round(ro.isolated_order_error, 6),
+            "ReadOrderEdit": round(ro.read_order_edit, 6),
         }
 
     def _write_csv(
@@ -251,36 +366,204 @@ class Stage1Evaluator:
 
         if len(results) > 1:
             agg = self._aggregate(results)
-            char_rows.append({
+            char_rows.append(self._pick_columns({
                 "page_id": "__aggregate__",
-                "GCER": agg["character_quality"]["GCER"],
-                "CER": agg["character_quality"]["CER"],
-                "WER": agg["character_quality"]["WER"],
-                "BLEU": agg["character_quality"]["BLEU"],
-                "NED": agg["character_quality"]["NED"],
-            })
-            markup_rows.append({
+                **self._metrics_from_aggregate(agg),
+            }, self._char_csv_cols()))
+            markup_rows.append(self._pick_columns({
                 "page_id": "__aggregate__",
-                "bold_precision": agg["markup_quality"]["bold"]["precision"],
-                "bold_recall": agg["markup_quality"]["bold"]["recall"],
-                "bold_f1": agg["markup_quality"]["bold"]["f1"],
-                "italic_precision": agg["markup_quality"]["italic"]["precision"],
-                "italic_recall": agg["markup_quality"]["italic"]["recall"],
-                "italic_f1": agg["markup_quality"]["italic"]["f1"],
-            })
-            order_rows.append({
+                **self._metrics_from_aggregate(agg),
+            }, self._markup_csv_cols()))
+            order_rows.append(self._pick_columns({
                 "page_id": "__aggregate__",
-                "read_order_NED": agg["read_order"]["NED"],
-                "character_NED_baseline": agg["read_order"]["character_NED_baseline"],
-                "isolated_order_error": agg["read_order"]["isolated_order_error"],
-            })
+                **self._metrics_from_aggregate(agg),
+            }, self._order_csv_cols()))
 
-        self._write_csv(char_rows, self._CHAR_CSV_COLS,
+        char_rows = [self._pick_columns(r, self._char_csv_cols()) for r in char_rows]
+        markup_rows = [self._pick_columns(r, self._markup_csv_cols()) for r in markup_rows]
+        order_rows = [self._pick_columns(r, self._order_csv_cols()) for r in order_rows]
+
+        self._write_csv(char_rows, self._char_csv_cols(),
                          output_dir / "character_recognition.csv")
-        self._write_csv(markup_rows, self._MARKUP_CSV_COLS,
+        self._write_csv(markup_rows, self._markup_csv_cols(),
                          output_dir / "markup_preservation.csv")
-        self._write_csv(order_rows, self._ORDER_CSV_COLS,
+        self._write_csv(order_rows, self._order_csv_cols(),
                          output_dir / "structure_preservation.csv")
+
+    # -- Cross-experiment CSV exports (detailed + per-language summary) --
+
+    def _detailed_csv_cols(self) -> List[str]:
+        return [
+            "experiment", "alphabet", "ocr-hint", "page_id",
+            *self._metric_csv_cols(),
+        ]
+
+    def _summary_csv_cols(self) -> List[str]:
+        return [
+            "experiment", "language", "alphabet", "ocr-hint", "page_count",
+            *self._metric_csv_cols(),
+        ]
+
+    @staticmethod
+    def _bool_csv(value: bool) -> str:
+        return "true" if value else "false"
+
+    @staticmethod
+    def _parse_page_id(page_id: str) -> Optional[Tuple[str, str]]:
+        """Return ``(language, stem)`` or ``None`` for aggregate rows."""
+        if page_id == "__aggregate__":
+            return None
+        lang, _, stem = page_id.partition("/")
+        return (lang, stem) if lang else None
+
+    @staticmethod
+    def _load_run_config_flags(
+        samples_dir: Path, language: str, experiment: str
+    ) -> Tuple[bool, bool]:
+        """Read ``alphabet.used`` and ``ocr_hint.used`` from a run manifest."""
+        path = (
+            samples_dir / language / "outputs" / "stage-1"
+            / experiment / "run_config.json"
+        )
+        if not path.is_file():
+            return False, False
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            return False, False
+        alphabet = bool(data.get("alphabet", {}).get("used", False))
+        ocr_hint = bool(data.get("ocr_hint", {}).get("used", False))
+        return alphabet, ocr_hint
+
+    @staticmethod
+    def _metrics_from_aggregate(agg: dict) -> dict:
+        return {
+            "TextEdit": agg["character_quality"]["TextEdit"],
+            "GCER": agg["character_quality"]["GCER"],
+            "WER": agg["character_quality"]["WER"],
+            "typography_f1": agg["markup_quality"]["typography"]["f1"],
+            "bold_precision": agg["markup_quality"]["bold"]["precision"],
+            "bold_recall": agg["markup_quality"]["bold"]["recall"],
+            "bold_f1": agg["markup_quality"]["bold"]["f1"],
+            "italic_precision": agg["markup_quality"]["italic"]["precision"],
+            "italic_recall": agg["markup_quality"]["italic"]["recall"],
+            "italic_f1": agg["markup_quality"]["italic"]["f1"],
+            "ReadOrderEdit": agg["read_order"]["ReadOrderEdit"],
+        }
+
+    @staticmethod
+    def _metrics_from_stage1(m: Stage1Metrics) -> dict:
+        cq, mq, ro = m.character_quality, m.markup_quality, m.read_order
+        return {
+            "TextEdit": round(cq.text_edit, 6),
+            "GCER": round(cq.gcer, 6),
+            "WER": round(cq.wer, 6),
+            "typography_f1": round(mq.typography.f1, 4),
+            "bold_precision": round(mq.bold.precision, 4),
+            "bold_recall": round(mq.bold.recall, 4),
+            "bold_f1": round(mq.bold.f1, 4),
+            "italic_precision": round(mq.italic.precision, 4),
+            "italic_recall": round(mq.italic.recall, 4),
+            "italic_f1": round(mq.italic.f1, 4),
+            "ReadOrderEdit": round(ro.read_order_edit, 6),
+        }
+
+    def _detailed_csv_row(
+        self,
+        experiment: str,
+        m: Stage1Metrics,
+        samples_dir: Path,
+    ) -> dict:
+        parsed = self._parse_page_id(m.page_id)
+        if parsed is None:
+            alphabet_used: Union[bool, str] = ""
+            ocr_hint_used: Union[bool, str] = ""
+        else:
+            language, _ = parsed
+            alphabet_used, ocr_hint_used = self._load_run_config_flags(
+                samples_dir, language, experiment
+            )
+        row = {
+            "experiment": experiment,
+            "alphabet": (
+                self._bool_csv(alphabet_used)
+                if isinstance(alphabet_used, bool) else ""
+            ),
+            "ocr-hint": (
+                self._bool_csv(ocr_hint_used)
+                if isinstance(ocr_hint_used, bool) else ""
+            ),
+            "page_id": m.page_id,
+            **self._metrics_from_stage1(m),
+        }
+        return self._pick_columns(row, self._detailed_csv_cols())
+
+    def generate_detailed_csv(
+        self,
+        results_by_exp: Dict[str, List[Stage1Metrics]],
+        samples_dir: str | Path,
+        output_path: str | Path,
+    ) -> None:
+        """Long-format CSV: one row per (experiment, page) plus a per-experiment
+        ``__aggregate__`` row. ``alphabet`` and ``ocr-hint`` come from each
+        language's ``run_config.json``."""
+        samples_dir = Path(samples_dir)
+        output_path = Path(output_path)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+
+        rows: List[dict] = []
+        for exp, results in results_by_exp.items():
+            for m in results:
+                rows.append(self._detailed_csv_row(exp, m, samples_dir))
+            if len(results) > 1:
+                agg = self._aggregate(results)
+                rows.append(self._pick_columns({
+                    "experiment": exp,
+                    "alphabet": "",
+                    "ocr-hint": "",
+                    "page_id": "__aggregate__",
+                    **self._metrics_from_aggregate(agg),
+                }, self._detailed_csv_cols()))
+        self._write_csv(rows, self._detailed_csv_cols(), output_path)
+
+    def generate_summary_csv(
+        self,
+        results_by_exp: Dict[str, List[Stage1Metrics]],
+        samples_dir: str | Path,
+        output_path: str | Path,
+    ) -> None:
+        """Per-(experiment, language) micro-aggregated metrics across pages."""
+        samples_dir = Path(samples_dir)
+        output_path = Path(output_path)
+        output_path.parent.mkdir(parents=True, exist_ok=True)
+
+        rows: List[dict] = []
+        for exp, results in results_by_exp.items():
+            by_lang: Dict[str, List[Stage1Metrics]] = {}
+            for m in results:
+                parsed = self._parse_page_id(m.page_id)
+                if parsed is None:
+                    continue
+                language, _ = parsed
+                by_lang.setdefault(language, []).append(m)
+
+            for language in sorted(by_lang):
+                lang_results = by_lang[language]
+                alphabet_used, ocr_hint_used = self._load_run_config_flags(
+                    samples_dir, language, exp
+                )
+                row = {
+                    "experiment": exp,
+                    "language": language,
+                    "alphabet": self._bool_csv(alphabet_used),
+                    "ocr-hint": self._bool_csv(ocr_hint_used),
+                    "page_count": len(lang_results),
+                    **self._metrics_from_aggregate(
+                        self._aggregate(lang_results)
+                    ),
+                }
+                rows.append(self._pick_columns(row, self._summary_csv_cols()))
+        self._write_csv(rows, self._summary_csv_cols(), output_path)
 
     def generate_text_report(
         self,
@@ -322,21 +605,20 @@ class Stage1Evaluator:
             f"--- {m.page_id} ---",
             "",
             "  Character Recognition Quality:",
+            f"    TextEdit: {cq.text_edit:.4f}",
             f"    GCER: {cq.gcer:.4f}  ({cq.gcer*100:.2f}%)",
-            f"    CER:  {cq.cer:.4f}  ({cq.cer*100:.2f}%)",
             f"    WER:  {cq.wer:.4f}  ({cq.wer*100:.2f}%)",
-            f"    BLEU: {cq.bleu:.4f}",
-            f"    NED:  {cq.ned:.4f}",
-            f"    Lines: {cq.matched_lines} matched, {cq.missing_lines} missing, {cq.extra_lines} extra",
+            f"    Spans: {cq.matched_spans} matched, {cq.missing_spans} missing, {cq.extra_spans} extra",
             "",
             "  Markup / Typography Preservation:",
+            f"    Typography (bold+italic pooled) — F1: {mq.typography.f1:.4f}  "
+            f"(TP={mq.typography.true_positives} FP={mq.typography.false_positives} "
+            f"FN={mq.typography.false_negatives})",
             f"    Bold   — P: {mq.bold.precision:.4f}  R: {mq.bold.recall:.4f}  F1: {mq.bold.f1:.4f}  (TP={mq.bold.true_positives} FP={mq.bold.false_positives} FN={mq.bold.false_negatives})",
             f"    Italic — P: {mq.italic.precision:.4f}  R: {mq.italic.recall:.4f}  F1: {mq.italic.f1:.4f}  (TP={mq.italic.true_positives} FP={mq.italic.false_positives} FN={mq.italic.false_negatives})",
             "",
             "  Read Order (Structure Preservation):",
-            f"    NED:                    {ro.ned:.4f}",
-            f"    Character NED baseline: {ro.character_ned:.4f}",
-            f"    Isolated order error:   {ro.isolated_order_error:.4f}",
+            f"    ReadOrderEdit: {ro.read_order_edit:.4f}",
         ]
 
     def _format_aggregate(self, results: list[Stage1Metrics]) -> list[str]:
@@ -347,19 +629,17 @@ class Stage1Evaluator:
             "=" * 72,
             "",
             "  Character Recognition Quality:",
+            f"    TextEdit: {agg['character_quality']['TextEdit']:.4f}",
             f"    GCER: {agg['character_quality']['GCER']:.4f}",
-            f"    CER:  {agg['character_quality']['CER']:.4f}",
             f"    WER:  {agg['character_quality']['WER']:.4f}",
-            f"    BLEU: {agg['character_quality']['BLEU']:.4f}",
-            f"    NED:  {agg['character_quality']['NED']:.4f}",
             "",
             "  Markup / Typography Preservation:",
+            f"    Typography (bold+italic pooled) — F1: {agg['markup_quality']['typography']['f1']:.4f}",
             f"    Bold   — P: {agg['markup_quality']['bold']['precision']:.4f}  R: {agg['markup_quality']['bold']['recall']:.4f}  F1: {agg['markup_quality']['bold']['f1']:.4f}",
             f"    Italic — P: {agg['markup_quality']['italic']['precision']:.4f}  R: {agg['markup_quality']['italic']['recall']:.4f}  F1: {agg['markup_quality']['italic']['f1']:.4f}",
             "",
             "  Read Order (Structure Preservation):",
-            f"    NED:                    {agg['read_order']['NED']:.4f}",
-            f"    Isolated order error:   {agg['read_order']['isolated_order_error']:.4f}",
+            f"    ReadOrderEdit: {agg['read_order']['ReadOrderEdit']:.4f}",
         ]
 
     @staticmethod
@@ -368,17 +648,27 @@ class Stage1Evaluator:
         # Character quality: micro-average using totals
         total_grapheme_edits = sum(m.character_quality.total_grapheme_edits for m in results)
         total_graphemes_gold = sum(m.character_quality.total_graphemes_gold for m in results)
-        total_graphemes_pred = sum(m.character_quality.total_graphemes_pred for m in results)
-        total_char_edits = sum(m.character_quality.total_char_edits for m in results)
-        total_chars_gold = sum(m.character_quality.total_chars_gold for m in results)
         total_word_edits = sum(m.character_quality.total_word_edits for m in results)
         total_words_gold = sum(m.character_quality.total_words_gold for m in results)
+        total_spans = sum(
+            m.character_quality.matched_spans
+            + m.character_quality.missing_spans
+            + m.character_quality.extra_spans
+            for m in results
+        )
+        text_edit_sum = sum(
+            m.character_quality.text_edit
+            * (
+                m.character_quality.matched_spans
+                + m.character_quality.missing_spans
+                + m.character_quality.extra_spans
+            )
+            for m in results
+        )
 
         agg_gcer = total_grapheme_edits / total_graphemes_gold if total_graphemes_gold else 0.0
-        agg_cer = total_char_edits / total_chars_gold if total_chars_gold else 0.0
         agg_wer = total_word_edits / total_words_gold if total_words_gold else 0.0
-        agg_bleu = sum(m.character_quality.bleu for m in results) / len(results)
-        agg_ned = total_grapheme_edits / max(total_graphemes_gold, total_graphemes_pred, 1)
+        agg_text_edit = text_edit_sum / total_spans if total_spans else 0.0
 
         # Markup: sum TP/FP/FN
         bold_tp = sum(m.markup_quality.bold.true_positives for m in results)
@@ -396,27 +686,25 @@ class Stage1Evaluator:
 
         bp, br, bf = _prf(bold_tp, bold_fp, bold_fn)
         ip, ir, if1 = _prf(ital_tp, ital_fp, ital_fn)
+        tp, tr, tf = _prf(
+            bold_tp + ital_tp, bold_fp + ital_fp, bold_fn + ital_fn
+        )
 
-        # Read order: macro-average NED
-        ro_ned = sum(m.read_order.ned for m in results) / len(results)
-        ro_char_baseline = sum(m.read_order.character_ned for m in results) / len(results)
-        ro_iso = sum(m.read_order.isolated_order_error for m in results) / len(results)
+        # Read order: macro-average by page.
+        ro_edit = sum(m.read_order.read_order_edit for m in results) / len(results)
 
         return {
             "character_quality": {
+                "TextEdit": round(agg_text_edit, 6),
                 "GCER": round(agg_gcer, 6),
-                "CER": round(agg_cer, 6),
                 "WER": round(agg_wer, 6),
-                "BLEU": round(agg_bleu, 6),
-                "NED": round(agg_ned, 6),
             },
             "markup_quality": {
                 "bold": {"precision": bp, "recall": br, "f1": bf},
                 "italic": {"precision": ip, "recall": ir, "f1": if1},
+                "typography": {"precision": tp, "recall": tr, "f1": tf},
             },
             "read_order": {
-                "NED": round(ro_ned, 6),
-                "character_NED_baseline": round(ro_char_baseline, 6),
-                "isolated_order_error": round(ro_iso, 6),
+                "ReadOrderEdit": round(ro_edit, 6),
             },
         }

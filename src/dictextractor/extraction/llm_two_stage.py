@@ -158,7 +158,8 @@ class TwoStageLLMExtraction(ExtractionStrategy):
         intro_text: str = "",
         intro_image_paths: Optional[List[str]] = None,
         discover_extra_fields: bool = False,
-        stage2_reasoning_effort: str = "medium",
+        stage1_reasoning_effort: str = "low",
+        stage2_reasoning_effort: str = "low",
         stage1_guides: str = "",
         stage2_guides: str = "",
     ):
@@ -168,6 +169,7 @@ class TwoStageLLMExtraction(ExtractionStrategy):
         self.intro_text = intro_text
         self.intro_image_paths = intro_image_paths or []
         self.discover_extra_fields = discover_extra_fields
+        self.stage1_reasoning_effort = stage1_reasoning_effort
         self.stage2_reasoning_effort = stage2_reasoning_effort
         self.stage1_guides = stage1_guides
         self.stage2_guides = stage2_guides
@@ -340,7 +342,7 @@ class TwoStageLLMExtraction(ExtractionStrategy):
             model=self.transcribe_model,
             messages=messages,
             response_schema=TranscriptionResponse,
-            reasoning_effort="low",
+            reasoning_effort=self.stage1_reasoning_effort,
         )
         return _transcription_to_tsv(result), raw, usage, _sanitize_messages(messages)
 

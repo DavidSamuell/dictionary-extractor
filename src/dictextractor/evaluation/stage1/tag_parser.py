@@ -2,9 +2,11 @@
 Utilities for parsing inline HTML tags (<b>, <i>, etc.) in dictionary text.
 
 Provides:
-- strip_tags()          : remove all HTML tags, return plain text
-- parse_tagged_words()  : split text into (word, frozenset_of_tags) tuples
-- normalize_unicode()   : NFC-normalise for consistent comparison
+- strip_tags()                    : remove all HTML tags, return plain text
+- parse_tagged_words()            : split text into (word, frozenset_of_tags) tuples
+- normalize_unicode()             : NFC-normalise for consistent comparison
+- normalize_line_for_markup()     : line-level normalisation before word parse
+- normalize_word_for_markup_align : word key for fuzzy typography alignment
 """
 
 import re
@@ -28,6 +30,35 @@ def normalize_unicode(text: str) -> str:
 def normalize_whitespace(text: str) -> str:
     """Collapse runs of whitespace to a single space and strip."""
     return re.sub(r"\s+", " ", text).strip()
+
+
+# Punctuation ignored when aligning words for typography metrics only.
+_MARKUP_ALIGN_PUNCT_RE = re.compile(r"[,.\:;!?\'\"()\[\]]")
+
+# Remove whitespace immediately before punctuation (typography line normalisation).
+_SPACE_BEFORE_PUNCT_RE = re.compile(r"\s+([,.\:;!?\'\"()\[\]])")
+
+
+def normalize_line_for_markup(text: str) -> str:
+    """Prepare a tagged line for ``parse_tagged_words``.
+
+    Applies NFC, collapses whitespace, and removes spaces before punctuation
+    so ``hello ,`` tokenises like ``hello,``. Character-level metrics use
+    ``normalize_whitespace`` via ``_clean()`` instead; this path is markup-only.
+    """
+    text = normalize_unicode(text)
+    text = normalize_whitespace(text)
+    return _SPACE_BEFORE_PUNCT_RE.sub(r"\1", text)
+
+
+def normalize_word_for_markup_align(word: str) -> str:
+    """Normalised word surface for typography alignment / similarity.
+
+    Strips punctuation characters used in dictionary typography (``, . : ;``
+    etc.) so ``hello.,`` and ``hello`` align as the same slot. Original word
+    text and tags are unchanged for TP/FP/FN decisions.
+    """
+    return _MARKUP_ALIGN_PUNCT_RE.sub("", normalize_unicode(word))
 
 
 # ---------------------------------------------------------------------------

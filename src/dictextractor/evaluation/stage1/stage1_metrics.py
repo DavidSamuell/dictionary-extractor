@@ -2,9 +2,9 @@
 Stage1Metrics: dataclass for all Stage 1 OCR evaluation results.
 
 Three evaluation dimensions:
-1. Character recognition quality  (GCER, CER, WER, BLEU, NED on tag-stripped text)
+1. Character recognition quality  (TextEdit, GCER, WER on aligned spans)
 2. Markup/typography preservation (bold/italic precision, recall, F1)
-3. Structure preservation         (read-order NED)
+3. Structure preservation         (ReadOrderEdit)
 """
 
 from dataclasses import dataclass, field
@@ -38,24 +38,19 @@ class TagMetrics:
 class CharacterQualityMetrics:
     """Aggregated character-recognition quality."""
 
+    text_edit: float = 0.0  # Mean NED over aligned/unmatched spans.
     gcer: float = 0.0  # Grapheme Character Error Rate (UAX #29 grapheme clusters)
-    cer: float = 0.0  # Character Error Rate (raw Unicode code points)
     wer: float = 0.0  # Word Error Rate
-    bleu: float = 0.0  # BLEU score (word-level, corpus-level smoothed)
-    ned: float = 0.0  # Normalized Edit Distance
 
     total_graphemes_gold: int = 0
     total_graphemes_pred: int = 0
     total_grapheme_edits: int = 0
-    total_chars_gold: int = 0
-    total_chars_pred: int = 0
-    total_char_edits: int = 0
     total_words_gold: int = 0
     total_word_edits: int = 0
 
-    matched_lines: int = 0
-    missing_lines: int = 0  # in gold but not in pred
-    extra_lines: int = 0  # in pred but not in gold
+    matched_spans: int = 0
+    missing_spans: int = 0  # in gold but not in pred
+    extra_spans: int = 0  # in pred but not in gold
 
 
 @dataclass
@@ -65,16 +60,29 @@ class MarkupQualityMetrics:
     bold: TagMetrics = field(default_factory=TagMetrics)
     italic: TagMetrics = field(default_factory=TagMetrics)
 
+    @property
+    def typography(self) -> TagMetrics:
+        """Pooled bold + italic counts (micro-average F1 source)."""
+        return TagMetrics(
+            true_positives=(
+                self.bold.true_positives + self.italic.true_positives
+            ),
+            false_positives=(
+                self.bold.false_positives + self.italic.false_positives
+            ),
+            false_negatives=(
+                self.bold.false_negatives + self.italic.false_negatives
+            ),
+        )
+
 
 @dataclass
 class ReadOrderMetrics:
     """Structure / reading-order preservation."""
 
-    ned: float = 0.0  # NED on the concatenated strings
+    read_order_edit: float = 0.0
     edit_distance: int = 0
     max_length: int = 0
-    character_ned: float = 0.0  # per-line NED (from CharacterQuality) for reference
-    isolated_order_error: float = 0.0  # ned - character_ned (order-attributable error)
 
 
 @dataclass

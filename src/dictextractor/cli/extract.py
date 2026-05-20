@@ -5,8 +5,11 @@ Usage: python -m dictextractor.cli.extract [options]
 
 import argparse
 import json
+import re
+import subprocess
+from datetime import datetime, timezone
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from dictextractor.ocr.mathpix import MathpixBackend
 from dictextractor.schemas.ocr_result import OCRPageResult
@@ -166,6 +169,181 @@ def _apply_preprocessing(image_path: str, enabled: bool, preprocess_dir: Path) -
     return preprocessor.save_result(str(out))
 
 
+_IMAGE_ALPHABET_EXTS = {".png", ".jpg", ".jpeg", ".webp", ".gif"}
+
+
+def _git_short_sha() -> Optional[str]:
+    """Best-effort short git SHA of the working tree; None if unavailable."""
+    try:
+        out = subprocess.run(
+            ["git", "rev-parse", "--short", "HEAD"],
+            capture_output=True, text=True, check=False, timeout=2,
+        )
+        sha = out.stdout.strip()
+        return sha or None
+    except (OSError, subprocess.SubprocessError):
+        return None
+
+
+def _alphabet_manifest_entry(alphabet_path: Optional[str]) -> Dict[str, Any]:
+    """Describe the alphabet input for a run manifest.
+
+    Text-form alphabets (.txt/.md/.docx/etc.) are embedded inline so the
+    exact content used by the run is preserved even if the source file is
+    later edited or deleted. Image-form alphabets are referenced by path
+    only (you swap them, you don't edit them).
+    """
+    if not alphabet_path:
+        return {"used": False, "path": None, "kind": None, "text": None}
+    p = Path(alphabet_path)
+    if p.suffix.lower() in _IMAGE_ALPHABET_EXTS:
+        return {"used": True, "path": str(p), "kind": "image", "text": None}
+    try:
+        text = _read_text_file(p)
+    except OSError as exc:
+        return {
+            "used": True, "path": str(p), "kind": "text",
+            "text": None, "read_error": str(exc),
+        }
+    return {"used": True, "path": str(p), "kind": "text", "text": text}
+
+
+def _guides_manifest_entry(
+    path: Optional[str], loaded_text: str
+) -> Dict[str, Any]:
+    """Describe an inline guides file (stage-1 or stage-2 guides)."""
+    if not path:
+        return {"used": False, "path": None, "text": None}
+    return {"used": True, "path": path, "text": loaded_text or ""}
+
+
+def _per_page_inputs_stage1(
+    images: List[Path], ocr_dir: Optional[Path]
+) -> List[Dict[str, Any]]:
+    """Resolve the per-page input bundle for stage 1 (snippet + ocr-hint)."""
+    rows: List[Dict[str, Any]] = []
+    for image_file in images:
+        stem = image_file.stem
+        ocr_file = _find_ocr_file(ocr_dir, stem) if ocr_dir else None
+        rows.append({
+            "stem": stem,
+            "snippet_path": str(image_file),
+            "ocr_hint_file": str(ocr_file) if ocr_file else None,
+        })
+    return rows
+
+
+def _per_page_inputs_stage2(
+    images: List[Path], stage1_dir: Path
+) -> List[Dict[str, Any]]:
+    """Resolve the per-page stage-1 TSV that stage 2 consumes."""
+    rows: List[Dict[str, Any]] = []
+    for image_file in images:
+        stem = image_file.stem
+        tsv = stage1_dir / stem / f"{stem}_stage1.tsv"
+        rows.append({"stem": stem, "stage1_tsv_path": str(tsv)})
+    return rows
+
+
+def _write_run_config(
+    target_dir: Path, manifest: Dict[str, Any], *, force: bool
+) -> None:
+    """Write a run_config.json into ``target_dir`` honoring the resume guard.
+
+    On resume (file exists, ``force`` False) the existing manifest wins so
+    the on-disk config never drifts from what produced the predictions
+    sitting in the slot. With ``force=True`` (i.e. ``--overwrite``) the
+    manifest is rewritten to match the fresh invocation.
+    """
+    target_dir.mkdir(parents=True, exist_ok=True)
+    path = target_dir / "run_config.json"
+    if not force and path.exists():
+        print(
+            f"  Keeping existing {path} (resume; pass --overwrite to refresh it)."
+        )
+        return
+    path.write_text(
+        json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8"
+    )
+
+
+def _build_stage1_manifest(
+    args,
+    snippets_dir: Path,
+    images: List[Path],
+    ocr_dir: Optional[Path],
+) -> Dict[str, Any]:
+    """Assemble the stage-1 manifest dict (no I/O)."""
+    return {
+        "stage": "1",
+        "experiment_name": args.experiment_name,
+        "created_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "strategy": args.strategy,
+        "git_sha": _git_short_sha(),
+        "model": args.model,
+        "reasoning_effort": args.stage1_reasoning_effort,
+        "preprocess": bool(args.preprocess),
+        "alphabet": _alphabet_manifest_entry(args.alphabet),
+        "ocr_hint": {
+            "used": bool(ocr_dir),
+            "dir": str(ocr_dir) if ocr_dir else None,
+        },
+        "stage1_guides": _guides_manifest_entry(
+            getattr(args, "stage1_guides_path", None),
+            getattr(args, "stage1_guides_text", ""),
+        ),
+        "inputs": {
+            "snippets_dir": str(snippets_dir),
+            "page_count": len(images),
+        },
+        "per_page": _per_page_inputs_stage1(images, ocr_dir),
+    }
+
+
+def _build_stage2_manifest(
+    args,
+    snippets_dir: Path,
+    images: List[Path],
+    stage1_dir: Path,
+    intro_image_paths: List[str],
+) -> Dict[str, Any]:
+    """Assemble the stage-2 manifest dict (no I/O)."""
+    return {
+        "stage": "2",
+        "experiment_name": args.stage2_experiment_name,
+        "created_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "strategy": args.strategy,
+        "git_sha": _git_short_sha(),
+        "model": args.structure_model or args.model,
+        "reasoning_effort": args.stage2_reasoning_effort,
+        "discover_extra_fields": bool(
+            getattr(args, "discover_extra_fields", False)
+        ),
+        "stage1_source": {
+            "experiment_name": args.experiment_name,
+            "stage1_dir": str(stage1_dir),
+            "samples_dir": getattr(args, "samples_dir", None),
+        },
+        # Intro is path-only regardless of format (image / pdf / txt / md /
+        # docx) per the user's explicit choice — embedding intro PDFs/images
+        # would balloon the manifest, and intro text rarely changes mid-sweep.
+        "intro": {
+            "used": bool(args.intro),
+            "source_path": args.intro,
+            "resolved_image_or_pdf_paths": list(intro_image_paths),
+        },
+        "stage2_guides": _guides_manifest_entry(
+            getattr(args, "stage2_guides_path", None),
+            getattr(args, "stage2_guides_text", ""),
+        ),
+        "inputs": {
+            "snippets_dir": str(snippets_dir),
+            "page_count": len(images),
+        },
+        "per_page": _per_page_inputs_stage2(images, stage1_dir),
+    }
+
+
 def _build_strategy(args, intro_text: str, intro_image_paths: List[str]):
     """Instantiate the correct extraction strategy."""
     if args.strategy == "manual":
@@ -180,7 +358,8 @@ def _build_strategy(args, intro_text: str, intro_image_paths: List[str]):
             intro_text=intro_text,
             intro_image_paths=intro_image_paths,
             discover_extra_fields=getattr(args, "discover_extra_fields", False),
-            stage2_reasoning_effort=getattr(args, "stage2_reasoning_effort", "medium"),
+            stage1_reasoning_effort=getattr(args, "stage1_reasoning_effort", "low"),
+            stage2_reasoning_effort=getattr(args, "stage2_reasoning_effort", "low"),
             stage1_guides=getattr(args, "stage1_guides_text", ""),
             stage2_guides=getattr(args, "stage2_guides_text", ""),
         )
@@ -298,14 +477,25 @@ Examples:
         "into each entry's `extra_fields` map. Off by default.",
     )
     parser.add_argument(
-        "--reasoning",
+        "--stage1-reasoning",
         choices=["low", "medium", "high"],
-        default="medium",
+        default="low",
+        dest="stage1_reasoning_effort",
+        help="Reasoning effort for the Stage 1 transcription LLM call "
+        "(default: low). Stage 1 is a faithful-copy task — higher reasoning "
+        "tends to over-interpret the page (silent 'corrections', diacritic "
+        "normalization, dropped chars). On Gemini 3, 'low' is the floor "
+        "(thinking cannot be fully disabled).",
+    )
+    parser.add_argument(
+        "--stage2-reasoning",
+        choices=["low", "medium", "high"],
+        default="low",
         dest="stage2_reasoning_effort",
-        help="Reasoning effort for the Stage 2 LLM call (default: medium). "
-        "High reasoning has been observed to leak chain-of-thought into "
-        "JSON string fields on dense pages — drop to low for problematic "
-        "inputs, bump to high only when needed.",
+        help="Reasoning effort for the Stage 2 structuring LLM call "
+        "(default: low). High reasoning has been observed to leak chain-of-"
+        "thought into JSON string fields on dense pages — bump only when "
+        "you've confirmed the leak doesn't happen for your model + pages.",
     )
     parser.add_argument(
         "--stage-1-guides",
@@ -320,6 +510,45 @@ Examples:
         help="Path to a .txt/.md/.docx file of extra rules appended verbatim to "
         "the Stage 2 user prompt under a 'USER DEFINED GUIDELINES' header. "
         "Optional — leave unset to use the default prompt.",
+    )
+
+    # Per-stage experiment namespacing + ablation toggles
+    parser.add_argument(
+        "--experiment-name",
+        dest="experiment_name",
+        default="default",
+        help="Stage-1 experiment slot under outputs/stage-1/<name>/. Lets you "
+        "keep multiple ablation runs side-by-side (alphabet on/off, OCR hint "
+        "on/off, different models) without overwriting each other. Default: "
+        "'default'. Must match ^[A-Za-z0-9_.-]+$. Also used as the stage-2 "
+        "slot unless --stage2-experiment-name is set, and selects which "
+        "stage-1 TSV stage 2 consumes.",
+    )
+    parser.add_argument(
+        "--stage2-experiment-name",
+        dest="stage2_experiment_name",
+        default=None,
+        help="Stage-2 experiment slot under outputs/stage-2/<name>/. Defaults "
+        "to --experiment-name. Use a different value to sweep stage-2 "
+        "configurations (intro, structure-model, reasoning, --discover-extra-"
+        "fields, stage-2 guides) against a fixed stage-1 baseline; the "
+        "stage-2 manifest records --experiment-name as its stage1_source.",
+    )
+    parser.add_argument(
+        "--no-alphabet",
+        action="store_true",
+        dest="no_alphabet",
+        help="Suppress alphabet/legend input for Stage 1. In --samples-dir mode "
+        "this skips auto-discovery of <lang>/alphabet.txt; in single-entry "
+        "mode it ignores --alphabet. Use for alphabet-ablation experiments.",
+    )
+    parser.add_argument(
+        "--no-ocr-hint",
+        action="store_true",
+        dest="no_ocr_hint",
+        help="Suppress OCR hint input for Stage 1. In --samples-dir mode this "
+        "skips auto-discovery of <lang>/mathpix/; in single-entry mode it "
+        "ignores --ocr-text. Use for OCR-hint ablation experiments.",
     )
 
     # Preprocessing — off by default. When on, PDFs are rendered to PNG first
@@ -360,6 +589,28 @@ Examples:
     )
 
     args = parser.parse_args()
+
+    # ── Validate experiment slot names (must be safe directory names) ────────
+    if not re.fullmatch(r"[A-Za-z0-9_.-]+", args.experiment_name):
+        parser.error(
+            f"--experiment-name must match ^[A-Za-z0-9_.-]+$ (got: "
+            f"{args.experiment_name!r})"
+        )
+    if args.stage2_experiment_name is None:
+        args.stage2_experiment_name = args.experiment_name
+    elif not re.fullmatch(r"[A-Za-z0-9_.-]+", args.stage2_experiment_name):
+        parser.error(
+            f"--stage2-experiment-name must match ^[A-Za-z0-9_.-]+$ (got: "
+            f"{args.stage2_experiment_name!r})"
+        )
+
+    # ── Apply ablation toggles to single-entry inputs too ────────────────────
+    # (batch mode applies these inside _run_samples_dir before calling
+    # _run_single_entry, so this only matters when --samples-dir is unset.)
+    if args.no_alphabet:
+        args.alphabet = None
+    if args.no_ocr_hint:
+        args.ocr_text = None
 
     # ── Load user-defined guides (if any) once, shared across all pages ──────
     args.stage1_guides_text = ""
@@ -428,9 +679,17 @@ def _run_samples_dir(args, parser) -> int:
         output_dir = entry_dir / "outputs"
 
         args.input_image = str(snippets_dir)
-        args.ocr_text = str(mathpix_dir) if mathpix_dir.is_dir() else None
+        args.ocr_text = (
+            str(mathpix_dir)
+            if mathpix_dir.is_dir() and not args.no_ocr_hint
+            else None
+        )
         args.intro = str(intro_dir) if intro_dir.is_dir() else None
-        args.alphabet = str(alphabet_file) if alphabet_file.exists() else None
+        args.alphabet = (
+            str(alphabet_file)
+            if alphabet_file.exists() and not args.no_alphabet
+            else None
+        )
         args.output = str(output_dir)
 
         print("\n" + "#" * 60)
@@ -456,8 +715,12 @@ def _run_single_entry(args, parser) -> int:
     # raw/input/usage JSONs) live under <output>/stage-2/<page>/.
     output_dir = Path(args.output)
     output_dir.mkdir(parents=True, exist_ok=True)
-    stage1_dir = output_dir / "stage-1"
-    stage2_dir = output_dir / "stage-2"
+    # Both stages are namespaced by experiment name so multiple ablation runs
+    # coexist without overwriting each other. Stage 2 defaults to the same
+    # slot as stage 1 but can be overridden via --stage2-experiment-name to
+    # sweep stage-2 configurations against a fixed stage-1 baseline.
+    stage1_dir = output_dir / "stage-1" / args.experiment_name
+    stage2_dir = output_dir / "stage-2" / args.stage2_experiment_name
     preprocess_dir = output_dir / ".preprocessed"
     snippets_cache_dir = output_dir / ".rendered_snippets"
     intro_cache_dir = output_dir / ".rendered_intro"
@@ -508,6 +771,36 @@ def _run_single_entry(args, parser) -> int:
     print(
         f"Strategy: {args.strategy} | Model: {args.model} | Stage: {args.stage} | Overwrite: {args.overwrite}"
     )
+    if args.strategy == "two_stage":
+        print(
+            f"Stage-1 slot: {args.experiment_name} | Alphabet: "
+            f"{'on' if args.alphabet else 'off'} | OCR hint: "
+            f"{'on' if args.ocr_text else 'off'} | "
+            f"Reasoning: {args.stage1_reasoning_effort}"
+        )
+        if args.stage in ("2", "both"):
+            print(
+                f"Stage-2 slot: {args.stage2_experiment_name} "
+                f"(stage1_source={args.experiment_name}) | "
+                f"Reasoning: {args.stage2_reasoning_effort}"
+            )
+        # Manifests describe what's on disk in each experiment slot. On
+        # resume (slot already populated) the existing manifest wins so it
+        # never drifts from the predictions it documents.
+        if args.stage in ("1", "both"):
+            _write_run_config(
+                stage1_dir,
+                _build_stage1_manifest(args, input_dir, images, ocr_dir),
+                force=args.overwrite,
+            )
+        if args.stage in ("2", "both"):
+            _write_run_config(
+                stage2_dir,
+                _build_stage2_manifest(
+                    args, input_dir, images, stage1_dir, intro_image_paths
+                ),
+                force=args.overwrite,
+            )
     print("=" * 60)
 
     for idx, image_file in enumerate(images):

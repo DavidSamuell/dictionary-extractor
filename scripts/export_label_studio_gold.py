@@ -2,7 +2,8 @@
 
 The script matches Label Studio projects created by ``label-studio/setup.py``
 to subdirectories under a samples root, then writes each submitted page
-annotation beside the original stage-1 TSV as ``*_stage1_GOLD.tsv``.
+annotation to the experiment-agnostic gold location:
+``<samples-dir>/<language>/outputs/stage-1-gold/<page>/<page>_stage1_GOLD.tsv``.
 """
 
 from __future__ import annotations
@@ -249,12 +250,14 @@ def annotation_text_by_column(annotation: Annotation) -> dict[str, str]:
 
 
 def write_gold_tsv(samples_dir: Path, task: LabelStudioTask, columns: dict[str, str]) -> Path:
-    """Write one task annotation to the matching ``*_stage1_GOLD.tsv`` path."""
-    page_dir = samples_dir / task.data.language / "outputs" / "stage-1" / task.data.page_name
-    input_tsv = page_dir / f"{task.data.page_name}_stage1.tsv"
-    if not input_tsv.exists():
-        raise LabelStudioExportError(f"Original stage-1 TSV not found: {input_tsv}")
-
+    """Write one task annotation to the experiment-agnostic gold location."""
+    page_dir = (
+        samples_dir
+        / task.data.language
+        / "outputs"
+        / "stage-1-gold"
+        / task.data.page_name
+    )
     output_tsv = page_dir / f"{task.data.page_name}_stage1_GOLD.tsv"
     rows = build_tsv_rows(columns)
     page_dir.mkdir(parents=True, exist_ok=True)

@@ -211,13 +211,17 @@ Thin command-line entry points. Each file has an `argparse`-based `main()` that 
 |---|---|---|
 | `extract.py` | `python -m dictextractor.cli.extract` | `src/extract_dictionary.py` main |
 | `evaluate.py` | `python -m dictextractor.cli.evaluate` | `src/evaluate_extraction.py` main |
-| `evaluate_stage1.py` | `python -m dictextractor.cli.evaluate_stage1` | Stage-1 transcription evaluator (CER/WER) |
+| `evaluate_stage1.py` | `python -m dictextractor.cli.evaluate_stage1` | Stage-1 transcription evaluator (`TextEdit`/`ReadOrderEdit`, GCER, WER, typography F1). Batch mode caches per-page metrics in `stage1_eval_cache.json` (see `--languages`, `--overwrite`). |
 | `preprocess.py` | `python -m dictextractor.cli.preprocess` | `src/preprocessing.py` main |
 | `run_ocr.py` | `python -m dictextractor.cli.run_ocr` | `src/paddle_ocr.py` main |
 | `run_mathpix_convert.py` | `python -m dictextractor.cli.run_mathpix_convert` | Batch OCR of snippet PDFs via Mathpix Convert API |
 | `annotate.py` | `python -m dictextractor.cli.annotate` | `src/annotate_ocr_blocks.py` main |
 
-**`cli/extract.py` — batch mode:** supports both single-entry runs (`--input-image` + `--output`) and a batch mode (`--samples-dir <parent>`). In batch mode, every `{source}-{target...}` subfolder is processed using its default layout (`snippets/`, `introduction/`, `mathpix/`, `alphabet.txt`) and outputs land under `{entry}/outputs/stage-1/`. `--languages A B C` filters to specific subfolders.
+**`cli/extract.py` — batch mode:** supports both single-entry runs (`--input-image` + `--output`) and a batch mode (`--samples-dir <parent>`). In batch mode, every `{source}-{target...}` subfolder is processed using its default layout (`snippets/`, `introduction/`, `mathpix/`, `alphabet.txt`) and outputs land under `{entry}/outputs/stage-1/<stage1-experiment>/` and `{entry}/outputs/stage-2/<stage2-experiment>/`. `--languages A B C` filters to specific subfolders.
+
+**Per-stage experiment slots:** both stages are namespaced by experiment name. `--experiment-name` (default `default`) sets the stage-1 slot AND the default stage-2 slot AND the stage-1 source consumed by stage 2. `--stage2-experiment-name` overrides the stage-2 slot only — use it to sweep stage-2 configs against a fixed stage-1 baseline; the stage-2 manifest records the lineage. `--no-alphabet` and `--no-ocr-hint` are stage-1 ablation toggles that suppress batch-mode auto-discovery of `alphabet.txt` / `mathpix/`. Gold lives under `{entry}/outputs/stage-1-gold/<stem>/<stem>_stage1_GOLD.tsv` — experiment-agnostic, so `--overwrite` of any experiment can never clobber it. `scripts/migrate_stage1_layout.sh` is a one-shot mover for pre-experiment trees (handles both stage 1 and stage 2).
+
+**`run_config.json` manifest per stage per experiment.** Each `stage-1/<exp>/` and `stage-2/<exp>/` directory contains one manifest recording everything that could influence its outputs. Stage 1: model, reasoning, embedded alphabet text (or path for image alphabets), OCR-hint dir, embedded stage-1 guides text, per-page snippet + OCR-hint resolution, preprocess flag, git SHA. Stage 2: structure model, reasoning, `discover_extra_fields`, intro paths (always path-only, regardless of format), embedded stage-2 guides text, lineage to the stage-1 source experiment, per-page stage-1 TSV paths, git SHA. Manifests are written on first run and **preserved on resume** so they never drift from the predictions they document; pass `--overwrite` to refresh.
 
 **`cli/run_mathpix_convert.py`:** walks a samples root (default `assets/dictionaries/samples-2`) and, for every entry folder missing a `mathpix/` subfolder, creates one and converts each PDF in `snippets/` to `page_N.docx` via the Mathpix Convert API. Requires `MATHPIX_APP_ID` and `MATHPIX_APP_KEY` (loaded from `.env`).
 

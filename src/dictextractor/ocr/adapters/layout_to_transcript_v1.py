@@ -113,7 +113,9 @@ def _serialize_body_column_major(blocks: list[LayoutBlock]) -> list[str]:
         col_blocks.sort(key=lambda b: (b.y_min, b.x0))
         for block in col_blocks:
             for raw in _block_to_lines(block.text):
-                lines.append(normalize_line(raw))
+                line = normalize_line(raw)
+                if line:
+                    lines.append(line)
     return lines
 
 
@@ -142,12 +144,16 @@ def layout_to_transcript_v1(blocks: list[LayoutBlock]) -> FlatTranscriptParts:
     header_lines: list[str] = []
     for block in headers:
         for raw in _block_to_lines(block.text):
-            header_lines.append(normalize_line(raw))
+            line = normalize_line(raw)
+            if line:
+                header_lines.append(line)
 
     footer_lines: list[str] = []
     for block in footers:
         for raw in _block_to_lines(block.text):
-            footer_lines.append(normalize_line(raw))
+            line = normalize_line(raw)
+            if line:
+                footer_lines.append(line)
 
     body_lines = _serialize_body_column_major(body)
     return FlatTranscriptParts(

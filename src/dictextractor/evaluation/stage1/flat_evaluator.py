@@ -1,4 +1,4 @@
-"""eval-flat: per-page flat text vs gold flat (spec v2, no ReadOrderEdit)."""
+"""eval-flat: per-page flat text vs gold flat (spec v2)."""
 
 from __future__ import annotations
 
@@ -6,13 +6,17 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, List, Literal, Optional
 
-from dictextractor.evaluation.stage1.alignment import align_rows
+from dictextractor.evaluation.stage1.alignment import (
+    align_page_collapsed,
+    align_rows,
+)
 from dictextractor.evaluation.stage1.character_quality import compute_character_quality
 from dictextractor.evaluation.stage1.flatten import (
     flatten_stage1_tsv,
     load_flat_lines,
 )
 from dictextractor.evaluation.stage1.markup_quality import compute_markup_quality
+from dictextractor.evaluation.stage1.read_order import compute_read_order
 from dictextractor.evaluation.stage1.stage1_evaluator import Stage1Evaluator
 from dictextractor.evaluation.stage1.stage1_metrics import (
     ReadOrderMetrics,
@@ -48,7 +52,11 @@ def _load_pred_lines(pred_path: Path) -> List[str]:
 
 
 class FlatStage1Evaluator:
-    """Evaluate flat stage-1 predictions against flat gold (line alignment)."""
+    """Evaluate flat stage-1 predictions against flat gold.
+
+    Character and typography use page-collapsed alignment (line splits ignored).
+    Read order uses line-level adjacent-span alignment (``--alignment-*`` flags).
+    """
 
     _FULL_METRIC_CSV_COLS = [
         "TextEdit",
@@ -61,8 +69,15 @@ class FlatStage1Evaluator:
         "italic_precision",
         "italic_recall",
         "italic_f1",
+        "ReadOrderEdit",
     ]
-    _MINIMAL_METRIC_CSV_COLS = ["TextEdit", "GCER", "WER", "typography_f1"]
+    _MINIMAL_METRIC_CSV_COLS = [
+        "TextEdit",
+        "GCER",
+        "WER",
+        "typography_f1",
+        "ReadOrderEdit",
+    ]
 
     def __init__(
         self,
@@ -93,19 +108,23 @@ class FlatStage1Evaluator:
     ) -> Stage1Metrics:
         pred_lines = _load_pred_lines(Path(pred_path))
         gold_lines = load_flat_lines(gold_path)
-        alignment = align_rows(
-            _lines_to_rows(pred_lines),
-            _lines_to_rows(gold_lines),
+        pred_rows = _lines_to_rows(pred_lines)
+        gold_rows = _lines_to_rows(gold_lines)
+        page_alignment = align_page_collapsed(pred_rows, gold_rows)
+        line_alignment = align_rows(
+            pred_rows,
+            gold_rows,
             threshold=self.alignment_threshold,
             max_span_rows=self.alignment_max_span_rows,
         )
-        char_q = compute_character_quality(alignment)
-        markup_q = compute_markup_quality(alignment)
+        char_q = compute_character_quality(page_alignment)
+        markup_q = compute_markup_quality(page_alignment)
+        read_o = compute_read_order(line_alignment)
         return Stage1Metrics(
             page_id=page_id,
             character_quality=char_q,
             markup_quality=markup_q,
-            read_order=ReadOrderMetrics(),
+            read_order=read_o,
         )
 
     @staticmethod

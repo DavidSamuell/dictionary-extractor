@@ -267,9 +267,9 @@ Decision tree:
 
 Field hygiene:
   headword: lemma only — no POS, commas, or trailing line punctuation (POS → pos).
-  gloss: short target-language equivalent(s) for \\ge; join synonyms with ';'.
+  target_glosses: map of language-code → short gloss (see <dictionary_languages>); join synonyms with ';'.
+  gloss: always leave "" (legacy — use target_glosses only).
   definition: longer explanatory text for \\de; minor sub-meanings within one sense with ' | '.
-  meaning_description: always leave "" (use gloss and definition instead).
   semantic_domain: short label only (bot., colloq.) — never commentary.
   phonetic → phonetic field (\\ph), not extra_fields.
   cross_references → cross_references list (\\cf): target lemmas only, strip "see"/"cf.".
@@ -317,7 +317,7 @@ Rules:
 - Do NOT invent fields not visible in the source.
 - Process each column independently — entries do not span columns.
 - Hyphenated line breaks: rejoin end-of-line hyphens across rows (intelligi- + ble → intelligible)
-  in headword, gloss, definition, examples, and extra_fields. Keep genuine in-word hyphens.
+  in headword, target_glosses, definition, examples, and extra_fields. Keep genuine in-word hyphens.
 - Emit clean JSON only — no commentary inside field values.
 """
 
@@ -331,7 +331,7 @@ EXTRA_FIELDS_DISCOVERY_BLOCK = f"""\
 Discovery mode is ENABLED for this run.
 
 Populate extra_fields ONLY for structurally marked content NOT covered by the
-canonical schema (phonetic, cross_references, gloss, definition, citation_form, etc.).
+canonical schema (phonetic, cross_references, target_glosses, definition, citation_form, etc.).
 
 Allowed snake_case keys (use ONLY from this list when applicable):
   {EXTRA_FIELDS_ALLOWLIST}
@@ -343,7 +343,7 @@ Reuse the same key across entries on the page.
 Strict rules:
   - Do NOT put ipa, see_also, pronunciation, or cross-refs in extra_fields — use
     phonetic and cross_references on the entry instead.
-  - Do NOT duplicate gloss, definition, pos, or semantic_domain in extra_fields.
+  - Do NOT duplicate target_glosses, definition, pos, or semantic_domain in extra_fields.
   - If no allowlisted extra field applies, leave extra_fields as {{}}.
 </extra_fields_discovery>"""
 
@@ -358,6 +358,7 @@ def stage_2_user(
     intro_text: str = "",
     discover_extra_fields: bool = False,
     guides: str = "",
+    dictionary_languages: str = "",
 ) -> str:
     """
     Build the user-turn prompt for Stage 2 structuring.
@@ -374,8 +375,13 @@ def stage_2_user(
         guides:                  Optional user-defined guidelines appended verbatim
                                  under a ``USER DEFINED GUIDELINES`` header at the
                                  end of the prompt.
+        dictionary_languages:  Pre-rendered ``<dictionary_languages>`` block from
+                                 ``DictionaryLanguagesConfig.format_prompt_block()``.
     """
     parts = []
+
+    if dictionary_languages:
+        parts.append(dictionary_languages)
 
     if intro_text:
         parts.append(
@@ -401,9 +407,10 @@ def stage_2_user(
         "Toolbox / MDF export.\n"
         "The first image is the dictionary page; additional images are introduction pages.\n"
         "Set entry_type on every row (main, subentry, or sense). Use parent_lexeme and "
-        "sense_number for subentries and senses. Populate gloss and definition separately; "
-        "leave meaning_description empty. Use phonetic and cross_references on the entry "
-        "(not extra_fields). Examples and example_glosses must be lists (one element per example)."
+        "sense_number for subentries and senses. Populate target_glosses (per language keys "
+        "above) and definition separately; leave legacy gloss empty. "
+        "Use phonetic and cross_references on the entry (not extra_fields). "
+        "Examples and example_glosses must be lists (one element per example)."
     )
     if not discover_extra_fields:
         closing += "\n" + EXTRA_FIELDS_DISABLED_LINE

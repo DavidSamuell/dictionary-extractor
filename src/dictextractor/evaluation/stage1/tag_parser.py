@@ -5,7 +5,8 @@ Provides:
 - strip_tags()                    : remove all HTML tags, return plain text
 - parse_tagged_words()            : split text into (word, frozenset_of_tags) tuples
 - normalize_unicode()             : NFC-normalise for consistent comparison
-- normalize_line_for_markup()     : line-level normalisation before word parse
+- normalize_line_text()           : NFC, collapse whitespace, space before punct
+- normalize_line_for_markup()     : tagged line normalisation before word parse
 - normalize_word_for_markup_align : word key for fuzzy typography alignment
 """
 
@@ -35,20 +36,24 @@ def normalize_whitespace(text: str) -> str:
 # Punctuation ignored when aligning words for typography metrics only.
 _MARKUP_ALIGN_PUNCT_RE = re.compile(r"[,.\:;!?\'\"()\[\]]")
 
-# Remove whitespace immediately before punctuation (typography line normalisation).
+# Remove whitespace immediately before punctuation (eval + markup normalisation).
 _SPACE_BEFORE_PUNCT_RE = re.compile(r"\s+([,.\:;!?\'\"()\[\]])")
 
 
-def normalize_line_for_markup(text: str) -> str:
-    """Prepare a tagged line for ``parse_tagged_words``.
+def normalize_line_text(text: str) -> str:
+    """NFC, collapse whitespace, and remove spaces before punctuation.
 
-    Applies NFC, collapses whitespace, and removes spaces before punctuation
-    so ``hello ,`` tokenises like ``hello,``. Character-level metrics use
-    ``normalize_whitespace`` via ``_clean()`` instead; this path is markup-only.
+    Applied to both pred and gold for semantic alignment (TextEdit, GCER, WER)
+    and as the first step before typography word parsing.
     """
     text = normalize_unicode(text)
     text = normalize_whitespace(text)
     return _SPACE_BEFORE_PUNCT_RE.sub(r"\1", text)
+
+
+def normalize_line_for_markup(text: str) -> str:
+    """Prepare a tagged line for ``parse_tagged_words`` (tags preserved)."""
+    return normalize_line_text(text)
 
 
 def normalize_word_for_markup_align(word: str) -> str:

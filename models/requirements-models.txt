@@ -1,0 +1,9 @@
+# Per-model venv deps for stage-1 VLM OCR (CUDA 12.4 / A100 80GB).
+# Install: bash examples/helper/install_models_venv.sh
+#
+# Env layout:
+#   .venv-mineru     — mineru-vl-utils[transformers], torch 2.6 cu124
+#   .venv-glmocr     — transformers>=5.9, torch 2.6 cu124
+#   .venv-paddleocr  — paddlepaddle-gpu 3.2.1 cu126, paddleocr[doc-parser]
+#
+# MinerU and GLM-OCR cannot share one env (transformers 4.x vs >=5.9).

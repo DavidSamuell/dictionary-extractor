@@ -3,12 +3,16 @@
 from __future__ import annotations
 
 import json
+import logging
 from pathlib import Path
 from typing import Any
 
 from dictextractor.ocr.adapters.blocks import LayoutBlock
 
+logger = logging.getLogger(__name__)
+
 _SKIP_LABELS = frozenset({"figure", "image", "seal", "chart"})
+_BODY_LABELS = frozenset({"text", "paragraph", "table", "list", "reference", "title"})
 
 
 def _normalize_bbox(
@@ -51,6 +55,20 @@ def paddle_blocks_from_json(path: Path) -> list[LayoutBlock]:
     return blocks
 
 
+def _warn_if_no_body_blocks(blocks: list[LayoutBlock], *, source: Path) -> None:
+    """Log when Paddle JSON has no dictionary body blocks (header/footer only)."""
+    body_count = sum(1 for b in blocks if b.category.lower() in _BODY_LABELS)
+    if body_count == 0:
+        labels = sorted({b.category for b in blocks})
+        logger.warning(
+            "Paddle OCR at %s: no body blocks in parsing_res_list "
+            "(%d block(s), labels=%s)",
+            source,
+            len(blocks),
+            labels or "none",
+        )
+
+
 def paddle_blocks_from_page_dir(page_dir: Path, *, stem: str) -> list[LayoutBlock]:
     """Load blocks from ``{stem}_res.json`` or any ``*_res.json`` in *page_dir*."""
     candidates = [
@@ -59,9 +77,13 @@ def paddle_blocks_from_page_dir(page_dir: Path, *, stem: str) -> list[LayoutBloc
     ]
     for path in candidates:
         if path.is_file():
-            return paddle_blocks_from_json(path)
+            blocks = paddle_blocks_from_json(path)
+            _warn_if_no_body_blocks(blocks, source=path)
+            return blocks
     for child in sorted(page_dir.iterdir()):
         if child.is_dir():
             for path in sorted(child.glob("*_res.json")):
-                return paddle_blocks_from_json(path)
+                blocks = paddle_blocks_from_json(path)
+                _warn_if_no_body_blocks(blocks, source=path)
+                return blocks
     raise FileNotFoundError(f"No Paddle *_res.json under {page_dir}")

@@ -70,9 +70,7 @@ CANONICAL_TSV_FIELDS = [
     "Sense_Number",
     "Homonym_Number",
     "POS",
-    "Gloss",
     "Definition",
-    "Meaning_Description",
     "Semantic_Domain",
     "Citation_Form",
     "Phonetic",
@@ -85,6 +83,20 @@ CANONICAL_TSV_FIELDS = [
 def _key_to_column(key: str) -> str:
     """snake_case extra-field key → Title_Case_Underscore TSV header."""
     return "_".join(part.capitalize() for part in key.split("_") if part)
+
+
+def _collect_target_gloss_keys(entries: List[Dict]) -> List[str]:
+    """Union of target_glosses keys in first-appearance order."""
+    seen: Dict[str, None] = {}
+    for entry in entries:
+        for k in (entry.get("target_glosses") or {}).keys():
+            if k and k not in seen:
+                seen[k] = None
+    return list(seen.keys())
+
+
+def _target_gloss_column(code: str) -> str:
+    return f"Gloss_{code}"
 
 
 def _collect_extra_keys(entries: List[Dict]) -> List[str]:
@@ -123,11 +135,8 @@ def save_to_json(dictionary_page, output_path: str) -> None:
 
 
 def _resolve_definition(entry: Dict) -> str:
-    """Definition column: prefer definition, fall back to legacy meaning_description."""
-    definition = entry.get("definition") or ""
-    if definition:
-        return definition
-    return entry.get("meaning_description") or ""
+    """Definition column from ``definition`` only."""
+    return entry.get("definition") or ""
 
 
 def _join_list_field(value) -> str:
@@ -160,15 +169,18 @@ def json_to_tsv(json_path: str, output_path: Optional[str] = None) -> str:
     with open(json_path, "r", encoding="utf-8") as f:
         entries = json.load(f)
 
+    gloss_keys = _collect_target_gloss_keys(entries)
+    gloss_columns = [_target_gloss_column(k) for k in gloss_keys]
     extra_keys = _collect_extra_keys(entries)
     extra_columns = [_key_to_column(k) for k in extra_keys]
-    fieldnames = CANONICAL_TSV_FIELDS + extra_columns
+    fieldnames = CANONICAL_TSV_FIELDS + gloss_columns + extra_columns
 
     with open(output_path, "w", newline="", encoding="utf-8") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames, delimiter="\t")
         writer.writeheader()
         for entry in entries:
             extras = entry.get("extra_fields") or {}
+            tg = entry.get("target_glosses") or {}
             row = {
                 "Entry_Type": entry.get("entry_type") or "main",
                 "Headword": entry.get("headword") or entry.get("headword_phrase", ""),
@@ -176,9 +188,7 @@ def json_to_tsv(json_path: str, output_path: Optional[str] = None) -> str:
                 "Sense_Number": entry.get("sense_number", ""),
                 "Homonym_Number": entry.get("homonym_number", ""),
                 "POS": entry.get("pos", ""),
-                "Gloss": entry.get("gloss", ""),
                 "Definition": _resolve_definition(entry),
-                "Meaning_Description": entry.get("meaning_description", ""),
                 "Semantic_Domain": entry.get("semantic_domain", ""),
                 "Citation_Form": entry.get("citation_form", ""),
                 "Phonetic": entry.get("phonetic", ""),
@@ -186,6 +196,10 @@ def json_to_tsv(json_path: str, output_path: Optional[str] = None) -> str:
                 "Examples": _join_list_field(entry.get("examples")),
                 "Example_Glosses": _join_list_field(entry.get("example_glosses")),
             }
+            if not tg and entry.get("gloss"):
+                tg = {"legacy": entry.get("gloss", "")}
+            for code, column in zip(gloss_keys, gloss_columns):
+                row[column] = tg.get(code, "")
             for key, column in zip(extra_keys, extra_columns):
                 row[column] = extras.get(key, "")
             writer.writerow(row)

@@ -1,5 +1,8 @@
 **/.env
 .venv/
+.venv-*/
+# Symlink to scratch venv; git does not apply .venv-*/ to symlink pathspecs
+.venv-paddleocr
 __pycache__/
 *.pyc
 *.pyo
@@ -11,4 +14,4 @@ archive/
 assets/
 **.workspace
 .claude
-*.zip
+models/outputs/

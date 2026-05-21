@@ -19,7 +19,22 @@ from dictextractor.extraction.llm_two_stage import TwoStageLLMExtraction
 from dictextractor.extraction.vlm_ocr import run_vlm_ocr_batch, run_vlm_ocr_entry
 from dictextractor.ocr.vlm.registry import get_vlm_spec, list_vlm_keys
 from dictextractor.ocr.vlm.runner import create_vlm_runner
+from dictextractor.utils.dictionary_languages import (
+    config_to_yaml_dict,
+    load_dictionary_languages,
+)
 from dictextractor.utils.io import save_to_json, json_to_tsv
+from dictextractor.utils.stage1_input import (
+    resolve_stage1_transcript_path,
+    stage1_flat_path,
+    stage1_tsv_path,
+    stage1_transcript_kind,
+)
+
+_DEFAULT_METADATA_CSV = (
+    Path(__file__).resolve().parents[3]
+    / "assets/dictionaries/full dictionaries/dictionary_metadata.csv"
+)
 
 
 _STRATEGIES = {
@@ -239,14 +254,25 @@ def _per_page_inputs_stage1(
 
 
 def _per_page_inputs_stage2(
-    images: List[Path], stage1_dir: Path
+    images: List[Path],
+    stage1_dir: Path,
+    preference: str = "auto",
 ) -> List[Dict[str, Any]]:
-    """Resolve the per-page stage-1 TSV that stage 2 consumes."""
+    """Resolve per-page Stage-1 transcript paths that stage 2 may consume."""
     rows: List[Dict[str, Any]] = []
     for image_file in images:
         stem = image_file.stem
-        tsv = stage1_dir / stem / f"{stem}_stage1.tsv"
-        rows.append({"stem": stem, "stage1_tsv_path": str(tsv)})
+        page_dir = stage1_dir / stem
+        resolved = resolve_stage1_transcript_path(page_dir, stem, preference)  # type: ignore[arg-type]
+        row: Dict[str, Any] = {
+            "stem": stem,
+            "stage1_tsv_path": str(stage1_tsv_path(page_dir, stem)),
+            "stage1_flat_path": str(stage1_flat_path(page_dir, stem)),
+            "stage1_transcript_path": str(resolved) if resolved else None,
+        }
+        if resolved is not None:
+            row["stage1_transcript_kind"] = stage1_transcript_kind(resolved)
+        rows.append(row)
     return rows
 
 
@@ -315,9 +341,10 @@ def _build_stage2_manifest(
     images: List[Path],
     stage1_dir: Path,
     intro_image_paths: List[str],
+    dictionary_languages: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """Assemble the stage-2 manifest dict (no I/O)."""
-    return {
+    manifest = {
         "stage": "2",
         "experiment_name": args.stage2_experiment_name,
         "created_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
@@ -329,6 +356,7 @@ def _build_stage2_manifest(
             getattr(args, "discover_extra_fields", False)
         ),
         "stage2_output_format": "mdf",
+        "stage1_input": getattr(args, "stage1_input", "auto"),
         "stage1_source": {
             "experiment_name": args.experiment_name,
             "stage1_dir": str(stage1_dir),
@@ -350,11 +378,21 @@ def _build_stage2_manifest(
             "snippets_dir": str(snippets_dir),
             "page_count": len(images),
         },
-        "per_page": _per_page_inputs_stage2(images, stage1_dir),
+        "per_page": _per_page_inputs_stage2(
+            images, stage1_dir, getattr(args, "stage1_input", "auto")
+        ),
     }
+    if dictionary_languages is not None:
+        manifest["dictionary_languages"] = dictionary_languages
+    return manifest
 
 
-def _build_strategy(args, intro_text: str, intro_image_paths: List[str]):
+def _build_strategy(
+    args,
+    intro_text: str,
+    intro_image_paths: List[str],
+    dictionary_languages=None,
+):
     """Instantiate the correct extraction strategy."""
     if args.strategy == "manual":
         return ManualLLMExtraction(model=args.model)
@@ -373,6 +411,7 @@ def _build_strategy(args, intro_text: str, intro_image_paths: List[str]):
             stage1_guides=getattr(args, "stage1_guides_text", ""),
             stage2_guides=getattr(args, "stage2_guides_text", ""),
             stage1_mode=getattr(args, "stage1_mode", "column"),
+            dictionary_languages=dictionary_languages,
         )
     raise ValueError(f"Unknown strategy: {args.strategy}")
 
@@ -625,14 +664,22 @@ Examples:
         choices=["1", "2", "both"],
         default="both",
         help="Run only stage 1, only stage 2, or both (default: both). "
-        "Stage-2-only requires existing Stage 1 TSV in the output directory.",
+        "Stage-2-only requires an existing Stage-1 transcript (TSV or flat).",
     )
     parser.add_argument(
         "--stage1-mode",
         choices=["column", "flat"],
         default="column",
-        help="Stage-1 output schema for two_stage: column TSV (default) or flat "
-        "transcription (eval-flat). Flat mode supports --stage 1 only.",
+        help="Stage-1 *write* format for two_stage when running stage 1 or both: "
+        "column TSV (default) or flat text (eval-flat).",
+    )
+    parser.add_argument(
+        "--stage1-input",
+        choices=["auto", "column", "flat"],
+        default="auto",
+        dest="stage1_input",
+        help="Stage-2 *read* preference: column TSV, flat text, or auto (TSV if "
+        "present, else flat). Ignored for stage-1-only runs.",
     )
 
     args = parser.parse_args()
@@ -650,11 +697,8 @@ Examples:
     elif args.vlm_model:
         parser.error("--vlm-model is only valid with --strategy vlm_ocr")
 
-    if args.stage1_mode == "flat":
-        if args.strategy != "two_stage":
-            parser.error("--stage1-mode flat requires --strategy two_stage")
-        if args.stage != "1":
-            parser.error("--stage1-mode flat supports --stage 1 only (not stage 2)")
+    if args.stage1_mode == "flat" and args.strategy != "two_stage":
+        parser.error("--stage1-mode flat requires --strategy two_stage")
 
     # ── Validate experiment slot names (must be safe directory names) ────────
     if not re.fullmatch(r"[A-Za-z0-9_.-]+", args.experiment_name):
@@ -817,6 +861,7 @@ def _run_samples_dir(args, parser) -> int:
             else None
         )
         args.output = str(output_dir)
+        args.entry_dir = str(entry_dir)
 
         print("\n" + "#" * 60)
         print(f"# Entry: {entry_dir.name}")
@@ -883,8 +928,24 @@ def _run_single_entry(args, parser) -> int:
                 f"Intro: {len(intro_text)} chars of text, {len(intro_image_paths)} images loaded."
             )
 
+    dictionary_languages = None
+    entry_dir = getattr(args, "entry_dir", None)
+    if entry_dir and args.strategy == "two_stage":
+        entry_path = Path(entry_dir)
+        dictionary_languages = load_dictionary_languages(
+            entry_path,
+            metadata_csv_path=_DEFAULT_METADATA_CSV,
+        )
+        print(
+            f"Languages: {dictionary_languages.layout} | "
+            f"source={dictionary_languages.source.code} | "
+            f"targets={dictionary_languages.target_codes()}"
+        )
+
     # ── Strategy (instantiated once, shared across pages) ─────────────────────
-    strategy = _build_strategy(args, intro_text, intro_image_paths)
+    strategy = _build_strategy(
+        args, intro_text, intro_image_paths, dictionary_languages
+    )
 
     # ── Batch loop ─────────────────────────────────────────────────────────────
     total = len(images)
@@ -898,13 +959,19 @@ def _run_single_entry(args, parser) -> int:
         f"Strategy: {args.strategy} | Model: {args.model} | Stage: {args.stage} | Overwrite: {args.overwrite}"
     )
     if args.strategy == "two_stage":
-        print(
-            f"Stage-1 slot: {args.experiment_name} | Alphabet: "
-            f"{'on' if args.alphabet else 'off'} | OCR hint: "
-            f"{'on' if args.ocr_text else 'off'} | "
-            f"Reasoning: {args.stage1_reasoning_effort}"
-        )
+        if args.stage in ("1", "both"):
+            print(
+                f"Stage-1 slot: {args.experiment_name} | Alphabet: "
+                f"{'on' if args.alphabet else 'off'} | OCR hint: "
+                f"{'on' if args.ocr_text else 'off'} | "
+                f"Reasoning: {args.stage1_reasoning_effort}"
+            )
         if args.stage in ("2", "both"):
+            if args.stage == "2":
+                print(
+                    f"Stage-1 input slot (read-only): {args.experiment_name} "
+                    f"(preference={args.stage1_input}: *_stage1.tsv / *_stage1_flat.txt)"
+                )
             print(
                 f"Stage-2 slot: {args.stage2_experiment_name} "
                 f"(stage1_source={args.experiment_name}) | "
@@ -923,7 +990,14 @@ def _run_single_entry(args, parser) -> int:
             _write_run_config(
                 stage2_dir,
                 _build_stage2_manifest(
-                    args, input_dir, images, stage1_dir, intro_image_paths
+                    args,
+                    input_dir,
+                    images,
+                    stage1_dir,
+                    intro_image_paths,
+                    config_to_yaml_dict(dictionary_languages)
+                    if dictionary_languages
+                    else None,
                 ),
                 force=args.overwrite,
             )
@@ -934,11 +1008,23 @@ def _run_single_entry(args, parser) -> int:
         stem = image_file.stem
         stage1_page_dir = stage1_dir / stem
         stage2_page_dir = stage2_dir / stem
-        stage1_tsv = stage1_page_dir / (stem + "_stage1.tsv")
-        stage1_flat = stage1_page_dir / (stem + "_stage1_flat.txt")
-        stage1_done = (
-            stage1_flat if getattr(args, "stage1_mode", "column") == "flat" else stage1_tsv
-        )
+        stage1_tsv = stage1_tsv_path(stage1_page_dir, stem)
+        stage1_flat = stage1_flat_path(stage1_page_dir, stem)
+        stage1_transcript: Optional[Path] = None
+        if args.stage == "2":
+            stage1_transcript = resolve_stage1_transcript_path(
+                stage1_page_dir,
+                stem,
+                getattr(args, "stage1_input", "auto"),
+            )
+        if args.stage in ("1", "both"):
+            stage1_done = (
+                stage1_flat
+                if getattr(args, "stage1_mode", "column") == "flat"
+                else stage1_tsv
+            )
+        else:
+            stage1_done = stage1_transcript
         out_tsv = stage2_page_dir / (stem + ".tsv")
 
         # ── Resume: skip already-processed pages ──────────────────────────────
@@ -962,10 +1048,12 @@ def _run_single_entry(args, parser) -> int:
                 skipped += 1
                 continue
 
-        # ── Stage-2-only: verify stage 1 output exists ───────────────────────
-        if args.stage == "2" and not stage1_tsv.exists():
+        # ── Stage-2-only: verify stage 1 transcript exists ───────────────────
+        if args.stage == "2" and stage1_transcript is None:
             print(
-                f"[{idx+1}/{total}] SKIP {image_file.name} → no stage1 TSV at {stage1_tsv}"
+                f"[{idx+1}/{total}] SKIP {image_file.name} → no stage1 transcript "
+                f"(preference={args.stage1_input}; looked for {stage1_tsv.name} "
+                f"and {stage1_flat.name})"
             )
             skipped += 1
             continue
@@ -994,7 +1082,10 @@ def _run_single_entry(args, parser) -> int:
             # Extract
             extract_kwargs = {}
             if args.strategy == "two_stage":
-                extract_kwargs["stage1_output_path"] = str(stage1_done)
+                if args.stage == "2":
+                    extract_kwargs["stage1_output_path"] = str(stage1_transcript)
+                else:
+                    extract_kwargs["stage1_output_path"] = str(stage1_done)
                 if args.stage in ("2", "both"):
                     extract_kwargs["stage2_output_path"] = str(out_tsv)
                 extract_kwargs["run_stage"] = args.stage

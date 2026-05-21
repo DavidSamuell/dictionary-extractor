@@ -20,6 +20,10 @@ from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 logger = logging.getLogger(__name__)
 
+# Gold for these languages is maintained locally, not from Label Studio.
+# Syncing would overwrite hand-edited stage-1-gold TSVs on disk.
+EXCLUDED_LANGUAGES: frozenset[str] = frozenset({"Circassian-English-Turkish"})
+
 AUTH_SCHEMES = {"auto", "Token", "Bearer", "PAT"}
 TEXT_FIELD_TO_COLUMN: dict[str, str] = {
     "header_text": "header",
@@ -66,12 +70,18 @@ class Annotation(BaseModel):
 
 
 class TaskData(BaseModel):
-    """Task metadata needed to place an export back on disk."""
+    """Task metadata and import-time OCR prefill from ``label-studio/setup.py``."""
 
     model_config = ConfigDict(extra="ignore")
 
     page_name: str
     language: str
+    header_text: str = ""
+    footer_text: str = ""
+    body_text: str = ""
+    left_text: str = ""
+    middle_text: str = ""
+    right_text: str = ""
 
 
 class LabelStudioTask(BaseModel):
@@ -249,6 +259,54 @@ def annotation_text_by_column(annotation: Annotation) -> dict[str, str]:
     return columns
 
 
+def task_data_text_by_column(task: LabelStudioTask) -> dict[str, str]:
+    """Map Label Studio task import fields to stage-1 column ids."""
+    data = task.data
+    return {
+        "header": data.header_text,
+        "footer": data.footer_text,
+        "single": data.body_text,
+        "left": data.left_text,
+        "middle": data.middle_text,
+        "right": data.right_text,
+    }
+
+
+def columns_have_body_lines(columns: dict[str, str]) -> bool:
+    """Return True if any column contributes at least one non-empty TSV line."""
+    for column in ("header", "single", "left", "middle", "right", "footer"):
+        if split_annotation_lines(columns.get(column, "")):
+            return True
+    return False
+
+
+def resolve_export_columns(
+    task: LabelStudioTask,
+    *,
+    include_prefill: bool,
+) -> tuple[dict[str, str], str]:
+    """
+    Choose column text for GOLD export.
+
+    Returns:
+        (columns, source) where source is ``annotation``, ``prefill``, or ``skip``.
+    """
+    annotation = latest_annotation(task)
+    if annotation is not None:
+        columns = annotation_text_by_column(annotation)
+        if columns_have_body_lines(columns):
+            return columns, "annotation"
+        if not include_prefill:
+            return columns, "skip"
+
+    if include_prefill:
+        columns = task_data_text_by_column(task)
+        if columns_have_body_lines(columns):
+            return columns, "prefill"
+
+    return {}, "skip"
+
+
 def write_gold_tsv(samples_dir: Path, task: LabelStudioTask, columns: dict[str, str]) -> Path:
     """Write one task annotation to the experiment-agnostic gold location."""
     page_dir = (
@@ -294,19 +352,32 @@ def export_language(
     client: LabelStudioClient,
     samples_dir: Path,
     project: LabelStudioProject,
+    *,
+    include_prefill: bool = False,
 ) -> int:
-    """Export all submitted tasks from one Label Studio project."""
+    """Export tasks from one Label Studio project (submitted and/or import prefill)."""
     tasks = client.list_project_tasks(project.id)
     written = 0
 
     for index, task in enumerate(tasks, start=1):
-        annotation = latest_annotation(task)
-        if annotation is None:
-            logger.info("  [%d/%d] task %d has no submitted annotation", index, len(tasks), task.id)
+        columns, source = resolve_export_columns(task, include_prefill=include_prefill)
+        if source == "skip":
+            logger.info(
+                "  [%d/%d] task %d (%s) skipped — no submitted text and no prefill",
+                index,
+                len(tasks),
+                task.id,
+                task.data.page_name,
+            )
             continue
-        columns = annotation_text_by_column(annotation)
         output_path = write_gold_tsv(samples_dir, task, columns)
-        logger.info("  [%d/%d] wrote %s", index, len(tasks), output_path)
+        logger.info(
+            "  [%d/%d] wrote %s (%s)",
+            index,
+            len(tasks),
+            output_path,
+            source,
+        )
         written += 1
 
     return written
@@ -350,6 +421,15 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default=os.getenv("LABEL_STUDIO_AUTH_SCHEME", "auto"),
         help="Authorization scheme: auto, Token, Bearer, or PAT (refresh token -> access token).",
     )
+    parser.add_argument(
+        "--include-prefill",
+        action="store_true",
+        help=(
+            "For tasks with no submitted annotation, or an empty submission "
+            "(OCR accepted as-is), export import-time task data (header_text, "
+            "left_text, etc.) from Label Studio setup."
+        ),
+    )
     parser.add_argument("--verbose", "-v", action="store_true", help="Enable DEBUG logging.")
     return parser.parse_args(argv)
 
@@ -378,6 +458,7 @@ def main(argv: list[str] | None = None) -> int:
             args.ls_auth_scheme,
             args.ls_access_token,
             args.languages,
+            args.include_prefill,
         )
     except (requests.HTTPError, ValidationError, LabelStudioExportError) as error:
         logger.error("Export failed: %s", error)
@@ -391,6 +472,7 @@ def run_export(
     ls_auth_scheme: str,
     ls_access_token: str | None,
     languages: list[str] | None,
+    include_prefill: bool = False,
 ) -> int:
     """Export selected Label Studio projects into the samples directory."""
     client = LabelStudioClient(ls_url, ls_token, ls_auth_scheme, access_token=ls_access_token)
@@ -407,7 +489,9 @@ def run_export(
             logger.warning("[%d/%d] no project found for %s", index, len(entry_dirs), entry_dir.name)
             continue
         logger.info("[%d/%d] exporting %s (project id=%d)", index, len(entry_dirs), entry_dir.name, project.id)
-        total_written += export_language(client, samples_dir, project)
+        total_written += export_language(
+            client, samples_dir, project, include_prefill=include_prefill
+        )
 
     logger.info("Done. Wrote %d GOLD TSV files.", total_written)
     return 0
@@ -416,12 +500,26 @@ def run_export(
 def selected_entry_dirs(samples_dir: Path, languages: list[str] | None) -> list[Path]:
     """Return sample subdirectories selected for export."""
     entries = sorted(path for path in samples_dir.iterdir() if path.is_dir())
+
+    skipped = [entry.name for entry in entries if entry.name in EXCLUDED_LANGUAGES]
+    if skipped:
+        logger.info(
+            "Skipping Label Studio sync (local gold only): %s",
+            ", ".join(sorted(skipped)),
+        )
+    entries = [entry for entry in entries if entry.name not in EXCLUDED_LANGUAGES]
+
     if languages is None:
         return entries
 
     requested = set(languages)
+    if requested & EXCLUDED_LANGUAGES:
+        logger.warning(
+            "--languages includes excluded entries (ignored): %s",
+            ", ".join(sorted(requested & EXCLUDED_LANGUAGES)),
+        )
     selected = [entry for entry in entries if entry.name in requested]
-    missing = sorted(requested - {entry.name for entry in selected})
+    missing = sorted(requested - EXCLUDED_LANGUAGES - {entry.name for entry in selected})
     if missing:
         logger.warning("Requested languages not found under samples dir: %s", ", ".join(missing))
     return selected

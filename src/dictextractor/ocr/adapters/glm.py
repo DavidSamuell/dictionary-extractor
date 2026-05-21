@@ -35,5 +35,11 @@ def glm_transcript_from_page_dir(page_dir: Path) -> FlatTranscriptParts:
     Reading order is model output order (top-to-bottom as emitted).
     """
     text = _read_text_page(page_dir)
-    lines = [normalize_line(line) for line in text.splitlines() if line.strip()]
+    lines: list[str] = []
+    for raw in text.splitlines():
+        if not raw.strip():
+            continue
+        line = normalize_line(raw)
+        if line:
+            lines.append(line)
     return FlatTranscriptParts(header=[], body=lines, footer=[])

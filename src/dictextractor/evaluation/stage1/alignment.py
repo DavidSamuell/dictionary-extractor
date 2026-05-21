@@ -13,8 +13,7 @@ import grapheme
 import Levenshtein
 
 from dictextractor.evaluation.stage1.tag_parser import (
-    normalize_unicode,
-    normalize_whitespace,
+    normalize_line_text,
     strip_tags,
 )
 
@@ -78,12 +77,13 @@ class _Candidate:
 
 def clean_text(text: str) -> str:
     """Tag-strip and normalize text for semantic matching and text metrics."""
-    return normalize_whitespace(normalize_unicode(strip_tags(text)))
+    return normalize_line_text(strip_tags(text))
 
 
 def _span_text(rows: List[Row], *, tagged: bool) -> str:
     parts = [r.get("text", "") if tagged else clean_text(r.get("text", "")) for r in rows]
-    return normalize_whitespace(" ".join(parts))
+    joined = " ".join(p for p in parts if p)
+    return normalize_line_text(joined) if not tagged else joined
 
 
 def _make_spans(rows: List[Row], prefix: str, max_span_rows: int) -> List[RowSpan]:
@@ -115,6 +115,32 @@ def _ned(pred: str, gold: str) -> float:
 
 def _row_indexes(span: RowSpan) -> set[int]:
     return set(range(span.start_index, span.end_index + 1))
+
+
+def collapse_rows_to_page(rows: List[Row]) -> List[Row]:
+    """Collapse all rows into one synthetic page row (tagged text in ``text``)."""
+    if not rows:
+        return []
+    tagged = _span_text(rows, tagged=True)
+    return [{"column_id": "page", "line_number": "1", "text": tagged}]
+
+
+def align_page_collapsed(
+    pred_rows: List[Row],
+    gold_rows: List[Row],
+) -> AlignmentResult:
+    """Align pred/gold as single collapsed page spans (no multi-line fuzzy search).
+
+    Used for character and typography metrics where line boundaries should not
+    affect scoring. Joins rows with spaces and applies the same ``clean_text``
+    normalisation as multi-row spans.
+    """
+    return align_rows(
+        collapse_rows_to_page(pred_rows),
+        collapse_rows_to_page(gold_rows),
+        threshold=0.0,
+        max_span_rows=1,
+    )
 
 
 def align_rows(

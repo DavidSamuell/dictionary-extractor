@@ -8,7 +8,7 @@ from typing import Any
 
 from dictextractor.ocr.adapters.blocks import LayoutBlock
 
-_SKIP_TYPES = frozenset({"figure", "image", "equation"})
+_SKIP_TYPES = frozenset({"figure", "image", "equation", "phonetic"})
 
 
 def mineru_blocks_from_json(path: Path) -> list[LayoutBlock]:

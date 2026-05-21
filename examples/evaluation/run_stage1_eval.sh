@@ -26,8 +26,10 @@ OUTPUT_DIR="evaluations/stage1_eval"
 # Subset of language subfolders to evaluate. Comment out the `--languages`
 # line below to evaluate every language with stage-1 gold.
 LANGUAGES=(
+    Assyrian-English
     Canala-English
     Chepang-English
+    Chung-English
     Efik-English
     Na-English-Chinese
     Reel-English
@@ -35,6 +37,9 @@ LANGUAGES=(
     Shilluk-English
     Evenki-Russian
     Chukchi-Russian
+    Circassian-English-Turkish
+    Yiddish-English
+    Nahuatl-French
 )
 
 echo "=== Running Stage 1 evaluation across all experiments ==="

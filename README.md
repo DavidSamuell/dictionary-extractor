@@ -232,7 +232,6 @@ Provisions one Label Studio project per language pair, uploads page images, and 
 |----------------------|------------------------------------------------------------------------------|
 | `headword`           | Headword/phrase with all diacritics preserved                                |
 | `pos`                | Part-of-speech tag/abbreviation (empty if absent)                            |
-| `meaning_description`| Primary definition; senses joined with `;`, sub-meanings with ` \| `         |
 | `semantic_domain`    | Short domain label (`botany`, `colloquial`, …) — only when explicitly marked |
 | `examples`           | List of usage examples                                                       |
 | `extra_fields`       | Discovery slot for non-canonical fields (etymology, IPA, gender, …)          |

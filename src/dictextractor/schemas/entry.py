@@ -13,7 +13,7 @@ class DictionaryEntry(BaseModel):
     """Structured dictionary entry aligned with SIL Toolbox / MDF export.
 
     Use entry_type and parent_lexeme to encode hierarchy (\\lx, \\se, \\sn).
-    Populate gloss (\\ge) and definition (\\de) separately when the source distinguishes them.
+    Populate target_glosses (\\ge, \\gn, …) and definition (\\de) separately when the source distinguishes them.
     """
 
     entry_type: EntryType = Field(
@@ -59,11 +59,19 @@ class DictionaryEntry(BaseModel):
             "сущ., nn.); empty if not shown."
         ),
     )
+    target_glosses: Dict[str, str] = Field(
+        default_factory=dict,
+        description=(
+            "Short glosses per target language — keys must match dictionary_languages.yaml "
+            "(e.g. en, zh, tr). Maps to MDF \\ge, \\gn, etc. Leave empty {} when none. "
+            "Do not duplicate into gloss."
+        ),
+    )
     gloss: str = Field(
         default="",
         description=(
-            "Short target-language gloss for \\ge — brief equivalent(s) only; join "
-            "near-synonyms with '; '. Empty if the entry has no short gloss."
+            "Legacy single gloss field — leave empty. Use target_glosses[code] from "
+            "the dictionary language config instead."
         ),
     )
     definition: str = Field(
@@ -71,13 +79,6 @@ class DictionaryEntry(BaseModel):
         description=(
             "Longer definitional text for \\de — explanatory wording beyond a short gloss; "
             "join minor sub-meanings of the same sense with ' | '. Empty if none."
-        ),
-    )
-    meaning_description: str = Field(
-        default="",
-        description=(
-            "Legacy combined gloss/definition field — leave empty; use gloss and definition "
-            "instead. Downstream TSV may fall back to this when definition is empty."
         ),
     )
     semantic_domain: str = Field(
@@ -126,7 +127,7 @@ class DictionaryEntry(BaseModel):
         description=(
             "Non-MDF-standard structurally marked fields only (etymology, gender, register, "
             "dialect, inflection tables). Use frozen allowlist keys when discovery mode is on; "
-            "never duplicate phonetic, cross_references, gloss, or definition here; else {}."
+            "never duplicate phonetic, cross_references, target_glosses, or definition here; else {}."
         ),
     )
 

@@ -40,6 +40,7 @@ import json
 
 from dictextractor.evaluation.stage1.flatten import flat_transcription_to_text
 from dictextractor.extraction.base import ExtractionStrategy
+from dictextractor.schemas.dictionary_languages import DictionaryLanguagesConfig
 from dictextractor.schemas.entry import (
     DictionaryEntry,
     DictionaryPage,
@@ -166,6 +167,7 @@ class TwoStageLLMExtraction(ExtractionStrategy):
         stage1_guides: str = "",
         stage2_guides: str = "",
         stage1_mode: str = "column",
+        dictionary_languages: Optional[DictionaryLanguagesConfig] = None,
     ):
         if stage1_mode not in ("column", "flat"):
             raise ValueError(f"stage1_mode must be 'column' or 'flat', got {stage1_mode!r}")
@@ -180,6 +182,7 @@ class TwoStageLLMExtraction(ExtractionStrategy):
         self.stage1_guides = stage1_guides
         self.stage2_guides = stage2_guides
         self.stage1_mode = stage1_mode
+        self.dictionary_languages = dictionary_languages
 
     @property
     def name(self) -> str:
@@ -250,17 +253,16 @@ class TwoStageLLMExtraction(ExtractionStrategy):
                 )
                 print(f"Stage 1 saved → {base.name}  |  raw → {raw1_path.name}  |  input → {input1_path.name}")
         elif run_stage == "2":
-            if self.stage1_mode == "flat":
-                raise ValueError(
-                    "Stage 2 requires column TSV; use --stage1-mode column for stage 2 runs"
-                )
             if not stage1_output_path or not Path(stage1_output_path).exists():
                 raise FileNotFoundError(
-                    f"Stage-2-only requires existing stage 1 TSV: {stage1_output_path}"
+                    f"Stage-2-only requires existing stage 1 transcript: {stage1_output_path}"
                 )
             transcribed_text = Path(stage1_output_path).read_text(encoding="utf-8")
             print("=" * 60)
-            print(f"Stage 2 only: loaded existing transcription from {stage1_output_path}")
+            print(
+                f"Stage 2 only: loaded existing transcription from {stage1_output_path} "
+                f"({len(transcribed_text)} chars)"
+            )
 
         # ── Stage 2: structuring ───────────────────────────────────────────────
         stage2_base: Optional[Path] = None
@@ -397,11 +399,17 @@ class TwoStageLLMExtraction(ExtractionStrategy):
         mime = resolve_mime_type(image_path)
         page_data_url = image_data_url(image_path, mime)
 
+        lang_block = (
+            self.dictionary_languages.format_prompt_block()
+            if self.dictionary_languages
+            else ""
+        )
         user_text = stage_2_user(
             transcribed_text=transcribed_text,
             intro_text=intro_text,
             discover_extra_fields=self.discover_extra_fields,
             guides=self.stage2_guides,
+            dictionary_languages=lang_block,
         )
 
         content: list = [

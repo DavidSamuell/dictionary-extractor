@@ -22,6 +22,88 @@ from dictextractor.evaluation.stage1.stage1_metrics import Stage1Metrics
 
 FLAT_CACHE_FILE_NAME = "stage1_flat_eval_cache.json"
 
+# Specialized OCR backends (folder names without "flat"; preds use *_stage1_flat.txt).
+DEFAULT_VLM_OCR_EXPERIMENTS: tuple[str, ...] = (
+    "MinerU2.5-Pro",
+    "PaddleOCR-VL-1.5",
+    "GLM-OCR",
+)
+
+
+def list_stage1_experiments(
+    samples_dir: Path,
+    *,
+    languages: list[str] | None,
+    name_contains: str | None,
+) -> list[str]:
+    """Return sorted experiment folder names under ``outputs/stage-1``."""
+    needle = name_contains.lower() if name_contains else None
+    names: set[str] = set()
+    for lang_dir in sorted(samples_dir.iterdir()):
+        if not lang_dir.is_dir():
+            continue
+        if languages and lang_dir.name not in languages:
+            continue
+        stage1_root = lang_dir / "outputs" / "stage-1"
+        if not stage1_root.is_dir():
+            continue
+        for child in stage1_root.iterdir():
+            if child.is_dir() and not child.name.startswith("."):
+                if needle is None or needle in child.name.lower():
+                    names.add(child.name)
+    return sorted(names)
+
+
+def resolve_flat_and_vlm_ocr_experiments(
+    samples: Path,
+    *,
+    languages: list[str] | None,
+) -> list[str]:
+    """LLM flat ablations plus specialized OCR folders (excludes column Gemini)."""
+    flat = list_stage1_experiments(
+        samples, languages=languages, name_contains="flat"
+    )
+    on_disk = set(
+        list_stage1_experiments(samples, languages=languages, name_contains=None)
+    )
+    ocr = [name for name in DEFAULT_VLM_OCR_EXPERIMENTS if name in on_disk]
+    return sorted(set(flat) | set(ocr))
+
+
+def resolve_experiment_names(args: argparse.Namespace, samples: Path) -> list[str] | None:
+    """Resolve which experiment folders to include in batch eval-flat."""
+    if args.include_vlm_ocr:
+        found = resolve_flat_and_vlm_ocr_experiments(
+            samples, languages=args.languages
+        )
+        if args.experiment_names:
+            allowed = set(args.experiment_names)
+            found = [name for name in found if name in allowed]
+        if not found:
+            print("No flat or VLM OCR experiments found on disk.")
+        else:
+            print(f"Experiments (flat + VLM OCR): {found}")
+        return found
+    if args.experiment_name_contains:
+        found = list_stage1_experiments(
+            samples,
+            languages=args.languages,
+            name_contains=args.experiment_name_contains,
+        )
+        if args.experiment_names:
+            allowed = set(args.experiment_names)
+            found = [name for name in found if name in allowed]
+        if not found:
+            print(
+                f"No experiments matching name filter {args.experiment_name_contains!r}."
+            )
+        else:
+            print(f"Experiments (name contains {args.experiment_name_contains!r}): {found}")
+        return found
+    if args.all_experiments:
+        return None
+    return args.experiment_names
+
 
 def main() -> int:
     parser = argparse.ArgumentParser(
@@ -38,6 +120,23 @@ def main() -> int:
     )
     parser.add_argument("--languages", nargs="+", default=None)
     parser.add_argument("--all-experiments", action="store_true")
+    parser.add_argument(
+        "--experiment-name-contains",
+        default=None,
+        metavar="SUBSTR",
+        help=(
+            "Only evaluate experiment folders whose name contains SUBSTR "
+            "(case-insensitive), e.g. 'flat' for LLM flat ablations."
+        ),
+    )
+    parser.add_argument(
+        "--include-vlm-ocr",
+        action="store_true",
+        help=(
+            "Evaluate gemini*flat* experiments plus MinerU / Paddle / GLM OCR. "
+            "Does not include column-mode gemini3flash_* or legacy."
+        ),
+    )
     parser.add_argument("-o", "--output-dir", default=None)
     parser.add_argument(
         "--metrics",
@@ -79,15 +178,33 @@ def main() -> int:
         print(f"Error: samples directory not found: {samples}")
         return 1
 
+    mode_flags = sum(
+        bool(x)
+        for x in (
+            args.all_experiments,
+            args.experiment_name_contains,
+            args.include_vlm_ocr,
+        )
+    )
+    if mode_flags > 1:
+        parser.error(
+            "Use only one of --all-experiments, --experiment-name-contains, "
+            "--include-vlm-ocr."
+        )
+
     out = Path(args.output_dir) if args.output_dir else samples / "stage1_flat_eval"
     out.mkdir(parents=True, exist_ok=True)
 
+    experiment_names = resolve_experiment_names(args, samples)
+    if experiment_names is not None and not experiment_names:
+        return 1
+
     tasks_export = evaluator.discover_tasks(
-        samples, experiments=args.experiment_names, languages=None
+        samples, experiments=experiment_names, languages=None
     )
     tasks_eval = evaluator.discover_tasks(
         samples,
-        experiments=args.experiment_names,
+        experiments=experiment_names,
         languages=args.languages,
     )
     if not tasks_export:
@@ -163,11 +280,25 @@ def main() -> int:
         print(f"\n### Experiment: {exp} ({len(results)} page(s)) ###")
         print(text)
 
+    tasks_for_csv = evaluator.discover_tasks(
+        samples, experiments=None, languages=args.languages
+    )
+    results_for_csv = cache.collect_valid_metrics(
+        tasks_for_csv,
+        alignment_threshold=ath,
+        alignment_max_span_rows=amax,
+    )
+    n_csv_exps = len(results_for_csv)
+    n_csv_pages = sum(len(v) for v in results_for_csv.values())
+    print(
+        f"Aggregate CSVs: {n_csv_pages} page(s) across {n_csv_exps} experiment(s) "
+        f"(cached + this run; not limited to experiments selected above)."
+    )
     evaluator.generate_detailed_csv(
-        results_by_exp, samples, out / "stage1_flat_eval_detailed.csv"
+        results_for_csv, samples, out / "stage1_flat_eval_detailed.csv"
     )
     evaluator.generate_summary_csv(
-        results_by_exp, samples, out / "stage1_flat_eval_summary.csv"
+        results_for_csv, samples, out / "stage1_flat_eval_summary.csv"
     )
     print(f"\nReports under: {out}")
     return 0

@@ -5,7 +5,8 @@ from __future__ import annotations
 import json
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Optional, Tuple
+from collections import OrderedDict
+from typing import Dict, List, Optional, Tuple
 
 from dictextractor.evaluation.stage1.stage1_metrics import (
     CharacterQualityMetrics,
@@ -16,7 +17,7 @@ from dictextractor.evaluation.stage1.stage1_metrics import (
 )
 
 CACHE_FILE_NAME = "stage1_eval_cache.json"
-CACHE_FORMAT_VERSION = 1
+CACHE_FORMAT_VERSION = 3  # v3: eval-flat page collapse for char/markup; line read order
 
 
 def _file_fingerprint(path: Path) -> Tuple[int, int]:
@@ -192,7 +193,7 @@ class Stage1EvalCache:
         }
 
     def prune_stale_paths(self, samples_dir: Path) -> None:
-        """Remove entries whose prediction or gold TSV no longer exists on disk."""
+        """Remove entries whose prediction or gold files no longer exist on disk."""
         for exp in list(self._data.keys()):
             pages = self._data[exp]
             for page_id in list(pages.keys()):
@@ -200,15 +201,40 @@ class Stage1EvalCache:
                 if not sep or not stem:
                     del pages[page_id]
                     continue
-                pred = (
-                    samples_dir / lang / "outputs" / "stage-1" / exp
-                    / stem / f"{stem}_stage1.tsv"
-                )
-                gold = (
-                    samples_dir / lang / "outputs" / "stage-1-gold"
-                    / stem / f"{stem}_stage1_GOLD.tsv"
-                )
-                if not pred.is_file() or not gold.is_file():
+                page_dir = samples_dir / lang / "outputs" / "stage-1" / exp / stem
+                gold_dir = samples_dir / lang / "outputs" / "stage-1-gold" / stem
+                pred_flat = page_dir / f"{stem}_stage1_flat.txt"
+                pred_tsv = page_dir / f"{stem}_stage1.tsv"
+                gold_flat = gold_dir / f"{stem}_stage1_GOLD_flat.txt"
+                gold_tsv = gold_dir / f"{stem}_stage1_GOLD.tsv"
+                has_pred = pred_flat.is_file() or pred_tsv.is_file()
+                has_gold = gold_flat.is_file() or gold_tsv.is_file()
+                if not has_pred or not has_gold:
                     del pages[page_id]
             if not pages:
                 del self._data[exp]
+
+    def collect_valid_metrics(
+        self,
+        tasks: List[object],
+        *,
+        alignment_threshold: float,
+        alignment_max_span_rows: int,
+    ) -> OrderedDict[str, List[Stage1Metrics]]:
+        """Group cached metrics by experiment for tasks with valid cache entries."""
+        by_exp: OrderedDict[str, List[Stage1Metrics]] = OrderedDict()
+        for task in tasks:
+            if not self.entry_valid(
+                task.experiment,
+                task.page_id,
+                task.pred_path,
+                task.gold_path,
+                alignment_threshold,
+                alignment_max_span_rows,
+            ):
+                continue
+            entry = self.get_entry(task.experiment, task.page_id)
+            if entry is None:
+                continue
+            by_exp.setdefault(task.experiment, []).append(entry.metrics)
+        return by_exp

@@ -153,3 +153,20 @@ Output files:
 ### Comparing experiments
 
 The detailed and summary CSVs are the canonical artifacts for cross-configuration analysis. Each ablation (alphabet on/off, OCR hint on/off, different model / reasoning level) appears as a distinct value in the `experiment` column. Use the summary CSV for per-language leaderboard-style comparisons; use the detailed CSV to pivot by `(experiment, __aggregate__)` for overall quality or filter to a single `page_id` for page-level ablations. The `alphabet` and `ocr-hint` columns mirror `run_config.json` beside the predictions.
+
+---
+
+## eval-flat (flat transcription track)
+
+**CLI:** `dictextractor-eval-flat` — compares per-page flat text files, not column TSV.
+
+| Role | Path |
+| --- | --- |
+| Gold | `<lang>/outputs/stage-1-gold/<stem>/<stem>_stage1_GOLD_flat.txt` |
+| Pred | `<lang>/outputs/stage-1/<experiment>/<stem>/<stem>_stage1_flat.txt` (or column `*_stage1.tsv` flattened at eval time) |
+
+**Flat spec v2** line order: header lines (file order) → body (column-major from TSV, or adapter reading order for OCR) → footer lines. Unlike **eval-s1**, header and footer **are included** in TextEdit / GCER / WER / typography metrics.
+
+Alignment uses the same adjacent-span greedy matcher as eval-s1 (default `--alignment-max-span-rows 3`). **ReadOrderEdit is not reported** on this track.
+
+Generate gold flats: `python scripts/flatten_stage1_gold.py`. OCR flat preds: written automatically after `vlm_ocr` runs, or `python scripts/ocr_to_stage1_flat.py`.

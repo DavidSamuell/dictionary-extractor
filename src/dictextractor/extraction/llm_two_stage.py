@@ -38,16 +38,19 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 import json
 
+from dictextractor.evaluation.stage1.flatten import flat_transcription_to_text
 from dictextractor.extraction.base import ExtractionStrategy
 from dictextractor.schemas.entry import (
     DictionaryEntry,
     DictionaryPage,
     EntriesResponse,
+    FlatTranscriptionResponse,
     TranscriptionResponse,
 )
 from dictextractor.schemas.ocr_result import OCRPageResult
 from dictextractor.llm import client as llm
 from dictextractor.llm.prompts import (
+    STAGE_1_FLAT_SYSTEM,
     STAGE_1_SYSTEM,
     STAGE_2_SYSTEM,
     stage_1_user,
@@ -162,7 +165,10 @@ class TwoStageLLMExtraction(ExtractionStrategy):
         stage2_reasoning_effort: str = "low",
         stage1_guides: str = "",
         stage2_guides: str = "",
+        stage1_mode: str = "column",
     ):
+        if stage1_mode not in ("column", "flat"):
+            raise ValueError(f"stage1_mode must be 'column' or 'flat', got {stage1_mode!r}")
         self.transcribe_model = transcribe_model
         self.structure_model = structure_model or transcribe_model
         self.alphabet_path = alphabet_path
@@ -173,6 +179,7 @@ class TwoStageLLMExtraction(ExtractionStrategy):
         self.stage2_reasoning_effort = stage2_reasoning_effort
         self.stage1_guides = stage1_guides
         self.stage2_guides = stage2_guides
+        self.stage1_mode = stage1_mode
 
     @property
     def name(self) -> str:
@@ -234,15 +241,19 @@ class TwoStageLLMExtraction(ExtractionStrategy):
                 base = Path(stage1_output_path)
                 base.parent.mkdir(parents=True, exist_ok=True)
                 base.write_text(transcribed_text, encoding="utf-8")
-                raw1_path = base.with_name(base.stem + "_raw.json")
-                raw1_path.write_text(stage1_raw, encoding="utf-8")
-                input1_path = base.with_name(base.stem + "_input.json")
+                stem_base = base.stem.replace("_stage1_flat", "").replace("_stage1", "")
+                raw1_path = base.parent / f"{stem_base}_stage1_raw.json"
+                input1_path = base.parent / f"{stem_base}_stage1_input.json"
                 input1_path.write_text(
                     json.dumps(stage1_msgs, indent=2, ensure_ascii=False),
                     encoding="utf-8",
                 )
                 print(f"Stage 1 saved → {base.name}  |  raw → {raw1_path.name}  |  input → {input1_path.name}")
         elif run_stage == "2":
+            if self.stage1_mode == "flat":
+                raise ValueError(
+                    "Stage 2 requires column TSV; use --stage1-mode column for stage 2 runs"
+                )
             if not stage1_output_path or not Path(stage1_output_path).exists():
                 raise FileNotFoundError(
                     f"Stage-2-only requires existing stage 1 TSV: {stage1_output_path}"
@@ -251,18 +262,21 @@ class TwoStageLLMExtraction(ExtractionStrategy):
             print("=" * 60)
             print(f"Stage 2 only: loaded existing transcription from {stage1_output_path}")
 
-        # Resolve where Stage 2 artifacts live:
-        #   - explicit stage2_output_path → use it (its stem becomes the artifact prefix).
-        #   - else fall back to stage1 dir with the "_stage1" suffix stripped (legacy).
-        stage2_base: Optional[Path] = None
-        if stage2_output_path:
-            stage2_base = Path(stage2_output_path)
-        elif stage1_output_path:
-            s1 = Path(stage1_output_path)
-            stage2_base = s1.with_name(s1.stem.replace("_stage1", "") + s1.suffix)
-
         # ── Stage 2: structuring ───────────────────────────────────────────────
+        stage2_base: Optional[Path] = None
         if run_stage in ("2", "both"):
+            # Resolve where Stage 2 artifacts live:
+            #   - explicit stage2_output_path → use it (its stem becomes the artifact prefix).
+            #   - else fall back to stage1 dir with the "_stage1" suffix stripped (legacy).
+            if stage2_output_path:
+                stage2_base = Path(stage2_output_path)
+            elif stage1_output_path:
+                s1 = Path(stage1_output_path)
+                stage2_base = s1.with_name(
+                    s1.stem.replace("_stage1_flat", "").replace("_stage1", "")
+                    + s1.suffix
+                )
+
             print("Stage 2: Structuring transcribed text …")
             entries, stage2_raw, stage2_usage, stage2_msgs = self._stage2_structure(
                 transcribed_text, image_path, effective_intro, self.intro_image_paths
@@ -281,7 +295,15 @@ class TwoStageLLMExtraction(ExtractionStrategy):
                 print(f"Stage 2 raw saved → {raw2_path.name}  |  input → {input2_path.name}")
 
         # ── Per-page usage summary ────────────────────────────────────────────
-        if stage2_base and (stage1_usage or stage2_usage):
+        usage_path: Optional[Path] = None
+        if run_stage in ("2", "both") and stage2_base:
+            usage_path = stage2_base.with_name(stage2_base.stem + "_usage.json")
+        elif run_stage == "1" and stage1_output_path:
+            s1 = Path(stage1_output_path)
+            stem_base = s1.stem.replace("_stage1_flat", "").replace("_stage1", "")
+            usage_path = s1.parent / f"{stem_base}_usage.json"
+
+        if usage_path and (stage1_usage or stage2_usage):
             total_cost = _sum_costs(
                 stage1_usage.get("cost_usd"), stage2_usage.get("cost_usd")
             )
@@ -290,8 +312,7 @@ class TwoStageLLMExtraction(ExtractionStrategy):
                 "stage2": stage2_usage or None,
                 "total_cost_usd": total_cost,
             }
-            stage2_base.parent.mkdir(parents=True, exist_ok=True)
-            usage_path = stage2_base.with_name(stage2_base.stem + "_usage.json")
+            usage_path.parent.mkdir(parents=True, exist_ok=True)
             usage_path.write_text(
                 json.dumps(page_usage, indent=2, ensure_ascii=False),
                 encoding="utf-8",
@@ -332,6 +353,22 @@ class TwoStageLLMExtraction(ExtractionStrategy):
                 {"type": "image_url", "image_url": {"url": alphabet_image_url}}
             )
         content.append({"type": "image_url", "image_url": {"url": page_data_url}})
+
+        if self.stage1_mode == "flat":
+            messages = [
+                {"role": "system", "content": STAGE_1_FLAT_SYSTEM},
+                {"role": "user", "content": content},
+            ]
+            result, raw, usage = llm.complete_structured(
+                model=self.transcribe_model,
+                messages=messages,
+                response_schema=FlatTranscriptionResponse,
+                reasoning_effort=self.stage1_reasoning_effort,
+            )
+            flat_text = flat_transcription_to_text(
+                result.header, result.lines, result.footer
+            )
+            return flat_text, raw, usage, _sanitize_messages(messages)
 
         messages = [
             {"role": "system", "content": STAGE_1_SYSTEM},

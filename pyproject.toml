@@ -32,6 +32,9 @@ paddle = [
     "paddlepaddle",
     "paddleocr",
 ]
+# VLM OCR deps (torch, transformers, mineru, paddle doc-parser) are installed manually
+# into per-model venvs — see examples/helper/install_models_venv.sh and models/requirements-models.txt.
+# Not listed here: MinerU and GLM-OCR need incompatible transformers versions.
 
 [project.scripts]
 dictextractor-extract   = "dictextractor.cli.extract:main"
@@ -40,10 +43,15 @@ dictextractor-preprocess = "dictextractor.cli.preprocess:main"
 dictextractor-run-ocr   = "dictextractor.cli.run_ocr:main"
 dictextractor-annotate  = "dictextractor.cli.annotate:main"
 dictextractor-eval-s1   = "dictextractor.cli.evaluate_stage1:main"
+dictextractor-eval-flat = "dictextractor.cli.evaluate_stage_flat:main"
 dictextractor-mathpix-convert = "dictextractor.cli.run_mathpix_convert:main"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/dictextractor"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
 
 [tool.uv]
 package = true

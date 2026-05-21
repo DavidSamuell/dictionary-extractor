@@ -16,6 +16,9 @@ from dictextractor.schemas.ocr_result import OCRPageResult
 from dictextractor.extraction.llm_manual import ManualLLMExtraction
 from dictextractor.extraction.llm_join import JoinLLMExtraction
 from dictextractor.extraction.llm_two_stage import TwoStageLLMExtraction
+from dictextractor.extraction.vlm_ocr import run_vlm_ocr_batch, run_vlm_ocr_entry
+from dictextractor.ocr.vlm.registry import get_vlm_spec, list_vlm_keys
+from dictextractor.ocr.vlm.runner import create_vlm_runner
 from dictextractor.utils.io import save_to_json, json_to_tsv
 
 
@@ -24,6 +27,8 @@ _STRATEGIES = {
     "join": JoinLLMExtraction,
     "two_stage": TwoStageLLMExtraction,
 }
+
+_STRATEGY_CHOICES = list(_STRATEGIES.keys()) + ["vlm_ocr"]
 
 _IMAGE_EXTS = {".png", ".jpg", ".jpeg", ".webp"}
 _PDF_EXTS = {".pdf"}
@@ -274,11 +279,15 @@ def _build_stage1_manifest(
     ocr_dir: Optional[Path],
 ) -> Dict[str, Any]:
     """Assemble the stage-1 manifest dict (no I/O)."""
+    from dictextractor.evaluation.stage1.flatten import FLAT_SPEC_VERSION
+
     return {
         "stage": "1",
         "experiment_name": args.experiment_name,
         "created_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
         "strategy": args.strategy,
+        "stage1_mode": getattr(args, "stage1_mode", "column"),
+        "flat_spec_version": FLAT_SPEC_VERSION,
         "git_sha": _git_short_sha(),
         "model": args.model,
         "reasoning_effort": args.stage1_reasoning_effort,
@@ -319,6 +328,7 @@ def _build_stage2_manifest(
         "discover_extra_fields": bool(
             getattr(args, "discover_extra_fields", False)
         ),
+        "stage2_output_format": "mdf",
         "stage1_source": {
             "experiment_name": args.experiment_name,
             "stage1_dir": str(stage1_dir),
@@ -362,6 +372,7 @@ def _build_strategy(args, intro_text: str, intro_image_paths: List[str]):
             stage2_reasoning_effort=getattr(args, "stage2_reasoning_effort", "low"),
             stage1_guides=getattr(args, "stage1_guides_text", ""),
             stage2_guides=getattr(args, "stage2_guides_text", ""),
+            stage1_mode=getattr(args, "stage1_mode", "column"),
         )
     raise ValueError(f"Unknown strategy: {args.strategy}")
 
@@ -450,9 +461,38 @@ Examples:
     )
     parser.add_argument(
         "--strategy",
-        choices=list(_STRATEGIES.keys()),
+        choices=_STRATEGY_CHOICES,
         default="two_stage",
-        help="Extraction strategy (default: two_stage).",
+        help="Extraction strategy (default: two_stage). Use vlm_ocr for "
+        "specialized OCR/VLM models (MinerU, PaddleOCR-VL, GLM-OCR).",
+    )
+    parser.add_argument(
+        "--vlm-model",
+        dest="vlm_model",
+        choices=list_vlm_keys(),
+        default=None,
+        help="Specialized OCR/VLM backend when --strategy vlm_ocr: "
+        "mineru2.5-pro, paddleocr-vl-1.5, glm-ocr.",
+    )
+    parser.add_argument(
+        "--vlm-dpi",
+        dest="vlm_dpi",
+        type=int,
+        default=200,
+        help="DPI for rasterizing snippet PDFs in vlm_ocr mode (default: 200).",
+    )
+    parser.add_argument(
+        "--glm-ocr-prompt",
+        dest="glm_ocr_prompt",
+        default=None,
+        help='GLM-OCR prompt when --vlm-model glm-ocr (default: "Text Recognition:").',
+    )
+    parser.add_argument(
+        "--glm-max-new-tokens",
+        dest="glm_max_new_tokens",
+        type=int,
+        default=None,
+        help="GLM-OCR max_new_tokens (default: 8192).",
     )
 
     # Two-stage specific
@@ -587,8 +627,34 @@ Examples:
         help="Run only stage 1, only stage 2, or both (default: both). "
         "Stage-2-only requires existing Stage 1 TSV in the output directory.",
     )
+    parser.add_argument(
+        "--stage1-mode",
+        choices=["column", "flat"],
+        default="column",
+        help="Stage-1 output schema for two_stage: column TSV (default) or flat "
+        "transcription (eval-flat). Flat mode supports --stage 1 only.",
+    )
 
     args = parser.parse_args()
+
+    # ── VLM OCR strategy validation ───────────────────────────────────────────
+    if args.strategy == "vlm_ocr":
+        if not args.vlm_model:
+            parser.error("--vlm-model is required when --strategy vlm_ocr")
+        if args.stage != "1":
+            parser.error("--strategy vlm_ocr only supports --stage 1")
+        spec = get_vlm_spec(args.vlm_model)
+        if args.experiment_name == "default":
+            args.experiment_name = spec.experiment_name
+            print(f"Using experiment slot: {args.experiment_name}")
+    elif args.vlm_model:
+        parser.error("--vlm-model is only valid with --strategy vlm_ocr")
+
+    if args.stage1_mode == "flat":
+        if args.strategy != "two_stage":
+            parser.error("--stage1-mode flat requires --strategy two_stage")
+        if args.stage != "1":
+            parser.error("--stage1-mode flat supports --stage 1 only (not stage 2)")
 
     # ── Validate experiment slot names (must be safe directory names) ────────
     if not re.fullmatch(r"[A-Za-z0-9_.-]+", args.experiment_name):
@@ -627,6 +693,16 @@ Examples:
         args.stage2_guides_text = _read_text_file(p)
 
     # ── Dispatch: samples-dir batch mode vs. single-entry mode ────────────────
+    if args.strategy == "vlm_ocr":
+        if args.samples_dir:
+            return _run_samples_dir_vlm(args, parser)
+        if not args.input_image or not args.output:
+            parser.error(
+                "--input-image and --output are required for vlm_ocr "
+                "unless --samples-dir is used."
+            )
+        return _run_single_entry_vlm(args, parser)
+
     if args.samples_dir:
         return _run_samples_dir(args, parser)
 
@@ -638,25 +714,75 @@ Examples:
     return _run_single_entry(args, parser)
 
 
+def _discover_sample_entries(samples_root: Path, languages: Optional[List[str]]) -> List[Path]:
+    """Return entry subfolders to process under ``samples_root``."""
+    all_entries = sorted(p for p in samples_root.iterdir() if p.is_dir())
+    if languages:
+        requested = set(languages)
+        available = {p.name for p in all_entries}
+        missing = requested - available
+        if missing:
+            raise ValueError(
+                f"--languages references unknown subfolders: {sorted(missing)}. "
+                f"Available: {sorted(available)}"
+            )
+        return [p for p in all_entries if p.name in requested]
+    return all_entries
+
+
+def _run_samples_dir_vlm(args, parser) -> int:
+    """Batch VLM OCR over sample entries (one model load for all languages)."""
+    samples_root = Path(args.samples_dir)
+    if not samples_root.is_dir():
+        parser.error(f"--samples-dir must be a directory: {samples_root}")
+
+    try:
+        entries = _discover_sample_entries(samples_root, args.languages)
+    except ValueError as exc:
+        parser.error(str(exc))
+
+    if not entries:
+        print(f"No entry subfolders found under {samples_root}")
+        return 1
+
+    print(
+        f"VLM OCR batch: {args.vlm_model} on {len(entries)} "
+        f"entr{'y' if len(entries) == 1 else 'ies'} under {samples_root}"
+    )
+    return run_vlm_ocr_batch(args, entries)
+
+
+def _run_single_entry_vlm(args, parser) -> int:
+    """Run VLM OCR on a single entry's snippets directory."""
+    input_dir = Path(args.input_image)
+    if not input_dir.is_dir():
+        parser.error(f"--input-image must be a directory: {input_dir}")
+
+    output_dir = Path(args.output)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    runner = create_vlm_runner(
+        args.vlm_model,
+        glm_prompt=getattr(args, "glm_ocr_prompt", None),
+        glm_max_new_tokens=getattr(args, "glm_max_new_tokens", None),
+    )
+    runner.load()
+    try:
+        return run_vlm_ocr_entry(args, input_dir, output_dir, runner)
+    finally:
+        runner.unload()
+
+
 def _run_samples_dir(args, parser) -> int:
     """Iterate over every language subfolder under ``args.samples_dir``."""
     samples_root = Path(args.samples_dir)
     if not samples_root.is_dir():
         parser.error(f"--samples-dir must be a directory: {samples_root}")
 
-    all_entries = sorted(p for p in samples_root.iterdir() if p.is_dir())
-    if args.languages:
-        requested = set(args.languages)
-        available = {p.name for p in all_entries}
-        missing = requested - available
-        if missing:
-            parser.error(
-                f"--languages references unknown subfolders: {sorted(missing)}. "
-                f"Available: {sorted(available)}"
-            )
-        entries = [p for p in all_entries if p.name in requested]
-    else:
-        entries = all_entries
+    try:
+        entries = _discover_sample_entries(samples_root, args.languages)
+    except ValueError as exc:
+        parser.error(str(exc))
 
     if not entries:
         print(f"No entry subfolders found under {samples_root}")
@@ -809,6 +935,10 @@ def _run_single_entry(args, parser) -> int:
         stage1_page_dir = stage1_dir / stem
         stage2_page_dir = stage2_dir / stem
         stage1_tsv = stage1_page_dir / (stem + "_stage1.tsv")
+        stage1_flat = stage1_page_dir / (stem + "_stage1_flat.txt")
+        stage1_done = (
+            stage1_flat if getattr(args, "stage1_mode", "column") == "flat" else stage1_tsv
+        )
         out_tsv = stage2_page_dir / (stem + ".tsv")
 
         # ── Resume: skip already-processed pages ──────────────────────────────
@@ -819,7 +949,7 @@ def _run_single_entry(args, parser) -> int:
                 )
                 skipped += 1
                 continue
-            if args.stage == "1" and stage1_tsv.exists():
+            if args.stage == "1" and stage1_done.exists():
                 print(
                     f"[{idx+1}/{total}] SKIP {image_file.name} → stage1 already exists"
                 )
@@ -864,8 +994,9 @@ def _run_single_entry(args, parser) -> int:
             # Extract
             extract_kwargs = {}
             if args.strategy == "two_stage":
-                extract_kwargs["stage1_output_path"] = str(stage1_tsv)
-                extract_kwargs["stage2_output_path"] = str(out_tsv)
+                extract_kwargs["stage1_output_path"] = str(stage1_done)
+                if args.stage in ("2", "both"):
+                    extract_kwargs["stage2_output_path"] = str(out_tsv)
                 extract_kwargs["run_stage"] = args.stage
 
             page = strategy.extract(

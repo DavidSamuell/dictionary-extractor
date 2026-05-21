@@ -163,6 +163,33 @@ Rules that apply to every line (header, footer, and column lines alike):
 """
 
 
+STAGE_1_FLAT_SYSTEM = """\
+You are a precise OCR transcription system specialising in historical and minority-language dictionaries.
+
+Your task is faithful OCR only — do NOT parse dictionary entries or assign fields.
+
+Output structure:
+- `header`: page-level lines at the very top (running title, page number, letter band).
+  One string per visible line. Empty list if none. Never put dictionary entries here.
+- `lines`: every visible BODY line in reading order. For multi-column pages, transcribe
+  the full left column top-to-bottom, then the next column, and so on — as a single
+  ordered list (no column_id labels).
+- `footer`: page-level lines at the very bottom (page numbers, footnotes, rules).
+  One string per visible line. Empty list if none.
+
+You may receive <ocr_reference>...</ocr_reference> from a standard OCR engine. Use it
+only for ambiguous character shapes; always prioritise the page image.
+
+Rules for every line in header, lines, and footer:
+- Preserve ALL diacritics, stress marks, and special phonetic symbols exactly.
+- Wrap bold text in <b>...</b> and italic text in <i>...</i> when confident.
+- Do NOT interpret, summarise, merge lines, or fix typos.
+- Do NOT skip lines, including continuations and cross-references.
+- Hyphenated wraps: when a word breaks across two printed lines with a trailing hyphen,
+  emit TWO separate strings (e.g. "intelligi-" then "ble, adj. clear").
+"""
+
+
 def stage_1_user(
     alphabet_text: str = "",
     ocr_hint: str = "",
@@ -217,125 +244,107 @@ def stage_1_user(
 # ── Stage 2: Structuring ──────────────────────────────────────────────────
 # System = fixed role + rules.  User = dynamic inputs (transcription, intro, image).
 
+STAGE_2_MDF_BLOCK = """\
+MDF / Toolbox export contract (CRITICAL):
+  Output will be converted to SIL Multi-Dictionary Formatter field markers.
+  Every DictionaryEntry MUST set entry_type explicitly.
+
+Record boundaries (entry_type):
+  main — New bold headword starting a dictionary block → headword = surface \\lx form.
+    Homographs with explicit homonym markers → separate main rows, same headword,
+    distinct homonym_number. parent_lexeme and sense_number must be "".
+  subentry — Run-on derivative/compound bolded under the same visual block as a main lemma
+    → entry_type=subentry, parent_lexeme = that main lemma's headword, own gloss/definition/pos.
+    Do NOT duplicate parent gloss text unless it is printed for the subentry.
+  sense — Numbered senses (1., 2., I., II.) under one lemma without a new bold headword
+    → entry_type=sense, sense_number = the marker, parent_lexeme = the lemma's headword.
+    Do NOT emit a separate main per sense unless the dictionary prints a new bold headword.
+
+Decision tree:
+  Numbered sense under existing lemma → sense
+  Bold run-on form under same block → subentry
+  New bold headword column/block → main
+
+Field hygiene:
+  headword: lemma only — no POS, commas, or trailing line punctuation (POS → pos).
+  gloss: short target-language equivalent(s) for \\ge; join synonyms with ';'.
+  definition: longer explanatory text for \\de; minor sub-meanings within one sense with ' | '.
+  meaning_description: always leave "" (use gloss and definition instead).
+  semantic_domain: short label only (bot., colloq.) — never commentary.
+  phonetic → phonetic field (\\ph), not extra_fields.
+  cross_references → cross_references list (\\cf): target lemmas only, strip "see"/"cf.".
+  citation_form → citation_form (\\lc) when printed headword differs from headword.
+  examples / example_glosses: one element per example; bilingual → vernacular in examples[i],
+    translation in example_glosses[i] (same length); monolingual → example_glosses [].
+"""
+
 STAGE_2_SYSTEM = """\
-You are a linguistic expert parsing dictionary pages into structured data.
+You are a linguistic expert parsing dictionary pages into structured data for
+SIL Toolbox / MDF export.
 
 Your inputs:
-1. A TSV transcription of the page (column_id, line_number, text) — use this for reading order and spatial position. It was produced by a separate OCR stage. The text column preserves visual formatting from the original page:
-     <b>...</b> = bold text (typically headwords or entry starts)
-     <i>...</i> = italic text (typically POS tags, examples, or cross-references)
-   Use these tags as strong signals for identifying entry boundaries and field types.
-   Rows whose `column_id` is `header` or `footer` (with empty `line_number`)
-   are page-level metadata — running titles, page numbers, chapter abbreviations,
-   decorative rules, etc. IGNORE these rows. They are NOT dictionary entries
-   and must NOT produce any DictionaryEntry output.
-2. An image of the actual dictionary page — use this for visual verification of
-   entry boundaries and character accuracy.
-3. (Optional) Introduction pages from the dictionary — these explain the dictionary's
-   conventions: how entries are structured, what abbreviations mean, how to read
-   POS tags, semantic-domain markers, etc. Use them to understand the entry format
-   before parsing.
+1. A page transcription — either column TSV (column_id, line_number, text) or
+   flat text (one line per row, no column_id). Produced by a separate OCR stage.
+   <b>...</b> = bold (typically headwords); <i>...</i> = italic (POS, examples, xrefs).
+   For column TSV: rows with column_id header or footer (empty line_number) are
+   page metadata — IGNORE; they are NOT dictionary entries.
+   For flat text: infer headers/footers from position and the introduction.
+2. An image of the dictionary page — use for entry boundaries and character accuracy.
+3. (Optional) Introduction pages — abbreviations, entry layout, POS and domain conventions.
 
 Your task:
-1. Study the introduction pages (if provided) to understand the dictionary's
-   entry structure, abbreviation key, and formatting conventions.
-2. Read the transcription TSV together with the page image.
-3. Use column_id and line_number for reading order. Use <b>/<i> tags in the
-   transcription and the visual formatting in the image to determine entry
-   boundaries — a new <b>...</b> headword typically signals a new entry.
-   Multiple consecutive lines in the same column can belong to a single entry.
-4. For each entry, extract ONLY the fields that are actually present. Leave
-   string fields as "" and list fields as [] when not present.
-5. Strip <b> and <i> tags from the extracted field values — they are structural
-   hints, not part of the content.
+1. Study introduction material (if provided).
+2. Read the transcription with the page image; use reading order and <b>/<i> tags.
+3. Extract only fields actually present; strip <b>/<i> from values.
+4. Set entry_type, parent_lexeme, and sense_number per the MDF contract below.
 
-Splitting subentries (IMPORTANT):
-  A single visual entry block can contain MULTIPLE distinct headwords/subwords —
-  for example, variant spellings, derived forms, run-on subentries, or numbered
-  sub-senses with their own translations. When this happens you MUST emit one
-  DictionaryEntry per subword, NOT a single combined entry. Indicators include but not limited to:
-    - Multiple bolded forms inside one entry block.
-    - Numbered sense markers (1., 2., I., II.) each introducing a different
-      meaning of a related but distinct headform.
-    - Run-on derivatives or compounds listed under a main lemma but bolded
-      separately.
-  If subentries inherit context (POS, semantic domain) from the parent lemma,
-  copy that context into each split entry so each one is self-contained.
+""" + STAGE_2_MDF_BLOCK + """
 
-Examples handling (IMPORTANT):
-  The `examples` field is ALWAYS a list of strings, never a single string.
-    - 0 examples → []
-    - 1 example  → ["one example string"]
-    - N examples → one separate string per example, in the order they appear.
-  Do NOT concatenate multiple examples into a single string with separators.
-  Each illustrative phrase, sentence, or usage citation gets its own list element.
+Examples (lists):
+  examples: always a list — one string per citation, in order; never one concatenated string.
+  example_glosses: parallel translations when the dictionary gives them.
 
-Field semantics: see the response schema (each field carries its own description).
-The handling rules above (subentry splitting, examples-as-list) and the rules
-below override anything ambiguous in the schema descriptions.
+Field semantics: see the response schema descriptions (they match the MDF contract).
 
 No-reasoning-in-fields (CRITICAL):
-  Field values must contain ONLY the extracted dictionary text. Do NOT write
-  deliberation, hedging, self-correction, or chain-of-thought INSIDE any field
-  value. Forbidden patterns inside field strings include (non-exhaustive):
-    "wait", "let me", "I will", "I'm writing", "actually", "hmm",
-    "on second thought", "restart", "chain of thought", "thought block",
-    "per rules", "applied here", "rule above".
-  Do all reasoning in the dedicated thinking channel, never in the JSON.
-  If you are uncertain whether a field applies, leave it empty ("") or [].
-  Never narrate the uncertainty in the value itself.
+  Field values must contain ONLY extracted dictionary text. No deliberation, hedging,
+  or chain-of-thought inside any field. If uncertain, leave the field empty ("" or []).
+  Do reasoning only in the thinking channel, never in JSON string values.
 
 Rules:
 - Preserve ALL phonetic symbols exactly (ŋ, æ, ʌ, ə, ь, etc.).
-- Prioritise what you see in the page image over the transcription for character accuracy.
-- Do NOT invent or hallucinate fields not visible in the source.
+- Prioritise the page image over the transcription for character accuracy.
+- Do NOT invent fields not visible in the source.
 - Process each column independently — entries do not span columns.
-- Hyphenated line breaks: Stage 1 deliberately preserves typesetting hyphens —
-  consecutive transcription rows like "intelligi-" / "ble, adj. clear" are ONE
-  word "intelligible". When a field's text spans such a break you MUST rejoin
-  it: drop the trailing hyphen and the line boundary so the field value reads
-  naturally ("intelligible, adj. clear"), not "intelligi-ble" or
-  "intelligi- ble". Apply this to headword, meaning_description, examples,
-  and any extra_fields value. Genuine intra-word hyphens (compound words like
-  "self-aware", or hyphens that do NOT sit at end-of-line) must be preserved.
-- Emit clean JSON only. No commentary, no preamble, no postamble, no notes
-  inside string values.
+- Hyphenated line breaks: rejoin end-of-line hyphens across rows (intelligi- + ble → intelligible)
+  in headword, gloss, definition, examples, and extra_fields. Keep genuine in-word hyphens.
+- Emit clean JSON only — no commentary inside field values.
 """
 
+EXTRA_FIELDS_ALLOWLIST = (
+    "etymology, plural_form, gender, noun_class, tone_class, register, dialect, "
+    "usage_note, inflection, literal_meaning, variant_form, antonym"
+)
 
-EXTRA_FIELDS_DISCOVERY_BLOCK = """\
+EXTRA_FIELDS_DISCOVERY_BLOCK = f"""\
 <extra_fields_discovery>
 Discovery mode is ENABLED for this run.
 
-In addition to the canonical fields (headword, pos, meaning_description,
-semantic_domain, examples), scan the page and the introduction (if provided)
-for any OTHER fields that the dictionary CONSISTENTLY and STRUCTURALLY marks
-on its entries — for example:
-  - etymology (origin, root, source language)
-  - ipa or pronunciation guides
-  - inflectional forms (plural, genitive, past tense, aspect pair, etc.)
-  - gender / noun class / tone class
-  - register / style markers (formal, slang, archaic, dialectal)
-  - cross-references (synonyms, antonyms, "see also")
-  - usage notes that the dictionary itself flags with a dedicated marker
+Populate extra_fields ONLY for structurally marked content NOT covered by the
+canonical schema (phonetic, cross_references, gloss, definition, citation_form, etc.).
 
-For each such field you find on a given entry, add an item to that entry's
-`extra_fields` map:
-  - Key: a short snake_case English label (e.g. "etymology", "ipa",
-    "plural_form", "gender", "register", "see_also").
-  - Value: the extracted text as a string. If the dictionary lists multiple
-    values (e.g. two cross-references), join them with "; ".
-  - Reuse the SAME key across entries when the same field reappears, so
-    downstream consumers can group consistently.
+Allowed snake_case keys (use ONLY from this list when applicable):
+  {EXTRA_FIELDS_ALLOWLIST}
 
-Strict rules for `extra_fields`:
-  - ONLY include fields that the dictionary visibly marks with a dedicated
-    convention (italic abbreviation, special symbol, fixed position, etc.).
-    Do NOT invent fields, do NOT add freeform commentary, do NOT duplicate
-    canonical fields here.
-  - If an entry has no qualifying extra fields, leave its `extra_fields` as {}.
-  - Field semantics must be consistent across the whole page — pick the key
-    based on what the field IS, not where it appears.
+For each qualifying field on an entry, add extra_fields[key] = extracted text.
+Multiple values for one key → join with "; ".
+Reuse the same key across entries on the page.
+
+Strict rules:
+  - Do NOT put ipa, see_also, pronunciation, or cross-refs in extra_fields — use
+    phonetic and cross_references on the entry instead.
+  - Do NOT duplicate gloss, definition, pos, or semantic_domain in extra_fields.
+  - If no allowlisted extra field applies, leave extra_fields as {{}}.
 </extra_fields_discovery>"""
 
 
@@ -356,13 +365,12 @@ def stage_2_user(
     All dynamic data goes here to keep the system prompt fixed.
 
     Args:
-        transcribed_text:        TSV output from Stage 1 (column_id \\t line_number \\t text).
+        transcribed_text:        Stage 1 transcription — column TSV
+                                 (column_id \\t line_number \\t text) or flat
+                                 line-per-line text.
         intro_text:              Optional introduction/preface text extracted from the dictionary.
-        discover_extra_fields:   When True, instruct the LLM to populate
-                                 ``DictionaryEntry.extra_fields`` with any
-                                 dictionary-marked fields beyond the canonical
-                                 schema. When False, instruct it to leave
-                                 ``extra_fields`` as ``{}``.
+        discover_extra_fields:   When True, populate ``extra_fields`` from the frozen
+                                 allowlist only. When False, leave ``extra_fields`` as ``{}``.
         guides:                  Optional user-defined guidelines appended verbatim
                                  under a ``USER DEFINED GUIDELINES`` header at the
                                  end of the prompt.
@@ -389,12 +397,13 @@ def stage_2_user(
         parts.append(EXTRA_FIELDS_DISCOVERY_BLOCK)
 
     closing = (
-        "Parse all dictionary entries from the transcription and the attached images.\n"
-        "The first image is the dictionary page. Any additional images are pages from "
-        "the dictionary's introduction — study them to understand entry structure and conventions.\n"
-        "Only populate a field if it is actually present in that entry. "
-        "If a single entry block contains multiple subwords/subentries, emit each "
-        "as its own entry. Examples must always be a list of strings (one per example)."
+        "Parse all dictionary entries from the transcription and attached images for "
+        "Toolbox / MDF export.\n"
+        "The first image is the dictionary page; additional images are introduction pages.\n"
+        "Set entry_type on every row (main, subentry, or sense). Use parent_lexeme and "
+        "sense_number for subentries and senses. Populate gloss and definition separately; "
+        "leave meaning_description empty. Use phonetic and cross_references on the entry "
+        "(not extra_fields). Examples and example_glosses must be lists (one element per example)."
     )
     if not discover_extra_fields:
         closing += "\n" + EXTRA_FIELDS_DISABLED_LINE

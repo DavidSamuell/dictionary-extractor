@@ -64,11 +64,21 @@ def load_tsv(filepath: str) -> List[Dict[str, str]]:
 # ---------------------------------------------------------------------------
 
 CANONICAL_TSV_FIELDS = [
+    "Entry_Type",
     "Headword",
+    "Parent_Lexeme",
+    "Sense_Number",
+    "Homonym_Number",
     "POS",
+    "Gloss",
+    "Definition",
     "Meaning_Description",
     "Semantic_Domain",
+    "Citation_Form",
+    "Phonetic",
+    "Cross_References",
     "Examples",
+    "Example_Glosses",
 ]
 
 
@@ -112,15 +122,27 @@ def save_to_json(dictionary_page, output_path: str) -> None:
     print(f"Saved JSON to {output_path}")
 
 
+def _resolve_definition(entry: Dict) -> str:
+    """Definition column: prefer definition, fall back to legacy meaning_description."""
+    definition = entry.get("definition") or ""
+    if definition:
+        return definition
+    return entry.get("meaning_description") or ""
+
+
+def _join_list_field(value) -> str:
+    """Join list values for TSV; pass through strings unchanged."""
+    if isinstance(value, list):
+        return " | ".join(str(v) for v in value if v)
+    return str(value) if value else ""
+
+
 def json_to_tsv(json_path: str, output_path: Optional[str] = None) -> str:
     """
     Render a TSV file from a saved entries-JSON file.
 
-    The TSV always contains the canonical columns (Headword, POS,
-    Meaning_Description, Semantic_Domain, Examples). When entries carry
-    discovered ``extra_fields``, each unique key gets its own additional
-    column (snake_case key → Title_Case header), in first-appearance order
-    across the entries.
+    The TSV contains MDF-oriented canonical columns plus any discovered
+    ``extra_fields`` columns (snake_case key → Title_Case header).
 
     Args:
         json_path: Path to the input JSON file.
@@ -148,11 +170,21 @@ def json_to_tsv(json_path: str, output_path: Optional[str] = None) -> str:
         for entry in entries:
             extras = entry.get("extra_fields") or {}
             row = {
+                "Entry_Type": entry.get("entry_type") or "main",
                 "Headword": entry.get("headword") or entry.get("headword_phrase", ""),
+                "Parent_Lexeme": entry.get("parent_lexeme", ""),
+                "Sense_Number": entry.get("sense_number", ""),
+                "Homonym_Number": entry.get("homonym_number", ""),
                 "POS": entry.get("pos", ""),
+                "Gloss": entry.get("gloss", ""),
+                "Definition": _resolve_definition(entry),
                 "Meaning_Description": entry.get("meaning_description", ""),
                 "Semantic_Domain": entry.get("semantic_domain", ""),
-                "Examples": " | ".join(entry.get("examples", [])) if entry.get("examples") else "",
+                "Citation_Form": entry.get("citation_form", ""),
+                "Phonetic": entry.get("phonetic", ""),
+                "Cross_References": _join_list_field(entry.get("cross_references")),
+                "Examples": _join_list_field(entry.get("examples")),
+                "Example_Glosses": _join_list_field(entry.get("example_glosses")),
             }
             for key, column in zip(extra_keys, extra_columns):
                 row[column] = extras.get(key, "")

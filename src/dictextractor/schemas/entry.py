@@ -3,64 +3,130 @@ Canonical Pydantic schemas for structured dictionary entries.
 All modules that produce or consume dictionary entries import from here.
 """
 
-from typing import Dict, List
+from typing import Dict, List, Literal
 from pydantic import BaseModel, Field
+
+EntryType = Literal["main", "subentry", "sense"]
 
 
 class DictionaryEntry(BaseModel):
-    """Schema for a dictionary entry. Not all dictionary entries have all fields.
+    """Structured dictionary entry aligned with SIL Toolbox / MDF export.
 
-    A single visual entry block in the source page may contain multiple subwords
-    or subentries (variants, derived forms, sense splits). Each subword must be
-    emitted as its own DictionaryEntry — never collapse them into one.
+    Use entry_type and parent_lexeme to encode hierarchy (\\lx, \\se, \\sn).
+    Populate gloss (\\ge) and definition (\\de) separately when the source distinguishes them.
     """
 
+    entry_type: EntryType = Field(
+        default="main",
+        description=(
+            "MDF record role: 'main' = new \\lx headword block; 'subentry' = run-on "
+            "derivative/compound under a parent (\\se); 'sense' = numbered sense under "
+            "a lemma (\\sn). Every row must set this explicitly."
+        ),
+    )
     headword: str = Field(
         ...,
-        description="The headword word/phrase with all diacritical marks preserved",
+        description=(
+            "Surface lemma for \\lx — the headword only, with all diacritics preserved. "
+            "Do NOT include POS, commas, or trailing line punctuation (put POS in pos)."
+        ),
+    )
+    parent_lexeme: str = Field(
+        default="",
+        description=(
+            "Parent lemma headword when entry_type is 'subentry' or 'sense' (links \\se/\\sn "
+            "to the main \\lx). Must be empty when entry_type is 'main'."
+        ),
+    )
+    sense_number: str = Field(
+        default="",
+        description=(
+            "Sense index for \\sn (e.g. '1', '2', 'I') when entry_type is 'sense'; "
+            "otherwise empty."
+        ),
+    )
+    homonym_number: str = Field(
+        default="",
+        description=(
+            "Homonym discriminator for \\hm (e.g. '1', '2') when the dictionary marks "
+            "homographs; otherwise empty."
+        ),
     )
     pos: str = Field(
-        default="", description="Part-of-speech tag/abbreviation if present, else ''"
+        default="",
+        description=(
+            "Part-of-speech tag for \\ps — abbreviation exactly as printed (e.g. n., "
+            "сущ., nn.); empty if not shown."
+        ),
+    )
+    gloss: str = Field(
+        default="",
+        description=(
+            "Short target-language gloss for \\ge — brief equivalent(s) only; join "
+            "near-synonyms with '; '. Empty if the entry has no short gloss."
+        ),
+    )
+    definition: str = Field(
+        default="",
+        description=(
+            "Longer definitional text for \\de — explanatory wording beyond a short gloss; "
+            "join minor sub-meanings of the same sense with ' | '. Empty if none."
+        ),
     )
     meaning_description: str = Field(
-        ...,
+        default="",
         description=(
-            "The primary meaning/definition of the headword in the target language. "
-            "Join near-synonymous glosses of one sense with '; '. Join distinct "
-            "minor sub-meanings of the same sense with ' | '. Truly distinct senses "
-            "that the dictionary treats as separate subentries must become separate "
-            "DictionaryEntry items, not be joined here."
+            "Legacy combined gloss/definition field — leave empty; use gloss and definition "
+            "instead. Downstream TSV may fall back to this when definition is empty."
         ),
     )
     semantic_domain: str = Field(
         default="",
         description=(
-            "A short domain/register label, ONLY when the dictionary explicitly "
-            "marks one with a fixed convention (e.g. an italic abbreviation like "
-            "'bot.', 'astr.', 'colloq.', 'arch.', or a dedicated symbol). "
-            "Acceptable values are short tokens such as 'botany', 'astronomy', "
-            "'colloquial', 'archaic'. If no such marker is present, or you are "
-            "uncertain, return ''. Never write reasoning, hedging, or commentary "
-            "in this field — it is either a short label or empty."
+            "Semantic/register label for \\sd — short token only when explicitly marked "
+            "(e.g. bot., colloq., archaic); never commentary or reasoning; else ''."
+        ),
+    )
+    citation_form: str = Field(
+        default="",
+        description=(
+            "Lexical citation form for \\lc when the printed headword differs from headword "
+            "(e.g. bound roots); otherwise empty."
+        ),
+    )
+    phonetic: str = Field(
+        default="",
+        description=(
+            "Phonetic pronunciation for \\ph when marked on the entry; otherwise empty."
+        ),
+    )
+    cross_references: List[str] = Field(
+        default=[],
+        description=(
+            "Cross-reference target lemmas for \\cf — headword strings only, no 'see' or "
+            "'cf.' prose; empty list if none."
         ),
     )
     examples: List[str] = Field(
         default=[],
         description=(
-            "Example sentences/phrases showing the headword in use. "
-            "Always a list — one string per distinct example. "
-            "Empty list if the entry has no examples."
+            "Example phrases/sentences for \\xv — one string per example in order; "
+            "vernacular/source-language text when bilingual."
+        ),
+    )
+    example_glosses: List[str] = Field(
+        default=[],
+        description=(
+            "Translations of examples for \\xe — parallel to examples (same length when "
+            "each example has a translation); empty list if monolingual examples only."
         ),
     )
     extra_fields: Dict[str, str] = Field(
         default={},
         description=(
-            "Optional discovery slot for any structurally-marked fields beyond "
-            "the canonical schema (e.g. etymology, ipa, plural_form, gender, "
-            "register, tone_class). Keys are snake_case English labels chosen "
-            "by the model; values are the extracted text. Only populate when "
-            "discovery mode is explicitly requested in the user prompt; "
-            "otherwise leave as {}."
+            "Non-MDF-standard structurally marked fields only (etymology, gender, register, "
+            "dialect, inflection tables). Use frozen allowlist keys when discovery mode is on; "
+            "never duplicate phonetic, cross_references, gloss, or definition here; else {}."
         ),
     )
 
@@ -93,6 +159,37 @@ class ColumnTranscription(BaseModel):
             "and special characters. Do not merge, skip, or paraphrase any line. "
             "Wrap bold text in <b>...</b> and italic text in <i>...</i> tags."
         )
+    )
+
+
+class FlatTranscriptionResponse(BaseModel):
+    """
+    Structured output for flat Stage 1 transcription (eval-flat / PageTranscript).
+
+    No column_id or line_number — body lines are in global reading order.
+    """
+
+    header: List[str] = Field(
+        default=[],
+        description=(
+            "Page-level header lines above the dictionary body (running title, "
+            "page number, letter band). One string per visible line. Empty if none."
+        ),
+    )
+    lines: List[str] = Field(
+        description=(
+            "Every visible body line in reading order (top to bottom). For "
+            "multi-column pages: complete the left column top-to-bottom, then "
+            "the next column, etc. Wrap bold in <b>...</b> and italic in <i>...</i>. "
+            "Preserve hyphenated line breaks as separate lines with trailing hyphen."
+        )
+    )
+    footer: List[str] = Field(
+        default=[],
+        description=(
+            "Page-level footer lines below the body. One string per visible line. "
+            "Empty if none."
+        ),
     )
 
 

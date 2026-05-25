@@ -8,7 +8,7 @@ Stage 1 answers: **what text appears on the page, in what order, with what inlin
 
 | Track | Mode | Primary output | Evaluation |
 | --- | --- | --- | --- |
-| **Column** | `--stage1-mode column` (default) | `*_stage1.tsv` | `dictextractor-eval-s1` |
+| **Column** | `--stage1-mode column` (default) | `*_stage1.tsv` | (Stage 2 input only) |
 | **Flat** | `--stage1-mode flat` | `*_stage1_flat.txt` | `dictextractor-eval-flat` |
 
 Flat track is required for **fair comparison** between Gemini flat LLM runs and specialized VLM OCR (MinerU, Paddle, GLM).
@@ -33,8 +33,10 @@ Implementation: `src/dictextractor/evaluation/stage1/flatten.py` (`FLAT_SPEC_VER
 {lang}/
   outputs/
     stage-1-gold/{stem}/
-      {stem}_stage1_GOLD.tsv          # human column gold
-      {stem}_stage1_GOLD_flat.txt     # derived flat gold (eval-flat)
+      {stem}_stage1_GOLD.tsv
+      {stem}_stage1_GOLD_flat.txt
+    stage-2-gold/{stem}/
+      {stem}.mdf.txt                    # MDF gold (direct MDF eval)
     stage-1/{experiment}/{stem}/
       {stem}_stage1_flat.txt          # flat pred (LLM or OCR adapter)
       {stem}_stage1.tsv               # column pred (LLM column mode only)
@@ -99,7 +101,7 @@ bash examples/evaluation/run_stage1_eval_flat.sh
 - OCR-only refresh: uncomment the OCR block in the script (no `--include-vlm-ocr`).
 - Cache: `evaluations/stage1_flat_eval/stage1_flat_eval_cache.json` — aggregate CSVs merge **all** valid cached experiments.
 
-Metrics detail: `docs/stage_1_evaluation_metrics.md`.
+Metrics detail: `docs/stage_1_evaluation_metrics.md`. Stage 2 MDF eval: `docs/stage_2_evaluation_metrics.md` and `examples/evaluation/run_stage2_eval_mdf.sh`.
 
 ---
 
@@ -110,13 +112,14 @@ Metrics detail: `docs/stage_1_evaluation_metrics.md`.
 | Flat line order | `v2` | `flatten.py` |
 | OCR layout adapter | `v1` | `layout_to_transcript_v1.py` |
 | Typography normalize | `v1` | `normalize_typography.py` |
-| eval-flat cache | `3` | `stage1_eval_cache.py` |
+| eval-flat cache | `4` | `stage1_eval_cache.py` |
 
 ---
 
 ## Related docs
 
 - **Full methodology:** `docs/stage_1_methodology.md`
-- **Metrics (eval-s1 vs eval-flat):** `docs/stage_1_evaluation_metrics.md`
+- **Metrics (eval-flat):** `docs/stage_1_evaluation_metrics.md`
+- **Evaluation overview:** `docs/evaluation_metrics.md`
 - **Stage 2:** `docs/stage_2_methodology.md`
 - **Engineering plan:** `PLAN.md` §3 (Layer 2 / adapter fairness)

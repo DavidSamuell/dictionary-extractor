@@ -3,18 +3,25 @@
 See ``PLAN.md`` §3 Layer 2 (spec v2): header rows (file order), body columns
 left → center → right → single (``middle`` treated as center), footer rows
 (file order).
+
+``Circassian-English-Turkish`` uses row-major body flattening: each dictionary
+row spans all three columns horizontally, so lines with the same offset from
+each column header are emitted left → center → right.
 """
 
 from __future__ import annotations
 
 import csv
 import logging
+import re
 from pathlib import Path
 from typing import Mapping, Sequence
 
 logger = logging.getLogger(__name__)
 
 FLAT_SPEC_VERSION = "v2"
+
+ROW_MAJOR_FLAT_LANGUAGES = frozenset({"Circassian-English-Turkish"})
 
 _METADATA_COLUMN_IDS = frozenset({"header", "footer"})
 
@@ -51,7 +58,61 @@ def _metadata_lines(rows: Sequence[Mapping[str, str]], column_id: str) -> list[s
     ]
 
 
-def flatten_stage1_body_rows(rows: Sequence[Mapping[str, str]]) -> list[str]:
+_COLUMN_HEADER_LABELS: Mapping[str, str] = {
+    "left": "english.",
+    "center": "circassian.",
+    "middle": "circassian.",
+    "right": "turkish.",
+}
+
+
+def _normalize_header_text(text: str) -> str:
+    """Strip markup and lowercase for column header detection."""
+    stripped = re.sub(r"<[^>]+>", "", text).strip().lower()
+    return stripped
+
+
+def _body_rows_by_column(
+    rows: Sequence[Mapping[str, str]],
+) -> dict[str, dict[int, str]]:
+    """Group body rows as column_id → line_number → text."""
+    by_column: dict[str, dict[int, str]] = {}
+    for row in rows:
+        col = (row.get("column_id") or "").strip()
+        if col in _METADATA_COLUMN_IDS:
+            continue
+        line_no = _parse_line_number(row.get("line_number") or "")
+        text = row.get("text") or ""
+        by_column.setdefault(col, {})[line_no] = text
+    return by_column
+
+
+def _ordered_body_columns(by_column: Mapping[str, dict[int, str]]) -> list[str]:
+    ordered_columns = sorted(
+        by_column.keys(),
+        key=lambda c: (_BODY_COLUMN_RANK.get(c, _DEFAULT_BODY_RANK), c),
+    )
+    for col in ordered_columns:
+        if col not in _BODY_COLUMN_RANK:
+            logger.warning(
+                "Unknown body column_id %r; appending after known columns", col
+            )
+    return ordered_columns
+
+
+def _column_header_line(column_lines: Mapping[int, str], column_id: str) -> int | None:
+    """Return the line_number of a column header row, or the first line."""
+    if not column_lines:
+        return None
+    expected = _COLUMN_HEADER_LABELS.get(column_id)
+    if expected is not None:
+        for line_no in sorted(column_lines):
+            if _normalize_header_text(column_lines[line_no]) == expected:
+                return line_no
+    return min(column_lines)
+
+
+def flatten_stage1_body_rows_column_major(rows: Sequence[Mapping[str, str]]) -> list[str]:
     """
     Convert body TSV rows to column-major lines (excludes header/footer).
 
@@ -66,15 +127,9 @@ def flatten_stage1_body_rows(rows: Sequence[Mapping[str, str]]) -> list[str]:
         line_no = _parse_line_number(row.get("line_number") or "")
         by_column.setdefault(col, []).append((line_no, index, text))
 
-    ordered_columns = sorted(
-        by_column.keys(),
-        key=lambda c: (_BODY_COLUMN_RANK.get(c, _DEFAULT_BODY_RANK), c),
+    ordered_columns = _ordered_body_columns(
+        {col: {line_no: text for line_no, _, text in entries} for col, entries in by_column.items()}
     )
-    for col in ordered_columns:
-        if col not in _BODY_COLUMN_RANK:
-            logger.warning(
-                "Unknown body column_id %r; appending after known columns", col
-            )
 
     lines: list[str] = []
     for col in ordered_columns:
@@ -83,14 +138,87 @@ def flatten_stage1_body_rows(rows: Sequence[Mapping[str, str]]) -> list[str]:
     return lines
 
 
-def flatten_stage1_rows(rows: Sequence[Mapping[str, str]]) -> list[str]:
+def flatten_stage1_body_rows_row_major(rows: Sequence[Mapping[str, str]]) -> list[str]:
+    """
+    Convert body TSV rows to row-major lines for horizontally aligned columns.
+
+    Lines before the left column header (e.g. page markers) are emitted first.
+    Then for each row offset from the column headers, emit left → center → right.
+
+    Time complexity: O(n log n) for n body rows.
+    """
+    by_column = _body_rows_by_column(rows)
+    ordered_columns = _ordered_body_columns(by_column)
+    header_lines = {
+        col: _column_header_line(by_column[col], col)
+        for col in ordered_columns
+        if col in by_column
+    }
+
+    lines: list[str] = []
+    left_header = header_lines.get("left")
+    if left_header is not None:
+        for line_no in sorted(by_column["left"]):
+            if line_no < left_header:
+                lines.append(by_column["left"][line_no])
+
+    max_offset = 0
+    for col in ordered_columns:
+        header_line = header_lines.get(col)
+        if header_line is None:
+            continue
+        max_offset = max(max_offset, max(by_column[col]) - header_line)
+
+    for offset in range(max_offset + 1):
+        for col in ordered_columns:
+            header_line = header_lines.get(col)
+            if header_line is None:
+                continue
+            line_no = header_line + offset
+            if line_no in by_column[col]:
+                lines.append(by_column[col][line_no])
+    return lines
+
+
+def flatten_stage1_body_rows(
+    rows: Sequence[Mapping[str, str]],
+    *,
+    language: str | None = None,
+) -> list[str]:
+    """
+    Convert body TSV rows to flat lines (excludes header/footer).
+
+    Uses row-major order for ``Circassian-English-Turkish``; column-major otherwise.
+    """
+    if language in ROW_MAJOR_FLAT_LANGUAGES:
+        return flatten_stage1_body_rows_row_major(rows)
+    return flatten_stage1_body_rows_column_major(rows)
+
+
+def language_from_sample_path(path: str | Path) -> str | None:
+    """Extract language folder name from a path under ``assets/dictionaries/samples``."""
+    parts = Path(path).parts
+    try:
+        samples_idx = parts.index("samples")
+    except ValueError:
+        return None
+    if samples_idx + 1 >= len(parts):
+        return None
+    return parts[samples_idx + 1]
+
+
+def flatten_stage1_rows(
+    rows: Sequence[Mapping[str, str]],
+    *,
+    language: str | None = None,
+) -> list[str]:
     """
     Convert stage-1 TSV rows to flat eval lines (spec v2).
 
-    Order: header (file order) → body (column-major) → footer (file order).
+    Order: header (file order) → body → footer (file order).
     """
     headers = _metadata_lines(rows, "header")
-    body = flatten_stage1_body_rows(rows)
+    body = flatten_stage1_body_rows(rows, language=language)
     footers = _metadata_lines(rows, "footer")
     return headers + body + footers
 
@@ -122,9 +250,10 @@ def flatten_stage1_tsv(tsv_path: str | Path) -> str:
             raise ValueError(f"Invalid stage-1 TSV (missing column_id): {path}")
         for row in reader:
             rows.append(dict(row))
+    language = language_from_sample_path(path)
     return flat_transcription_to_text(
         _metadata_lines(rows, "header"),
-        flatten_stage1_body_rows(rows),
+        flatten_stage1_body_rows(rows, language=language),
         _metadata_lines(rows, "footer"),
     )
 

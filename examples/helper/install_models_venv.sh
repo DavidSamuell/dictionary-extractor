@@ -80,6 +80,35 @@ install_mineru_venv() {
   "${venv_python}" -c "import torch; from mineru_vl_utils import MinerUClient; print('mineru ok', torch.__version__, 'cuda', torch.cuda.is_available())"
 }
 
+install_mineru_vllm_venv() {
+  local venv_dir venv_python
+  venv_dir="$(prepare_model_venv ".venv-mineru-vllm")"
+  venv_python="${venv_dir}/bin/python"
+
+  echo ""
+  echo "=== .venv-mineru-vllm (MinerU2.5-Pro, vLLM in-process) ==="
+  echo "Note: vLLM pulls its own torch build (typically newer cu128 wheels)."
+  uv pip install --python "${venv_python}" -U pip
+  uv pip install --python "${venv_python}" \
+    "mineru-vl-utils[vllm]" accelerate pillow pyyaml pymupdf
+  install_editable_project "${venv_python}"
+  "${venv_python}" -c "import torch; from vllm import LLM; from mineru_vl_utils import MinerUClient; print('mineru-vllm ok', torch.__version__, 'cuda', torch.cuda.is_available())"
+}
+
+install_glmocr_vllm_venv() {
+  local venv_dir venv_python
+  venv_dir="$(prepare_model_venv ".venv-glmocr-vllm")"
+  venv_python="${venv_dir}/bin/python"
+
+  echo ""
+  echo "=== .venv-glmocr-vllm (GLM-OCR vLLM server + client) ==="
+  uv pip install --python "${venv_python}" -U pip
+  uv pip install --python "${venv_python}" \
+    "transformers>=5.9.0" "vllm>=0.19.0" httpx accelerate pillow pyyaml pymupdf
+  install_editable_project "${venv_python}"
+  "${venv_python}" -c "import vllm; import httpx; print('glmocr-vllm ok', vllm.__version__)"
+}
+
 install_glmocr_venv() {
   local venv_dir venv_python
   venv_dir="$(prepare_model_venv ".venv-glmocr")"
@@ -111,6 +140,31 @@ install_paddle_venv() {
   "${venv_python}" -c "import paddle; print('paddleocr ok', paddle.__version__)"
 }
 
+install_paddle_vllm_server_venv() {
+  local venv_dir venv_python
+  venv_dir="$(prepare_model_venv ".venv-paddle-vllm-server")"
+  venv_python="${venv_dir}/bin/python"
+
+  echo ""
+  echo "=== .venv-paddle-vllm-server (Paddle GenAI vLLM server for PaddleOCR-VL) ==="
+  echo "Tip: module load CUDA/12.2.0 && export CUDA_HOME=\$EBROOTCUDA before install if flash-attn build fails."
+  uv pip install --python "${venv_python}" -U pip
+  uv pip install --python "${venv_python}" "paddleocr[doc-parser]" pymupdf pyyaml
+  uv pip install --python "${venv_python}" torch==2.8.0
+  if ! uv pip install --python "${venv_python}" flash-attn==2.8.3 --no-build-isolation; then
+    echo "flash-attn build failed — set CUDA_HOME and retry this target." >&2
+    exit 1
+  fi
+  uv pip install --python "${venv_python}" \
+    einops "transformers<5.0.0" uvloop "vllm==0.10.2" xformers
+  install_editable_project "${venv_python}"
+  "${venv_python}" -c "
+from paddlex.utils.deps import is_genai_engine_plugin_available
+assert is_genai_engine_plugin_available('vllm-server'), 'genai-vllm-server plugin missing'
+print('paddle-vllm-server ok')
+"
+}
+
 TARGETS=("$@")
 if [[ ${#TARGETS[@]} -eq 0 ]]; then
   TARGETS=(mineru glmocr paddle)
@@ -119,10 +173,13 @@ fi
 for target in "${TARGETS[@]}"; do
   case "${target}" in
     mineru) install_mineru_venv ;;
+    mineru-vllm) install_mineru_vllm_venv ;;
     glmocr) install_glmocr_venv ;;
+    glmocr-vllm) install_glmocr_vllm_venv ;;
     paddle) install_paddle_venv ;;
+    paddle-vllm-server) install_paddle_vllm_server_venv ;;
     *)
-      echo "Unknown target: ${target} (choose mineru, glmocr, paddle)" >&2
+      echo "Unknown target: ${target} (choose mineru, mineru-vllm, glmocr, glmocr-vllm, paddle, paddle-vllm-server)" >&2
       exit 1
       ;;
   esac
@@ -130,5 +187,12 @@ done
 
 echo ""
 echo "Done. Run stage-1 VLM OCR with:"
+echo "  VLM_BACKEND=vllm bash examples/stage-1/run_stage1_extraction_flat.sh"
 echo "  bash examples/stage-1/run_stage1_vlm_ocr.sh"
-echo "Do not install vllm in these envs (upgrades torch and breaks cu124)."
+echo ""
+echo "MinerU vLLM: bash examples/helper/install_models_venv.sh mineru-vllm"
+echo "GLM-OCR vLLM: bash examples/helper/install_models_venv.sh glmocr-vllm"
+echo "Paddle vLLM server (auto-started during paddleocr-vl-1.5 runs):"
+echo "  bash examples/helper/install_models_venv.sh paddle-vllm-server"
+echo "Or point to an external server: export PADDLE_VL_REC_SERVER_URL=http://127.0.0.1:8765/v1"
+echo "Do not install vllm into .venv-mineru (upgrades torch and breaks cu124)."

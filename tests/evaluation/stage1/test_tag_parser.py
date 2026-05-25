@@ -19,3 +19,10 @@ def test_clean_text_path_strips_tags_and_normalizes_punctuation() -> None:
 
 def test_normalize_line_text_collapses_whitespace() -> None:
     assert normalize_line_text("a   b") == "a b"
+    assert normalize_line_text("a  \t  b") == "a b"
+
+
+def test_alignment_clean_text_collapses_whitespace() -> None:
+    from dictextractor.evaluation.stage1.alignment import clean_text
+
+    assert clean_text("<b>hello</b>   world") == "hello world"

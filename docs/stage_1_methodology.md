@@ -4,12 +4,12 @@ Stage 1 is the **faithful transcription** layer of the dictionary-extractor pipe
 
 This document covers:
 
-1. **Column mode** (layout-aware TSV) — default LLM path and input to Stage 2.
-2. **Flat mode** — one line per visible row, spec **v2**, used for OCR benchmarks and fair cross-paradigm comparison.
+1. **Column mode** (layout-aware TSV) — default LLM Stage 1 output; optional Stage 2 input via `--stage1-input column`.
+2. **Flat mode** — one line per visible row, spec **v2**, used for OCR benchmarks, fair cross-paradigm comparison, and **default Stage 2 direct MDF input** (`--stage1-input flat`).
 3. **Gold flattening** — deriving flat gold from column gold.
 4. **VLM OCR flattening** — MinerU / Paddle / GLM → flat preds via a frozen geometry adapter.
 5. **Typography normalization** — shared cleanup before flat write and eval.
-6. **Evaluation** — `eval-s1` vs `eval-flat` (metrics in `docs/stage_1_evaluation_metrics.md`).
+6. **Evaluation** — `eval-flat` (metrics in `docs/stage_1_evaluation_metrics.md`).
 
 Quick reference: `docs/stage_1_outline.md`.
 
@@ -25,16 +25,16 @@ Optional OCR hint   └──────────────┬────
                                    │
           ┌────────────────────────┼────────────────────────┐
           ▼                        ▼                        ▼
-   eval-s1 (column)         eval-flat (flat)          Stage 2 (column TSV only)
-   layout-aware gold        flat gold + preds         entry JSON / TSV
+   eval-flat (flat)         Stage 2 direct MDF          Stage 2 schema
+   layout-aware gold        flat or column transcript   (legacy JSON/TSV)
 ```
 
 | Question | Stage 1 | Stage 2 |
 | --- | --- | --- |
-| What characters appear? | Yes | Uses Stage 1 text |
-| Bold / italic on words? | Yes (`<b>`, `<i>`) | Tags stripped from field values |
-| Column vs global read order? | Column TSV encodes grid; flat encodes one ordered line list | Uses column TSV today |
-| Entry boundaries, glosses, MDF? | No | Yes |
+| What characters appear? | Yes | Uses Stage 1 transcript (characters copied verbatim in direct MDF) |
+| Bold / italic on words? | Yes (`<b>`, `<i>`) | Tags stripped when emitting MDF |
+| Column vs global read order? | Column TSV encodes grid; flat encodes one ordered line list | `--stage1-input` selects transcript source |
+| Entry boundaries, glosses, MDF? | No | Yes (`direct_mdf` default) |
 
 **Design principle:** Stage 1 must not “fix” dictionary content (no merging hyphenated lines across rows in flat mode, no paraphrase). Stage 2 may apply linguistic judgment.
 
@@ -57,9 +57,7 @@ Optional OCR hint   └──────────────┬────
 
 **Produced by:** `dictextractor-extract --stage1-mode column` with `TranscriptionResponse` (`src/dictextractor/schemas/entry.py`).
 
-**Evaluation:** `dictextractor-eval-s1` — header/footer rows excluded from metrics; adjacent-row span alignment.
-
-**Stage 2:** Requires column TSV. Flat Stage 1 output cannot feed Stage 2 in the current CLI.
+**Stage 2 input:** `--stage1-input auto|column|flat` (default `auto`). Batch direct MDF (`examples/stage-2/run_stage2_extraction.sh`) typically uses **`flat` gold** from `stage-1-gold/`. Column TSV is still preferred for column-trilingual layouts when `column_id` matters.
 
 ### 2.2 Flat text (spec v2)
 
@@ -276,12 +274,11 @@ uv run python scripts/audit_ocr_flat_noise.py
 
 ## 6. Evaluation
 
-Stage 1 metrics are documented in **`docs/stage_1_evaluation_metrics.md`**. Summary:
+Stage 1 metrics are documented in **`docs/stage_1_evaluation_metrics.md`**. Overview of both tracks: **`docs/evaluation_metrics.md`**. Summary:
 
 | CLI | Pred / gold | Character + markup alignment | Read order |
 | --- | --- | --- | --- |
-| `dictextractor-eval-s1` | Column TSV | Adjacent row spans; header/footer dropped | Row spans |
-| `dictextractor-eval-flat` | Flat `.txt` | **Page collapsed** (one string per side) | **Per-line** row spans |
+| `dictextractor-eval-flat` | Flat `.txt` | **Page collapsed** (one string per side) | **Gold line indices** (OmniDocBench-style) |
 
 **Fair OCR comparison:** always use **eval-flat** with the same `*_stage1_GOLD_flat.txt` and v2 flatten rule.
 
@@ -297,7 +294,7 @@ Active block uses `--include-vlm-ocr` (four `gemini3flash_flat_*` + three OCR ba
 
 ### 6.2 Incremental cache and merged CSVs
 
-**Cache file:** `evaluations/stage1_flat_eval/stage1_flat_eval_cache.json` (format version **3**).
+**Cache file:** `evaluations/stage1_flat_eval/stage1_flat_eval_cache.json` (format version **4**).
 
 - Each page stores metrics plus fingerprints of pred/gold files and alignment settings.
 - A run with `--experiment-name` limits **recomputation** to those experiments.
@@ -328,7 +325,7 @@ Under `evaluations/stage1_flat_eval/`:
 | Flat line order spec | **v2** | Bump `FLAT_SPEC_VERSION`; regenerate all `*_GOLD_flat.txt` |
 | OCR layout adapter | **v1** | New behavior → `adapter_v2`, document in paper |
 | Typography normalization | **v1** | Extend `normalize_typography.py`; re-flatten OCR preds |
-| eval-flat cache | **3** | Bump `CACHE_FORMAT_VERSION` in `stage1_eval_cache.py` invalidates old cache |
+| eval-flat cache | **4** | Bump `CACHE_FORMAT_VERSION` in `stage1_eval_cache.py` invalidates old cache |
 
 **Allowed:** frozen prompts, frozen adapter, symmetric normalization for all OCR backends, per-language Stage 1 **guides** (LLM only).
 
@@ -346,7 +343,7 @@ Under `evaluations/stage1_flat_eval/`:
 | OCR JSON → flat preds | `examples/helper/run_flatten_vlm_ocr.sh` |
 | Audit OCR flat noise | `scripts/audit_ocr_flat_noise.py` |
 | Eval flat (LLM + OCR) | `examples/evaluation/run_stage1_eval_flat.sh` |
-| Eval column (Stage 2 path) | `examples/evaluation/run_stage1_eval.sh` |
+| Eval Stage 2 MDF | `examples/evaluation/run_stage2_eval_mdf.sh` |
 
 ---
 
@@ -357,7 +354,7 @@ Under `evaluations/stage1_flat_eval/`:
 | Flat spec + gold write | `evaluation/stage1/flatten.py` |
 | Flat eval + discovery | `evaluation/stage1/flat_evaluator.py` |
 | eval-flat CLI | `cli/evaluate_stage_flat.py` |
-| Column eval | `evaluation/stage1/stage1_evaluator.py`, `cli/evaluate_stage1.py` |
+| Report generation | `evaluation/stage1/stage1_reports.py` |
 | LLM flat extract | `extraction/llm_two_stage.py`, `llm/prompts.py` |
 | OCR → flat export | `ocr/adapters/flat_export.py` |
 | Layout adapter v1 | `ocr/adapters/layout_to_transcript_v1.py` |
@@ -371,6 +368,8 @@ Under `evaluations/stage1_flat_eval/`:
 
 - `docs/stage_1_outline.md` — one-page quick reference
 - `docs/stage_1_evaluation_metrics.md` — TextEdit, GCER, WER, typography F1, ReadOrderEdit
-- `docs/stage_2_methodology.md` — structuring (requires column Stage 1 today)
-- `docs/architecture.md` — repo-wide overview
+- `docs/stage_2_evaluation_metrics.md` — Record Accuracy, MDF Fields F1, ReadOrderEdit (Stage 2 MDF)
+- `docs/evaluation_metrics.md` — overview of both evaluation tracks
+- `docs/stage_2_methodology.md` — Pass 1 discovery + Pass 2 direct MDF (and legacy schema mode)
+- `README.md` — CLI reference and repo layout
 - `PLAN.md` — Layer 2 flat eval and fairness rules

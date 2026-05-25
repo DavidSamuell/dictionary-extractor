@@ -46,7 +46,7 @@ utils/io.py  →  <stem>.json + <stem>.tsv
     │
     ▼
 evaluation/stage1/  (TextEdit/GCER/WER + markup F1 + ReadOrderEdit)
-evaluation/stage2/  (entry-level matching vs. gold TSV)
+evaluation/stage2/  (MDF record/marker P/R/F1 + ReadOrderEdit; legacy TSV eval)
 ```
 
 OCR backends all produce `OCRPageResult`; extraction strategies all consume `OCRPageResult` and produce `DictionaryPage`. Adding a new OCR backend or extraction strategy is a single new file.
@@ -182,33 +182,33 @@ Walks every entry subfolder and, for each one missing a `mathpix/` directory, ru
 **Stage 1** (transcription quality — character accuracy, markup preservation, read-order):
 
 ```bash
-# Compare every experiment under each language root
-uv run dictextractor-eval-s1 \
-    --samples-dir assets/dictionaries/samples-2 --all-experiments \
-    -o assets/dictionaries/samples-2/stage1_eval
-
-# Restrict to specific experiments
-uv run dictextractor-eval-s1 \
-    --samples-dir assets/dictionaries/samples-2 \
-    --experiment-name gemini3flash_alpha_ocr \
-    --experiment-name gemini3flash_bare \
-    -o assets/dictionaries/samples-2/stage1_eval
+uv run dictextractor-eval-flat \
+    --samples-dir assets/dictionaries/samples \
+    --include-vlm-ocr \
+    -o evaluations/stage1_flat_eval
 ```
 
 Reports cover OmniDocBench-style `TextEdit` and `ReadOrderEdit`, plus GCER,
-WER, and per-tag bold/italic typography F1 after semantic adjacency alignment.
-Outputs:
+WER, and typography F1. Character/markup use page-collapsed alignment; read
+order uses gold line indices. See [`docs/stage_1_evaluation_metrics.md`](docs/stage_1_evaluation_metrics.md).
 
-- `<out>/stage1_eval_detailed.csv` — long-format, one row per `(experiment, page_id)` plus a per-experiment `__aggregate__` row. Includes `alphabet` and `ocr-hint` booleans from each language's `run_config.json`.
-- `<out>/stage1_eval_summary.csv` — same metrics aggregated per `(experiment, language)`, with `page_count`, `alphabet`, and `ocr-hint`.
-- `--metrics minimal` — CSVs only include `TextEdit`, `GCER`, `WER`, `typography_f1` (bold+italic TP/FP/FN pooled), and `ReadOrderEdit`. Default is `full` (adds full bold/italic detail).
-- `--alignment-threshold` / `--alignment-max-span-rows` — tune semantic adjacency matching (defaults: `0.5` and `3`).
-- **Incremental batch runs:** metrics are stored under `<out>/stage1_eval_cache.json` (keyed by experiment, page, prediction/gold fingerprints, and alignment settings). The detailed and summary CSVs always cover **every** language that has gold+predictions under `--samples-dir`, but only pages in the current `--languages` selection (or **all** languages if omitted) plus any page whose cache is stale get recomputed. Use `--overwrite` to force recomputation for the current `--languages` / `--experiment-name` slice without dropping other cached pages. Delete the cache file to recompute everything.
-- `<out>/<experiment>/` — the three per-component CSVs, the JSON report, and the human-readable text report (same shape as the pre-experiment evaluator), one drill-down folder per experiment.
+Batch wrapper: `bash examples/evaluation/run_stage1_eval_flat.sh`
 
-Metric definitions and aggregation rules are in [`docs/stage1_evaluation_metrics.md`](docs/stage1_evaluation_metrics.md).
+**Stage 2** (MDF record/marker matching + read order):
 
-**Stage 2** (entry-level matching vs. gold TSV):
+```bash
+uv run dictextractor-eval-stage2-mdf \
+    --samples-dir assets/dictionaries/samples \
+    --experiment-name gemini31pro_high_mdf_intro_notoolbox \
+    --experiment-name gemini31pro_high_mdf_intro_toolbox \
+    -o evaluations/stage2_mdf_eval
+```
+
+Reports cover **Record Accuracy**, **MDF Fields F1**, and OmniDocBench-style `ReadOrderEdit` on gold record indices. See [`docs/stage_2_evaluation_metrics.md`](docs/stage_2_evaluation_metrics.md).
+
+Batch wrapper: `bash examples/evaluation/run_stage2_eval_mdf.sh`
+
+**Legacy Stage 2 TSV** (entry-level headword/gloss matching):
 
 ```bash
 uv run dictextractor-evaluate -e <pred>.tsv -g <gold>.tsv -o results/
@@ -260,8 +260,9 @@ All entry points are registered as console scripts (run with `uv run <name>`):
 | Console script                  | Module                                       | Purpose                                   |
 |---------------------------------|----------------------------------------------|-------------------------------------------|
 | `dictextractor-extract`         | `dictextractor.cli.extract`                  | Run extraction (single entry or batch)    |
-| `dictextractor-evaluate`        | `dictextractor.cli.evaluate`                 | Stage-2 entry-level evaluation            |
-| `dictextractor-eval-s1`         | `dictextractor.cli.evaluate_stage1`          | Stage-1 transcription evaluation          |
+| `dictextractor-eval-stage2-mdf` | `dictextractor.cli.evaluate_stage2_mdf`      | Stage-2 MDF evaluation                    |
+| `dictextractor-evaluate`        | `dictextractor.cli.evaluate`                 | Stage-2 legacy TSV evaluation             |
+| `dictextractor-eval-flat`       | `dictextractor.cli.evaluate_stage_flat`      | Stage-1 flat transcription evaluation     |
 | `dictextractor-mathpix-convert` | `dictextractor.cli.run_mathpix_convert`      | Batch OCR of PDFs via Mathpix Convert API |
 | `dictextractor-preprocess`      | `dictextractor.cli.preprocess`               | Standalone cv2 image preprocessing        |
 | `dictextractor-run-ocr`         | `dictextractor.cli.run_ocr`                  | Run a chosen OCR backend                  |

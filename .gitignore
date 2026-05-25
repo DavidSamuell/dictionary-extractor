@@ -1,17 +1,46 @@
+# Environment and secrets
 **/.env
+.env
 .venv/
 .venv-*/
-# Symlink to scratch venv; git does not apply .venv-*/ to symlink pathspecs
+venv/
 .venv-paddleocr
+
+# Python
 __pycache__/
-*.pyc
-*.pyo
+*.py[cod]
 *.egg-info/
 dist/
 build/
-.DS_Store
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Logs and local run artifacts
+logs/
+*.log
+
+# Local IDE / agent files
+CLAUDE.md
+.claude
+.cursor/
+**/.cursor/
+
+# Hidden dotfiles (keep .gitignore itself)
+.*
+!.gitignore
+
+# Label Studio local renders (regenerate locally)
+.label-studio-renders/
+
+# Data, archives, and model outputs
 archive/
 assets/
-**.workspace
-.claude
 models/outputs/
+**.workspace
+
+# OS
+.DS_Store
+Thumbs.db

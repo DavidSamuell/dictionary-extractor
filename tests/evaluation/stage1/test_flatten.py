@@ -48,14 +48,18 @@ def test_shilluk_header_footer_preserved() -> None:
 
 
 @pytest.mark.skipif(not _CIRCASSIAN.is_file(), reason="sample gold missing")
-def test_circassian_column_major_body() -> None:
+def test_circassian_row_major_body() -> None:
     rows = _load_rows(_CIRCASSIAN)
-    body = flatten_stage1_body_rows(rows)
+    body = flatten_stage1_body_rows(rows, language="Circassian-English-Turkish")
     assert body[0] == "ii"
     assert body[1] == "<b>ENGLISH.</b>"
-    assert body[23] == "Alone, <i>a.</i>"
-    assert body[24] == "<b>CIRCASSIAN.</b>"
-    assert body[-1] == "یالكز"
+    assert body[2] == "<b>CIRCASSIAN.</b>"
+    assert body[3] == "<b>TURKISH.</b>"
+    assert body[4] == "After, <i>prep.</i>"
+    assert body[5] == "یِتانِه yeytáhney"
+    assert body[6] == "كوره ــ اوزره"
+    assert body[67] == "Alone, <i>a.</i>"
+    assert "یالكز" in body
     left_count = sum(1 for r in rows if r["column_id"] == "left")
     center_count = sum(1 for r in rows if r["column_id"] == "center")
     right_count = sum(1 for r in rows if r["column_id"] == "right")
@@ -63,11 +67,11 @@ def test_circassian_column_major_body() -> None:
 
 
 @pytest.mark.skipif(not _CIRCASSIAN.is_file(), reason="sample gold missing")
-def test_flat_transcription_to_text_roundtrip() -> None:
+def test_circassian_tsv_path_uses_row_major() -> None:
     rows = _load_rows(_CIRCASSIAN)
     headers = [r["text"] for r in rows if r["column_id"] == "header"]
     footers = [r["text"] for r in rows if r["column_id"] == "footer"]
-    body = flatten_stage1_body_rows(rows)
+    body = flatten_stage1_body_rows(rows, language="Circassian-English-Turkish")
     assert flatten_stage1_tsv(_CIRCASSIAN) == flat_transcription_to_text(
         headers, body, footers
     )

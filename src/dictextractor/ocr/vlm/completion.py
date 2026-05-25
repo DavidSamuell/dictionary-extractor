@@ -41,19 +41,23 @@ def paddle_page_has_content(page_dir: Path, *, stem: str) -> bool:
     return False
 
 
+def _text_result_json_has_content(page_dir: Path) -> bool:
+    """True when ``result.json`` contains a non-empty ``text`` field."""
+    result_path = page_dir / "result.json"
+    if not result_path.is_file():
+        return False
+    try:
+        data = json.loads(result_path.read_text(encoding="utf-8"))
+        text = data.get("text")
+        return isinstance(text, str) and bool(text.strip())
+    except json.JSONDecodeError:
+        return False
+
+
 def glm_page_has_content(page_dir: Path) -> bool:
     """True when GLM-OCR produced non-empty transcript text."""
     if file_has_non_empty_text(page_dir / "output.txt"):
         return True
     if file_has_non_empty_text(page_dir / "output.md"):
         return True
-    result_path = page_dir / "result.json"
-    if result_path.is_file():
-        try:
-            data = json.loads(result_path.read_text(encoding="utf-8"))
-            text = data.get("text")
-            if isinstance(text, str) and text.strip():
-                return True
-        except json.JSONDecodeError:
-            pass
-    return False
+    return _text_result_json_has_content(page_dir)

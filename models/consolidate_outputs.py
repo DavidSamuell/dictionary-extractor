@@ -70,7 +70,6 @@ def main() -> int:
         "mineru": OUTPUT_ROOT / "run_mineru",
         "paddleocr": OUTPUT_ROOT / "run_paddleocr",
         "glm-ocr": OUTPUT_ROOT / "run_glmocr",
-        "ovis": OUTPUT_ROOT / "run_ovis",
     }
     dest = consolidate(args.name, run_dirs)
     print(f"Consolidated -> {dest}")

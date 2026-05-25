@@ -5,6 +5,7 @@ import jiwer
 import Levenshtein
 
 from dictextractor.evaluation.stage1.alignment import AlignmentResult
+from dictextractor.evaluation.stage1.tag_parser import casefold_letters_for_eval
 from dictextractor.evaluation.stage1.stage1_metrics import CharacterQualityMetrics
 
 _JIWER_WORD_TRANSFORM = jiwer.Compose([jiwer.ReduceToListOfListOfWords()])
@@ -34,14 +35,14 @@ def compute_character_quality(alignment: AlignmentResult) -> CharacterQualityMet
         elif pair.pred:
             extra += 1
 
-        pg = list(grapheme.graphemes(p))
-        gg = list(grapheme.graphemes(g))
+        pg = list(grapheme.graphemes(casefold_letters_for_eval(p)))
+        gg = list(grapheme.graphemes(casefold_letters_for_eval(g)))
         total_grapheme_edits += Levenshtein.distance(pg, gg)
         total_graphemes_gold += len(gg)
         total_graphemes_pred += len(pg)
         total_words_gold += len(g.split())
-        gold_spans.append(g)
-        pred_spans.append(p)
+        gold_spans.append(casefold_letters_for_eval(g))
+        pred_spans.append(casefold_letters_for_eval(p))
 
     wer = 0.0
     if gold_spans or pred_spans:

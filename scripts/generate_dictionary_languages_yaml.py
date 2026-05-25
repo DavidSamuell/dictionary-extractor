@@ -4,6 +4,10 @@ Generate ``dictionary_languages.yaml`` for every sample under assets/dictionarie
 
 Derives layout and language roles from folder names and
 ``assets/dictionaries/full dictionaries/dictionary_metadata.csv``.
+
+MDF gloss markers follow SIL naming by language code in ``markers_for_config``
+(fallback for the legacy schema export path only). The two-pass direct MDF
+pipeline discovers markers in ``field_cheatsheet.json`` instead.
 """
 
 from __future__ import annotations

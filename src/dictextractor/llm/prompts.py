@@ -210,7 +210,7 @@ def stage_1_user(
     if alphabet_text:
         parts.append(
             f"""<alphabet>\n{alphabet_text}\n</alphabet>\n\n
-            The <alphabet> is a reference guide, not a strict whitelist. It may be 
+            The <alphabet> is a reference guide to the list of characters in the script of the source language, not a strict whitelist. It may be 
             incomplete or not perfectly match this document's script variant.
 
             Rules:
@@ -244,43 +244,48 @@ def stage_1_user(
 # ── Stage 2: Structuring ──────────────────────────────────────────────────
 # System = fixed role + rules.  User = dynamic inputs (transcription, intro, image).
 
-STAGE_2_MDF_BLOCK = """\
-MDF / Toolbox export contract (CRITICAL):
-  Output will be converted to SIL Multi-Dictionary Formatter field markers.
-  Every DictionaryEntry MUST set entry_type explicitly.
+STAGE_2_SCHEMA_BLOCK = """\
+Entry schema contract:
+  Map visible page text into JSON fields only. Do not use SIL/Toolbox marker names.
+  Every row MUST set entry_type. Rows appear in page order; grouping is inferred downstream.
 
-Record boundaries (entry_type):
-  main — New bold headword starting a dictionary block → headword = surface \\lx form.
-    Homographs with explicit homonym markers → separate main rows, same headword,
-    distinct homonym_number. parent_lexeme and sense_number must be "".
-  subentry — Run-on derivative/compound bolded under the same visual block as a main lemma
-    → entry_type=subentry, parent_lexeme = that main lemma's headword, own gloss/definition/pos.
-    Do NOT duplicate parent gloss text unless it is printed for the subentry.
-  sense — Numbered senses (1., 2., I., II.) under one lemma without a new bold headword
-    → entry_type=sense, sense_number = the marker, parent_lexeme = the lemma's headword.
-    Do NOT emit a separate main per sense unless the dictionary prints a new bold headword.
+Row types (entry_type):
+  main — new bold headword (or homograph main). headword = lemma only (no homograph label).
+    parent_lexeme empty. sense_number null. homonym_number = integer 1, 2, … when homographs
+    are marked; null otherwise.
+  subentry — bold run-on form under the same block as a main lemma.
+    parent_lexeme = that main headword. Own gloss, usage_note, pos. homonym_number null.
+  sense — numbered meaning under one lemma (MANDATORY when inline numbering is printed).
+    parent_lexeme = the lemma headword. sense_number = integer 1, 2, 3, … homonym_number null.
+    NEVER merge numbered senses into one main gloss string.
 
-Decision tree:
-  Numbered sense under existing lemma → sense
-  Bold run-on form under same block → subentry
-  New bold headword column/block → main
+Homograph vs sense:
+  Separate bold lines, same lemma + homograph index → separate main rows, homonym_number 1, 2, …
+  One bold headword + inline 1.; 2.; 1); 2) → one main + mandatory sense rows
+  Bold run-on derivative under same block → subentry
+
+Numbering (normalise to integers):
+  homonym_number and sense_number: output 1, 2, 3, … only.
+  Convert Roman numerals (I → 1, II → 2). Strip trailing ')' or '.' from printed labels.
+  Null when not applicable.
+
+Gloss vs usage_note (see <dictionary_languages>):
+  gloss: primary target-language translation — all non-italic wording after the headword.
+    Semicolon-separated synonyms allowed in one string.
+  gloss_secondary: second target language when the dictionary is trilingual; else "".
+  usage_note: italic or parenthetical domain/usage expansion only — not the main translation.
 
 Field hygiene:
-  headword: lemma only — no POS, commas, or trailing line punctuation (POS → pos).
-  target_glosses: map of language-code → short gloss (see <dictionary_languages>); join synonyms with ';'.
-  gloss: always leave "" (legacy — use target_glosses only).
-  definition: longer explanatory text for \\de; minor sub-meanings within one sense with ' | '.
-  semantic_domain: short label only (bot., colloq.) — never commentary.
-  phonetic → phonetic field (\\ph), not extra_fields.
-  cross_references → cross_references list (\\cf): target lemmas only, strip "see"/"cf.".
-  citation_form → citation_form (\\lc) when printed headword differs from headword.
-  examples / example_glosses: one element per example; bilingual → vernacular in examples[i],
-    translation in example_glosses[i] (same length); monolingual → example_glosses [].
+  headword: lemma only — no POS or trailing punctuation (POS → pos).
+  phonetic, cross_references, examples, example_glosses when marked on the page.
+  cross_references: target lemma strings only, strip "see"/"cf." prose.
 """
 
+# Backward-compatible alias for docs and imports.
+STAGE_2_MDF_BLOCK = STAGE_2_SCHEMA_BLOCK
+
 STAGE_2_SYSTEM = """\
-You are a linguistic expert parsing dictionary pages into structured data for
-SIL Toolbox / MDF export.
+You are a linguistic expert parsing dictionary pages into structured JSON entries.
 
 Your inputs:
 1. A page transcription — either column TSV (column_id, line_number, text) or
@@ -296,19 +301,20 @@ Your task:
 1. Study introduction material (if provided).
 2. Read the transcription with the page image; use reading order and <b>/<i> tags.
 3. Extract only fields actually present; strip <b>/<i> from values.
-4. Set entry_type, parent_lexeme, and sense_number per the MDF contract below.
+4. Set entry_type, parent_lexeme, gloss, usage_note, sense_number, and homonym_number per the schema contract below.
 
-""" + STAGE_2_MDF_BLOCK + """
+""" + STAGE_2_SCHEMA_BLOCK + """
 
 Examples (lists):
   examples: always a list — one string per citation, in order; never one concatenated string.
   example_glosses: parallel translations when the dictionary gives them.
 
-Field semantics: see the response schema descriptions (they match the MDF contract).
+Field semantics: see the response schema field descriptions.
 
 No-reasoning-in-fields (CRITICAL):
   Field values must contain ONLY extracted dictionary text. No deliberation, hedging,
-  or chain-of-thought inside any field. If uncertain, leave the field empty ("" or []).
+  or chain-of-thought inside any field. If uncertain about optional fields, leave them
+  empty ("" or []). Always populate gloss when translation text is visible.
   Do reasoning only in the thinking channel, never in JSON string values.
 
 Rules:
@@ -317,13 +323,13 @@ Rules:
 - Do NOT invent fields not visible in the source.
 - Process each column independently — entries do not span columns.
 - Hyphenated line breaks: rejoin end-of-line hyphens across rows (intelligi- + ble → intelligible)
-  in headword, target_glosses, definition, examples, and extra_fields. Keep genuine in-word hyphens.
+  in headword, gloss, usage_note, examples, and extra_fields. Keep genuine in-word hyphens.
 - Emit clean JSON only — no commentary inside field values.
 """
 
 EXTRA_FIELDS_ALLOWLIST = (
-    "etymology, plural_form, gender, noun_class, tone_class, register, dialect, "
-    "usage_note, inflection, literal_meaning, variant_form, antonym"
+    "plural_form, gender, noun_class, tone_class, register, dialect, "
+    "usage_note, inflection, literal_meaning, antonym"
 )
 
 EXTRA_FIELDS_DISCOVERY_BLOCK = f"""\
@@ -331,7 +337,7 @@ EXTRA_FIELDS_DISCOVERY_BLOCK = f"""\
 Discovery mode is ENABLED for this run.
 
 Populate extra_fields ONLY for structurally marked content NOT covered by the
-canonical schema (phonetic, cross_references, target_glosses, definition, citation_form, etc.).
+canonical schema (phonetic, cross_references, gloss, usage_note, pos, etc.).
 
 Allowed snake_case keys (use ONLY from this list when applicable):
   {EXTRA_FIELDS_ALLOWLIST}
@@ -343,7 +349,7 @@ Reuse the same key across entries on the page.
 Strict rules:
   - Do NOT put ipa, see_also, pronunciation, or cross-refs in extra_fields — use
     phonetic and cross_references on the entry instead.
-  - Do NOT duplicate target_glosses, definition, pos, or semantic_domain in extra_fields.
+  - Do NOT duplicate gloss, usage_note, or pos in extra_fields.
   - If no allowlisted extra field applies, leave extra_fields as {{}}.
 </extra_fields_discovery>"""
 
@@ -403,12 +409,13 @@ def stage_2_user(
         parts.append(EXTRA_FIELDS_DISCOVERY_BLOCK)
 
     closing = (
-        "Parse all dictionary entries from the transcription and attached images for "
-        "Toolbox / MDF export.\n"
+        "Parse all dictionary entries from the transcription and attached images.\n"
         "The first image is the dictionary page; additional images are introduction pages.\n"
         "Set entry_type on every row (main, subentry, or sense). Use parent_lexeme and "
-        "sense_number for subentries and senses. Populate target_glosses (per language keys "
-        "above) and definition separately; leave legacy gloss empty. "
+        "sense_number for subentries and senses; use homonym_number (integer or null, "
+        "normalised from printed labels) only for homograph main entries. Emit mandatory "
+        "sense rows for inline numbered senses under one headword. Put non-italic "
+        "translation text in gloss (and gloss_secondary when trilingual), not in usage_note. "
         "Use phonetic and cross_references on the entry (not extra_fields). "
         "Examples and example_glosses must be lists (one element per example)."
     )

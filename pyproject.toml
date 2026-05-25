@@ -43,8 +43,8 @@ dictextractor-evaluate  = "dictextractor.cli.evaluate:main"
 dictextractor-preprocess = "dictextractor.cli.preprocess:main"
 dictextractor-run-ocr   = "dictextractor.cli.run_ocr:main"
 dictextractor-annotate  = "dictextractor.cli.annotate:main"
-dictextractor-eval-s1   = "dictextractor.cli.evaluate_stage1:main"
 dictextractor-eval-flat = "dictextractor.cli.evaluate_stage_flat:main"
+dictextractor-eval-stage2-mdf = "dictextractor.cli.evaluate_stage2_mdf:main"
 dictextractor-mathpix-convert = "dictextractor.cli.run_mathpix_convert:main"
 
 [tool.hatch.build.targets.wheel]

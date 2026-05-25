@@ -40,6 +40,15 @@ _MARKUP_ALIGN_PUNCT_RE = re.compile(r"[,.\:;!?\'\"()\[\]]")
 _SPACE_BEFORE_PUNCT_RE = re.compile(r"\s+([,.\:;!?\'\"()\[\]])")
 
 
+def casefold_letters_for_eval(text: str) -> str:
+    """Fold letter case for eval comparison only (not flat export).
+
+    Applied in alignment and character metrics so ``VERB`` vs ``verb`` does not
+    inflate GCER/WER. Non-letters (digits, IPA, CJK) are unchanged.
+    """
+    return "".join(ch.casefold() if ch.isalpha() else ch for ch in text)
+
+
 def normalize_line_text(text: str) -> str:
     """NFC, collapse whitespace, and remove spaces before punctuation.
 
@@ -63,7 +72,7 @@ def normalize_word_for_markup_align(word: str) -> str:
     etc.) so ``hello.,`` and ``hello`` align as the same slot. Original word
     text and tags are unchanged for TP/FP/FN decisions.
     """
-    return _MARKUP_ALIGN_PUNCT_RE.sub("", normalize_unicode(word))
+    return _MARKUP_ALIGN_PUNCT_RE.sub("", casefold_letters_for_eval(normalize_unicode(word)))
 
 
 # ---------------------------------------------------------------------------

@@ -59,10 +59,32 @@ def test_html_entity() -> None:
     assert normalize_line("tsh&#x27;khâ") == "tsh'khâ"
 
 
+def test_latex_mathbf_to_bold_tag() -> None:
+    assert normalize_line(r"\mathbf{no}") == "<b>no</b>"
+    assert normalize_line(r"\boldsymbol{-}") == "<b>-</b>"
+    out = normalize_line(r"$\mathbf{n o} \boldsymbol{-}$")
+    assert "<b>n o</b>" in out
+    assert "<b>-</b>" in out
+
+
 def test_latex_mathbf_unwrap() -> None:
     out = normalize_line(r"\mathbf{omel}\varnothing_{3} salt")
-    assert "omel" in out and "salt" in out
+    assert out == "<b>omel</b>3 salt"
     assert r"\mathbf" not in out
+
+
+def test_latex_textit_to_italic_tag() -> None:
+    assert normalize_line(r"\textit{gloss}") == "<i>gloss</i>"
+    assert normalize_line(r"\mathit{ipa}") == "<i>ipa</i>"
+
+
+def test_mathpix_line_preserves_latex_bold() -> None:
+    raw = (
+        "la forme $\\mathbf{n o} \\boldsymbol{-}=\\lfloor \\rfloor$ est jugée plus correcte"
+    )
+    out = normalize_line(raw)
+    assert "<b>n o</b>" in out
+    assert "<b>-</b>" in out
 
 
 def test_preserve_pos_marker() -> None:
@@ -107,3 +129,72 @@ def test_junk_cjk_symbol_spam_dropped() -> None:
 def test_preserve_bilingual_chinese_english_line() -> None:
     line = "word <b>你好</b> definition with enough English text here"
     assert normalize_line(line) != ""
+
+
+def test_strip_hathitrust_boilerplate_in_line() -> None:
+    from dictextractor.ocr.adapters.markdown_to_flat import is_boilerplate_line
+
+    assert is_boilerplate_line(
+        "Generated at University of Melbourne through HathiTrust on 2026-05-18"
+    )
+
+
+def test_normalize_cuneiform_spacing() -> None:
+    from dictextractor.evaluation.stage1.normalize_typography import (
+        normalize_cuneiform_spacing,
+    )
+
+    spaced = "¶ \U00012000 \U00012047 \U00012051 \U00012054 \U000120bc agarin."
+    assert normalize_cuneiform_spacing(spaced) == "¶ \U00012000\U00012047\U00012051\U00012054\U000120bc agarin."
+    assert normalize_line(spaced) == normalize_line(
+        "¶ \U00012000\U00012047\U00012051\U00012054\U000120bc agarin."
+    )
+
+
+def test_normalize_curly_apostrophe() -> None:
+    assert normalize_line("nae\u2019er") == "nae'er"
+
+
+def test_normalize_unicode_dash_in_header() -> None:
+    out = normalize_line("FUN \u2013 96 \u2013 page")
+    assert "—" in out
+
+
+def test_normalize_unicode_dash_in_compound() -> None:
+    assert normalize_line("one\u2013self") == "one-self"
+
+
+def test_strip_latex_mathrm_and_bare_dollar() -> None:
+    out = normalize_line(r"$\mathrm{k}^{\mathrm{h}}$")
+    assert "k" in out
+    assert r"\mathrm" not in out
+
+
+def test_strip_latex_drop_commands() -> None:
+    out = normalize_line(r"no \dashv=\dot{i}")
+    assert r"\dashv" not in out
+
+
+def test_markdown_table_and_empty_header() -> None:
+    from dictextractor.ocr.adapters.markdown_to_flat import markdown_text_to_flat_lines
+
+    raw = "| :--- | :--- |\n| head | gloss |\n###\n"
+    lines = markdown_text_to_flat_lines(raw)
+    assert "head" in lines[0]
+    assert "gloss" in lines[1]
+    assert all(ln != "###" for ln in lines)
+
+
+def test_strip_caret_text_artifact() -> None:
+    out = normalize_line("avto ^text и́на")
+    assert "^text" not in out and "_text" not in out
+    assert "avto" in out and "и́на" in out
+    assert "_text" not in normalize_line("word _text tail")
+    latex = r"рот ${ }^{\text {~ }}$-са"
+    assert "^text" not in normalize_line(latex).lower()
+
+
+def test_strip_latex_wedge_artifact() -> None:
+    assert "wedge" not in normalize_line(r"ca \wedge nx").lower()
+    assert normalize_line("cawedge-nx") == "ca-nx"
+    assert "wedge" not in normalize_line(r"<b>c a</b> wedge-<b>n</b>").lower()

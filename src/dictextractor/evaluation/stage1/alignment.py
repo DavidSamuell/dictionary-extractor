@@ -1,17 +1,14 @@
 """
-OmniDocBench-style semantic alignment for Stage 1 TSV rows.
+Stage 1 flat alignment: OmniDocBench quick_match (line-level) or page collapse.
 
-The matcher works on adjacent row spans rather than strict
-``(column_id, line_number)`` keys, so harmless line splits/merges do not
-dominate text-recognition metrics.
+Each flat line is one alignment unit. quick_match merges adjacent pred lines
+when a gold line was split across multiple OCR lines (Adjacency Search Match).
 """
 
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 
-import grapheme
-import Levenshtein
-
+from dictextractor.evaluation.stage1.quick_match import quick_match_lines
 from dictextractor.evaluation.stage1.tag_parser import (
     normalize_line_text,
     strip_tags,
@@ -22,7 +19,7 @@ Row = Dict[str, str]
 
 @dataclass(frozen=True)
 class RowSpan:
-    """Adjacent TSV rows treated as one semantic alignment unit."""
+    """One or more flat lines treated as one alignment unit."""
 
     span_id: str
     rows: List[Row]
@@ -48,7 +45,7 @@ class AlignedSpanPair:
 
 @dataclass(frozen=True)
 class AlignmentResult:
-    """Semantic alignment output shared by all Stage 1 metrics."""
+    """Alignment output shared by Stage 1 character and typography metrics."""
 
     pairs: List[AlignedSpanPair]
     pred_rows: List[Row]
@@ -67,14 +64,6 @@ class AlignmentResult:
         return sum(1 for pair in self.pairs if pair.pred and not pair.gold)
 
 
-@dataclass(frozen=True)
-class _Candidate:
-    pred: RowSpan
-    gold: RowSpan
-    similarity: float
-    text_edit: float
-
-
 def clean_text(text: str) -> str:
     """Tag-strip and normalize text for semantic matching and text metrics."""
     return normalize_line_text(strip_tags(text))
@@ -86,35 +75,28 @@ def _span_text(rows: List[Row], *, tagged: bool) -> str:
     return normalize_line_text(joined) if not tagged else joined
 
 
-def _make_spans(rows: List[Row], prefix: str, max_span_rows: int) -> List[RowSpan]:
-    spans: List[RowSpan] = []
-    for start in range(len(rows)):
-        max_end = min(len(rows), start + max_span_rows)
-        for end_exclusive in range(start + 1, max_end + 1):
-            span_rows = rows[start:end_exclusive]
-            end = end_exclusive - 1
-            spans.append(
-                RowSpan(
-                    span_id=f"{prefix}{start}" if start == end else f"{prefix}{start}-{end}",
-                    rows=span_rows,
-                    start_index=start,
-                    end_index=end,
-                    text=_span_text(span_rows, tagged=False),
-                    tagged_text=_span_text(span_rows, tagged=True),
-                )
-            )
-    return spans
+def _rows_for_indices(rows: List[Row], indices: List[int]) -> List[Row]:
+    return [rows[i] for i in indices]
 
 
-def _ned(pred: str, gold: str) -> float:
-    pred_graphemes = list(grapheme.graphemes(pred))
-    gold_graphemes = list(grapheme.graphemes(gold))
-    max_len = max(len(pred_graphemes), len(gold_graphemes), 1)
-    return Levenshtein.distance(pred_graphemes, gold_graphemes) / max_len
-
-
-def _row_indexes(span: RowSpan) -> set[int]:
-    return set(range(span.start_index, span.end_index + 1))
+def _make_span(
+    rows: List[Row],
+    indices: List[int],
+    *,
+    prefix: str,
+    tagged: bool,
+) -> RowSpan:
+    selected = _rows_for_indices(rows, indices)
+    start = indices[0]
+    end = indices[-1]
+    return RowSpan(
+        span_id=f"{prefix}{start}_{end}",
+        rows=selected,
+        start_index=start,
+        end_index=end,
+        text=_span_text(selected, tagged=False),
+        tagged_text=_span_text(selected, tagged=True),
+    )
 
 
 def collapse_rows_to_page(rows: List[Row]) -> List[Row]:
@@ -125,88 +107,35 @@ def collapse_rows_to_page(rows: List[Row]) -> List[Row]:
     return [{"column_id": "page", "line_number": "1", "text": tagged}]
 
 
-def align_page_collapsed(
+def _quick_match_to_pairs(
     pred_rows: List[Row],
     gold_rows: List[Row],
-) -> AlignmentResult:
-    """Align pred/gold as single collapsed page spans (no multi-line fuzzy search).
-
-    Used for character and typography metrics where line boundaries should not
-    affect scoring. Joins rows with spaces and applies the same ``clean_text``
-    normalisation as multi-row spans.
-    """
-    return align_rows(
-        collapse_rows_to_page(pred_rows),
-        collapse_rows_to_page(gold_rows),
-        threshold=0.0,
-        max_span_rows=1,
-    )
-
-
-def align_rows(
-    pred_rows: List[Row],
-    gold_rows: List[Row],
-    *,
-    threshold: float = 0.5,
-    max_span_rows: int = 3,
-) -> AlignmentResult:
-    """Align predicted/gold TSV rows using adjacent span fuzzy matching.
-
-    Candidate pred/gold spans are scored by grapheme normalized edit distance.
-    Non-overlapping candidates are then selected greedily from highest
-    similarity to lowest, which approximates OmniDocBench's adjacency search
-    while keeping dictionary-page evaluation simple and deterministic.
-    """
-    if max_span_rows < 1:
-        raise ValueError("max_span_rows must be >= 1")
-
-    pred_spans = _make_spans(pred_rows, "p", max_span_rows)
-    gold_spans = _make_spans(gold_rows, "g", max_span_rows)
-
-    candidates: List[_Candidate] = []
-    for pred in pred_spans:
-        for gold in gold_spans:
-            text_edit = _ned(pred.text, gold.text)
-            similarity = 1.0 - text_edit
-            if similarity >= threshold:
-                candidates.append(_Candidate(pred, gold, similarity, text_edit))
-
-    candidates.sort(
-        key=lambda c: (
-            -c.similarity,
-            c.pred.row_count + c.gold.row_count,
-            c.pred.start_index,
-            c.gold.start_index,
-        )
-    )
-
-    used_pred: set[int] = set()
-    used_gold: set[int] = set()
+    raw_matches: List[Dict[str, object]],
+) -> List[AlignedSpanPair]:
     pairs: List[AlignedSpanPair] = []
-    for candidate in candidates:
-        pred_indexes = _row_indexes(candidate.pred)
-        gold_indexes = _row_indexes(candidate.gold)
-        if pred_indexes & used_pred or gold_indexes & used_gold:
-            continue
-        used_pred.update(pred_indexes)
-        used_gold.update(gold_indexes)
+    for idx, match in enumerate(raw_matches):
+        gold_indices: List[int] = match["gold_indices"]  # type: ignore[assignment]
+        pred_indices: List[int] = match["pred_indices"]  # type: ignore[assignment]
+        text_edit = float(match["edit"])  # type: ignore[arg-type]
+
+        gold_span = (
+            _make_span(gold_rows, gold_indices, prefix=f"g{idx}_", tagged=True)
+            if gold_indices
+            else None
+        )
+        pred_span = (
+            _make_span(pred_rows, pred_indices, prefix=f"p{idx}_", tagged=True)
+            if pred_indices
+            else None
+        )
         pairs.append(
             AlignedSpanPair(
-                pred=candidate.pred,
-                gold=candidate.gold,
-                similarity=candidate.similarity,
-                text_edit=candidate.text_edit,
+                pred=pred_span,
+                gold=gold_span,
+                similarity=max(0.0, 1.0 - text_edit),
+                text_edit=text_edit,
             )
         )
-
-    for idx, row in enumerate(pred_rows):
-        if idx not in used_pred:
-            span = _make_spans([row], f"p{idx}_", 1)[0]
-            pairs.append(AlignedSpanPair(pred=span, gold=None, similarity=0.0, text_edit=1.0))
-    for idx, row in enumerate(gold_rows):
-        if idx not in used_gold:
-            span = _make_spans([row], f"g{idx}_", 1)[0]
-            pairs.append(AlignedSpanPair(pred=None, gold=span, similarity=0.0, text_edit=1.0))
 
     pairs.sort(
         key=lambda pair: (
@@ -214,4 +143,41 @@ def align_rows(
             pair.gold.start_index if pair.gold else float("inf"),
         )
     )
+    return pairs
+
+
+def align_lines_quick_match(
+    pred_rows: List[Row],
+    gold_rows: List[Row],
+) -> AlignmentResult:
+    """Align flat lines with OmniDocBench quick_match (Adjacency Search Match)."""
+    norm_gold = [clean_text(r.get("text", "")) for r in gold_rows]
+    norm_pred = [clean_text(r.get("text", "")) for r in pred_rows]
+    gold_tagged = [r.get("text", "") for r in gold_rows]
+    pred_tagged = [r.get("text", "") for r in pred_rows]
+
+    raw = quick_match_lines(norm_gold, norm_pred, gold_tagged, pred_tagged)
+    pairs = _quick_match_to_pairs(pred_rows, gold_rows, raw)
     return AlignmentResult(pairs=pairs, pred_rows=pred_rows, gold_rows=gold_rows)
+
+
+def align_rows(
+    pred_rows: List[Row],
+    gold_rows: List[Row],
+    *,
+    threshold: float = 0.6,
+) -> AlignmentResult:
+    """Line-level quick_match alignment (``threshold`` kept for API compatibility)."""
+    del threshold
+    return align_lines_quick_match(pred_rows, gold_rows)
+
+
+def align_page_collapsed(
+    pred_rows: List[Row],
+    gold_rows: List[Row],
+) -> AlignmentResult:
+    """Align pred/gold as single collapsed page spans (line split/merge invariant)."""
+    return align_lines_quick_match(
+        collapse_rows_to_page(pred_rows),
+        collapse_rows_to_page(gold_rows),
+    )

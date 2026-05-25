@@ -29,3 +29,5 @@ uv run python scripts/export_label_studio_gold.py \
     --samples-dir "${SAMPLES_DIR}" \
     --ls-url "${LS_URL}" \
     "$@"
+
+uv run python scripts/flatten_stage1_gold.py "$@"

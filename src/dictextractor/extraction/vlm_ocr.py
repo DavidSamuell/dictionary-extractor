@@ -9,11 +9,34 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from dictextractor.extraction.sample_entry import (
+    configure_sample_entry_args,
+    report_entry_input_failures,
+    validate_configured_sample_entry,
+)
 from dictextractor.ocr.adapters.flat_export import write_stage1_flat_for_page
 from dictextractor.ocr.vlm.page_inputs import list_snippet_pages, materialize_page_image
+from dictextractor.ocr.vlm.prompts import (
+    build_stage1_context_prompt,
+    find_ocr_hint_file,
+    load_alphabet_text,
+    load_ocr_hint_text,
+)
 from dictextractor.ocr.vlm.runner import VlmOcrRunner, create_vlm_runner, page_is_complete
 
 logger = logging.getLogger(__name__)
+
+
+def alphabet_disabled_for_experiment(
+    experiment_name: str,
+    *,
+    global_no_alphabet: bool,
+) -> bool:
+    """Return True when alphabet should be off for one experiment slot."""
+    if global_no_alphabet:
+        return True
+    lower = experiment_name.lower()
+    return "noalpha" in lower or "no_alpha" in lower
 
 
 def _git_short_sha() -> str | None:
@@ -51,7 +74,12 @@ def _build_vlm_manifest(
     snippets_dir: Path,
     snippets: list[Path],
     spec: Any,
+    *,
+    ocr_dir: Path | None = None,
 ) -> dict[str, Any]:
+    from dictextractor.evaluation.stage1.flatten import FLAT_SPEC_VERSION
+
+    alphabet_path = getattr(args, "alphabet", None)
     return {
         "stage": "1",
         "experiment_name": args.experiment_name,
@@ -61,16 +89,52 @@ def _build_vlm_manifest(
         "vlm_model": spec.key,
         "model_id": spec.model_id,
         "product_label": spec.product_label,
+        "flat_spec_version": FLAT_SPEC_VERSION,
         "vlm_dpi": getattr(args, "vlm_dpi", 200),
+        "alphabet": {
+            "used": bool(alphabet_path),
+            "path": alphabet_path,
+        },
+        "ocr_hint": {
+            "used": bool(ocr_dir),
+            "dir": str(ocr_dir) if ocr_dir else None,
+        },
         "glm_ocr_prompt": getattr(args, "glm_ocr_prompt", None),
         "inputs": {
             "snippets_dir": str(snippets_dir),
             "page_count": len(snippets),
         },
         "per_page": [
-            {"stem": s.stem, "snippet_path": str(s)} for s in snippets
+            {
+                "stem": s.stem,
+                "snippet_path": str(s),
+                "ocr_hint_file": (
+                    str(find_ocr_hint_file(ocr_dir, s.stem))
+                    if ocr_dir and find_ocr_hint_file(ocr_dir, s.stem)
+                    else None
+                ),
+            }
+            for s in snippets
         ],
     }
+
+
+def _page_prompt_for_runner(
+    runner: VlmOcrRunner,
+    args: Any,
+    *,
+    stem: str,
+    ocr_dir: Path | None,
+) -> str | None:
+    if runner.spec.key != "glm-ocr":
+        return None
+    alphabet_text = load_alphabet_text(getattr(args, "alphabet", None))
+    ocr_file = find_ocr_hint_file(ocr_dir, stem) if ocr_dir else None
+    ocr_hint = load_ocr_hint_text(ocr_file)
+    return build_stage1_context_prompt(
+        alphabet_text=alphabet_text,
+        ocr_hint=ocr_hint,
+    )
 
 
 def run_vlm_ocr_entry(
@@ -98,10 +162,11 @@ def run_vlm_ocr_entry(
     stage1_dir = output_dir / "stage-1" / args.experiment_name
     render_cache = output_dir / ".rendered_snippets"
     dpi = getattr(args, "vlm_dpi", 200)
+    ocr_dir = Path(args.ocr_text) if getattr(args, "ocr_text", None) else None
 
     _write_run_config(
         stage1_dir,
-        _build_vlm_manifest(args, snippets_dir, snippets, runner.spec),
+        _build_vlm_manifest(args, snippets_dir, snippets, runner.spec, ocr_dir=ocr_dir),
         force=args.overwrite,
     )
 
@@ -109,7 +174,11 @@ def run_vlm_ocr_entry(
     skipped = processed = failed = 0
 
     print(f"\nFound {total} snippet(s) in {snippets_dir}")
-    print(f"VLM: {runner.spec.product_label} | Output: {stage1_dir}")
+    print(
+        f"VLM: {runner.spec.product_label} | Output: {stage1_dir} | "
+        f"Alphabet: {'on' if getattr(args, 'alphabet', None) else 'off'} | "
+        f"OCR hint: {'on' if ocr_dir else 'off'}"
+    )
 
     for idx, snippet in enumerate(snippets):
         stem = snippet.stem
@@ -142,7 +211,12 @@ def run_vlm_ocr_entry(
 
                 shutil.copy2(image_path, input_copy)
 
-            artifacts = runner.run_page(image_path, page_dir, stem=stem)
+            artifacts = runner.run_page(
+                image_path,
+                page_dir,
+                stem=stem,
+                prompt=_page_prompt_for_runner(runner, args, stem=stem, ocr_dir=ocr_dir),
+            )
             flat_path = write_stage1_flat_for_page(page_dir, stem=stem)
             elapsed = time.perf_counter() - started
             print(
@@ -163,32 +237,98 @@ def run_vlm_ocr_entry(
 
 
 def run_vlm_ocr_batch(args: Any, entries: list[Path]) -> int:
-    """Process multiple language entries with one loaded VLM."""
-    runner = create_vlm_runner(
-        args.vlm_model,
-        glm_prompt=getattr(args, "glm_ocr_prompt", None),
-        glm_max_new_tokens=getattr(args, "glm_max_new_tokens", None),
-    )
-    runner.load()
-    any_failure = False
+    """Process multiple language entries and experiments with one loaded VLM."""
+    from dictextractor.ocr.vlm.paddle_genai_server import ensure_paddle_vllm_server_args
+
+    experiment_names: list[str] = getattr(args, "experiment_names", None) or [
+        args.experiment_name
+    ]
+    global_no_alphabet = getattr(args, "no_alphabet", False)
+    saved_experiment_name = args.experiment_name
+    saved_no_alphabet = global_no_alphabet
+
+    paddle_server: Any = None
+    glm_server: Any = None
     try:
-        for entry_dir in entries:
-            snippets_dir = entry_dir / "snippets"
-            if not snippets_dir.is_dir():
-                print(f"[skip] {entry_dir.name}: no snippets/ folder")
-                continue
-            output_dir = entry_dir / "outputs"
-            print("\n" + "#" * 60)
-            print(f"# Entry: {entry_dir.name}")
-            print("#" * 60)
-            rc = run_vlm_ocr_entry(
-                args,
-                snippets_dir,
-                output_dir,
-                runner,
+        paddle_server = ensure_paddle_vllm_server_args(args)
+        if paddle_server is not None:
+            print(
+                f"Paddle GenAI vLLM server: {args.paddle_vl_rec_server_url} "
+                f"(auto-started; stops when this run finishes)"
             )
-            if rc != 0:
-                any_failure = True
+        from dictextractor.ocr.vlm.glm_vllm_server import ensure_glm_vllm_server_args
+
+        glm_server = ensure_glm_vllm_server_args(args)
+        if glm_server is not None:
+            print(
+                f"GLM-OCR vLLM server: {args.glm_vllm_server_url} "
+                f"(auto-started; stops when this run finishes)"
+            )
+
+        runner = create_vlm_runner(
+            args.vlm_model,
+            glm_prompt=getattr(args, "glm_ocr_prompt", None),
+            glm_max_new_tokens=getattr(args, "glm_max_new_tokens", None),
+            glm_backend=getattr(args, "glm_backend", None),
+            glm_vllm_server_url=getattr(args, "glm_vllm_server_url", None),
+            mineru_backend=getattr(args, "vlm_backend", None),
+            mineru_batch_size=getattr(args, "mineru_batch_size", None),
+            mineru_max_new_tokens=getattr(args, "mineru_max_new_tokens", None),
+            paddle_vl_rec_backend=getattr(args, "paddle_vl_rec_backend", None),
+            paddle_vl_rec_server_url=getattr(args, "paddle_vl_rec_server_url", None),
+        )
+        runner.load()
+        any_failure = False
+        try:
+            for experiment_name in experiment_names:
+                args.experiment_name = experiment_name
+                args.no_alphabet = alphabet_disabled_for_experiment(
+                    experiment_name,
+                    global_no_alphabet=global_no_alphabet,
+                )
+                if len(experiment_names) > 1:
+                    print("\n" + "=" * 60)
+                    print(f" Experiment: {experiment_name}")
+                    print(
+                        f" Alphabet: {'off' if args.no_alphabet else 'on'} "
+                        f"(model stays loaded)"
+                    )
+                    print("=" * 60)
+
+                for entry_dir in entries:
+                    snippets_dir, output_dir = configure_sample_entry_args(args, entry_dir)
+                    if not snippets_dir.is_dir():
+                        print(f"[skip] {entry_dir.name}: no snippets/ folder")
+                        continue
+                    input_errors = validate_configured_sample_entry(
+                        args, entry_dir, snippets_dir
+                    )
+                    if input_errors:
+                        report_entry_input_failures(
+                            entry_dir.name,
+                            input_errors,
+                            experiment_name=experiment_name,
+                        )
+                        any_failure = True
+                        continue
+                    print("\n" + "#" * 60)
+                    print(f"# Entry: {entry_dir.name} | Experiment: {experiment_name}")
+                    print("#" * 60)
+                    rc = run_vlm_ocr_entry(
+                        args,
+                        snippets_dir,
+                        output_dir,
+                        runner,
+                    )
+                    if rc != 0:
+                        any_failure = True
+        finally:
+            args.experiment_name = saved_experiment_name
+            args.no_alphabet = saved_no_alphabet
+            runner.unload()
+        return 1 if any_failure else 0
     finally:
-        runner.unload()
-    return 1 if any_failure else 0
+        if paddle_server is not None:
+            paddle_server.stop()
+        if glm_server is not None:
+            glm_server.stop()

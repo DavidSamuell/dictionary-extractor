@@ -13,7 +13,6 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple
 import yaml
 
 from dictextractor.schemas.dictionary_languages import (
-    _DEFAULT_MDF_MARKERS,
     DictionaryLanguagesConfig,
     SourceLanguageConfig,
     TargetLanguageConfig,
@@ -173,6 +172,31 @@ def infer_layout(folder_name: str, num_targets: int) -> str:
     return "bilingual"
 
 
+# SIL Toolbox gloss markers (Appendix A): ge=English, gn=national, gr=regional, gv=vernacular.
+_MDF_GLOSS_NON_ENGLISH = ("gn", "gr", "gv")
+
+
+def mdf_marker_for_target(code: str, *, non_english_index: int = 0) -> str:
+    """
+    Map a target language code to the appropriate MDF gloss marker.
+
+    English always uses ``ge``. Each additional gloss language uses ``gn``,
+    then ``gr``, then ``gv`` (national → regional → vernacular in SIL naming).
+
+    Args:
+        code: Short target language code (``en``, ``ru``, ``zh``, …).
+        non_english_index: 0-based index among non-English targets in folder order.
+
+    Returns:
+        Two-letter MDF gloss marker.
+    """
+    if code == "en":
+        return "ge"
+    if non_english_index < len(_MDF_GLOSS_NON_ENGLISH):
+        return _MDF_GLOSS_NON_ENGLISH[non_english_index]
+    return f"g{non_english_index + 2}"
+
+
 def build_config_from_folder(
     folder_name: str,
     metadata_rows: Optional[Sequence[Dict[str, str]]] = None,
@@ -203,13 +227,11 @@ def build_config_from_folder(
                 break
 
     targets: List[TargetLanguageConfig] = []
-    for idx, (_token, code, meta_name) in enumerate(target_tokens):
-        marker = _DEFAULT_MDF_MARKERS[idx] if idx < len(_DEFAULT_MDF_MARKERS) else f"g{idx}"
+    for _token, code, meta_name in target_tokens:
         targets.append(
             TargetLanguageConfig(
                 language=meta_name,
                 code=code,
-                mdf_marker=marker,
                 column_id=col_map.get(code),
             )
         )
@@ -233,7 +255,6 @@ def build_config_from_folder(
         source=SourceLanguageConfig(
             language=source_display,
             code=source_code,
-            mdf_lexeme="lx",
             column_id=source_col,
         ),
         targets=targets,
@@ -242,14 +263,33 @@ def build_config_from_folder(
     )
 
 
+def markers_for_config(config: DictionaryLanguagesConfig) -> dict[str, str]:
+    """
+    Fallback MDF gloss markers for the legacy structured schema export path.
+
+    The direct MDF two-pass pipeline assigns markers in ``field_cheatsheet.json``
+    instead; this helper is not used there.
+    """
+    markers: dict[str, str] = {}
+    non_english_index = 0
+    for target in config.targets:
+        if target.code == "en":
+            markers[target.code] = "ge"
+        else:
+            markers[target.code] = mdf_marker_for_target(
+                target.code, non_english_index=non_english_index
+            )
+            non_english_index += 1
+    return markers
+
+
 def config_to_yaml_dict(config: DictionaryLanguagesConfig) -> Dict[str, Any]:
-    """Serialize for YAML output."""
+    """Serialize for YAML output (languages and layout only — no MDF markers)."""
 
     def _src(s: SourceLanguageConfig) -> Dict[str, Any]:
         d: Dict[str, Any] = {
             "language": s.language,
             "code": s.code,
-            "mdf_lexeme": s.mdf_lexeme,
         }
         if s.column_id:
             d["column_id"] = s.column_id
@@ -259,7 +299,6 @@ def config_to_yaml_dict(config: DictionaryLanguagesConfig) -> Dict[str, Any]:
         d: Dict[str, Any] = {
             "language": t.language,
             "code": t.code,
-            "mdf_marker": t.mdf_marker,
         }
         if t.column_id:
             d["column_id"] = t.column_id

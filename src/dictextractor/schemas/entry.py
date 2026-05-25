@@ -1,135 +1,137 @@
 """
 Canonical Pydantic schemas for structured dictionary entries.
-All modules that produce or consume dictionary entries import from here.
+
+Stage 2 uses a deliberately small ``DictionaryEntry`` surface so the LLM fills
+plain string fields. MDF export adds block grouping and language codes downstream.
 """
 
-from typing import Dict, List, Literal
-from pydantic import BaseModel, Field
+from typing import Dict, List, Literal, Optional
+
+from pydantic import BaseModel, Field, field_validator
+
+from dictextractor.schemas.entry_numbers import normalize_entry_number
 
 EntryType = Literal["main", "subentry", "sense"]
 
 
 class DictionaryEntry(BaseModel):
-    """Structured dictionary entry aligned with SIL Toolbox / MDF export.
+    """One row in the Stage 2 JSON array.
 
-    Use entry_type and parent_lexeme to encode hierarchy (\\lx, \\se, \\sn).
-    Populate target_glosses (\\ge, \\gn, …) and definition (\\de) separately when the source distinguishes them.
+    Hierarchy:
+      main — new bold headword (or homograph main)
+      subentry — bold run-on form under a parent lemma
+      sense — numbered meaning under one lemma
+
+    ``block_id`` is assigned in post-processing, not by the LLM.
     """
 
     entry_type: EntryType = Field(
         default="main",
         description=(
-            "MDF record role: 'main' = new \\lx headword block; 'subentry' = run-on "
-            "derivative/compound under a parent (\\se); 'sense' = numbered sense under "
-            "a lemma (\\sn). Every row must set this explicitly."
+            "'main' = headword block; 'subentry' = run-on compound under parent_lexeme; "
+            "'sense' = numbered sense under parent_lexeme."
         ),
     )
     headword: str = Field(
         ...,
         description=(
-            "Surface lemma for \\lx — the headword only, with all diacritics preserved. "
-            "Do NOT include POS, commas, or trailing line punctuation (put POS in pos)."
+            "Chukchi/source lemma only — bold text, no homograph index, no POS, "
+            "no trailing punctuation."
         ),
     )
     parent_lexeme: str = Field(
         default="",
         description=(
-            "Parent lemma headword when entry_type is 'subentry' or 'sense' (links \\se/\\sn "
-            "to the main \\lx). Must be empty when entry_type is 'main'."
+            "Parent headword when entry_type is 'subentry' or 'sense'; empty for 'main'."
         ),
     )
-    sense_number: str = Field(
-        default="",
+    homonym_number: Optional[int] = Field(
+        default=None,
+        ge=1,
         description=(
-            "Sense index for \\sn (e.g. '1', '2', 'I') when entry_type is 'sense'; "
-            "otherwise empty."
+            "Homograph index (1, 2, 3, …) on entry_type='main' only. "
+            "Convert Roman numerals (I, II) to integers. Null if not a homograph."
         ),
     )
-    homonym_number: str = Field(
-        default="",
+    sense_number: Optional[int] = Field(
+        default=None,
+        ge=1,
         description=(
-            "Homonym discriminator for \\hm (e.g. '1', '2') when the dictionary marks "
-            "homographs; otherwise empty."
-        ),
-    )
-    pos: str = Field(
-        default="",
-        description=(
-            "Part-of-speech tag for \\ps — abbreviation exactly as printed (e.g. n., "
-            "сущ., nn.); empty if not shown."
-        ),
-    )
-    target_glosses: Dict[str, str] = Field(
-        default_factory=dict,
-        description=(
-            "Short glosses per target language — keys must match dictionary_languages.yaml "
-            "(e.g. en, zh, tr). Maps to MDF \\ge, \\gn, etc. Leave empty {} when none. "
-            "Do not duplicate into gloss."
+            "Sense index (1, 2, 3, …) on entry_type='sense' only. "
+            "Strip trailing ')' or '.' from printed labels. Null otherwise."
         ),
     )
     gloss: str = Field(
         default="",
         description=(
-            "Legacy single gloss field — leave empty. Use target_glosses[code] from "
-            "the dictionary language config instead."
+            "Primary target-language translation — all non-italic wording after the "
+            "headword. Semicolon-separated synonyms allowed in one string."
         ),
     )
-    definition: str = Field(
+    gloss_secondary: str = Field(
         default="",
         description=(
-            "Longer definitional text for \\de — explanatory wording beyond a short gloss; "
-            "join minor sub-meanings of the same sense with ' | '. Empty if none."
+            "Second target-language translation when the dictionary has two targets "
+            "(see <dictionary_languages>); empty for single-target dictionaries."
         ),
     )
-    semantic_domain: str = Field(
+    usage_note: str = Field(
         default="",
         description=(
-            "Semantic/register label for \\sd — short token only when explicitly marked "
-            "(e.g. bot., colloq., archaic); never commentary or reasoning; else ''."
+            "Italic or parenthetical domain/usage expansion only — not the main translation."
         ),
     )
-    citation_form: str = Field(
+    pos: str = Field(
         default="",
-        description=(
-            "Lexical citation form for \\lc when the printed headword differs from headword "
-            "(e.g. bound roots); otherwise empty."
-        ),
+        description="Part-of-speech abbreviation exactly as printed; empty if not shown.",
     )
     phonetic: str = Field(
         default="",
-        description=(
-            "Phonetic pronunciation for \\ph when marked on the entry; otherwise empty."
-        ),
+        description="Phonetic pronunciation when marked; otherwise empty.",
     )
     cross_references: List[str] = Field(
-        default=[],
-        description=(
-            "Cross-reference target lemmas for \\cf — headword strings only, no 'see' or "
-            "'cf.' prose; empty list if none."
-        ),
+        default_factory=list,
+        description="Cross-reference headwords only — no 'see' / 'cf.' prose.",
     )
     examples: List[str] = Field(
-        default=[],
-        description=(
-            "Example phrases/sentences for \\xv — one string per example in order; "
-            "vernacular/source-language text when bilingual."
-        ),
+        default_factory=list,
+        description="Example phrases in source language — one string per example.",
     )
     example_glosses: List[str] = Field(
-        default=[],
-        description=(
-            "Translations of examples for \\xe — parallel to examples (same length when "
-            "each example has a translation); empty list if monolingual examples only."
-        ),
+        default_factory=list,
+        description="Example translations parallel to examples; empty if monolingual.",
     )
     extra_fields: Dict[str, str] = Field(
-        default={},
-        description=(
-            "Non-MDF-standard structurally marked fields only (etymology, gender, register, "
-            "dialect, inflection tables). Use frozen allowlist keys when discovery mode is on; "
-            "never duplicate phonetic, cross_references, target_glosses, or definition here; else {}."
-        ),
+        default_factory=dict,
+        description="Optional marked fields (gender, dialect, …) when discovery is on.",
     )
+
+    @field_validator("homonym_number", "sense_number", mode="before")
+    @classmethod
+    def _normalize_number_fields(cls, value: object) -> Optional[int]:
+        """Accept integers, Arabic strings, Roman labels; normalise to int or null."""
+        return normalize_entry_number(value)
+
+    @field_validator("homonym_number")
+    @classmethod
+    def _homonym_only_on_main(cls, value: Optional[int], info) -> Optional[int]:
+        if info.data.get("entry_type") != "main":
+            return None
+        return value
+
+    @field_validator("sense_number")
+    @classmethod
+    def _sense_only_on_sense(cls, value: Optional[int], info) -> Optional[int]:
+        if info.data.get("entry_type") != "sense":
+            return None
+        return value
+
+    @field_validator("parent_lexeme")
+    @classmethod
+    def _parent_only_on_child(cls, value: str, info) -> str:
+        if info.data.get("entry_type") == "main":
+            return ""
+        return value
 
 
 class DictionaryPage(BaseModel):
@@ -138,10 +140,14 @@ class DictionaryPage(BaseModel):
     entries: List[DictionaryEntry]
     page_number: int
     source_file: str
+    mdf_text: str = Field(
+        default="",
+        description="Direct MDF output when stage2_mode=direct_mdf.",
+    )
 
 
 # ---------------------------------------------------------------------------
-# Structured output response schemas (used as response_format targets)
+# Stage 1 structured output (unchanged)
 # ---------------------------------------------------------------------------
 
 class ColumnTranscription(BaseModel):
@@ -164,82 +170,29 @@ class ColumnTranscription(BaseModel):
 
 
 class FlatTranscriptionResponse(BaseModel):
-    """
-    Structured output for flat Stage 1 transcription (eval-flat / PageTranscript).
+    """Structured output for flat Stage 1 transcription."""
 
-    No column_id or line_number — body lines are in global reading order.
-    """
-
-    header: List[str] = Field(
-        default=[],
-        description=(
-            "Page-level header lines above the dictionary body (running title, "
-            "page number, letter band). One string per visible line. Empty if none."
-        ),
-    )
+    header: List[str] = Field(default=[])
     lines: List[str] = Field(
         description=(
-            "Every visible body line in reading order (top to bottom). For "
-            "multi-column pages: complete the left column top-to-bottom, then "
-            "the next column, etc. Wrap bold in <b>...</b> and italic in <i>...</i>. "
-            "Preserve hyphenated line breaks as separate lines with trailing hyphen."
+            "Every visible body line in reading order. Wrap bold in <b>...</b> and "
+            "italic in <i>...</i>."
         )
     )
-    footer: List[str] = Field(
-        default=[],
-        description=(
-            "Page-level footer lines below the body. One string per visible line. "
-            "Empty if none."
-        ),
-    )
+    footer: List[str] = Field(default=[])
 
 
 class TranscriptionResponse(BaseModel):
-    """
-    Structured output schema for Stage 1 transcription.
+    """Structured output schema for Stage 1 column transcription."""
 
-    Page-level metadata (header, footer) is captured in dedicated fields,
-    separate from the body content. Body content is split into columns,
-    ordered left → right. Within each column, lines are ordered top → bottom.
-
-    For single-column pages use one column with column_id='single'.
-    """
-
-    header: List[str] = Field(
-        default=[],
-        description=(
-            "Page-level header text appearing ABOVE the body columns — e.g. "
-            "running title, page number, chapter abbreviation, alphabetic letter "
-            "band. One string per visible line (top to bottom). Headers may sit "
-            "anywhere horizontally (centred, spanning columns); they are NEVER "
-            "part of a column. Empty list if the page has no header. "
-            "Do NOT include the first dictionary entry here."
-        ),
-    )
+    header: List[str] = Field(default=[])
     columns: List[ColumnTranscription] = Field(
-        description=(
-            "Body columns detected on the page, ordered left to right. "
-            "Transcribe each column fully (top to bottom) before moving to the next. "
-            "Never mix lines from different columns in the same column entry. "
-            "Do NOT include header or footer text inside any column."
-        )
+        description="Body columns left → right; transcribe each fully top → bottom."
     )
-    footer: List[str] = Field(
-        default=[],
-        description=(
-            "Page-level footer text appearing BELOW the body columns — e.g. "
-            "page number, footnote, decorative rule, copyright line. One string "
-            "per visible line (top to bottom). Footers may sit anywhere "
-            "horizontally; they are NEVER part of a column. Empty list if the "
-            "page has no footer."
-        ),
-    )
+    footer: List[str] = Field(default=[])
 
 
 class EntriesResponse(BaseModel):
-    """
-    Structured output schema for Stage 2 structuring.
-    The LLM fills only fields that are actually present in each entry.
-    """
+    """Stage 2 structured output — array of DictionaryEntry rows."""
 
     entries: List[DictionaryEntry]

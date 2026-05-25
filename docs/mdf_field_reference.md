@@ -13,10 +13,13 @@ This document supports dictionary-extractor Stage 2 design: which markers map to
 
 | Layer | What it is |
 | --- | --- |
-| **Canonical `DictionaryEntry` fields** | Stable JSON/TSV columns mapped to common MDF markers (`\lx`, `\ge`, `\de`, `\ps`, …). Used on every run. |
-| **`target_glosses`** | Per-target gloss markers (`\ge`, `\gn`, `\gf`, …) from `dictionary_languages.yaml`. |
-| **`extra_fields` (discovery)** | Optional snake_case keys when `--discover-extra-fields` is on. **12 built-in keys only** (see § Default `extra_fields` allowlist below); user YAML extension not implemented yet. |
-| **Planned `json_to_mdf()`** | Groups `main` / `subentry` / `sense` rows and writes Toolbox text with `\marker` lines. |
+| **Pass 1 marker reference** | Curated subset in `src/dictextractor/llm/mdf_marker_reference.py` — vocabulary for field discovery (not a hard allowlist). |
+| **`field_cheatsheet.json`** | Pass 1 output: markers + rules cached under `outputs/stage-2/<experiment>/` for **direct MDF Pass 2**. |
+| **Canonical `DictionaryEntry` fields** | Stable JSON/TSV columns (`schema` mode): `\lx`, `\ge`, `\de`, `\ps`, … |
+| **`target_glosses`** | Per-target gloss keys in schema mode; MDF markers from `dictionary_languages.yaml` at export time. |
+| **`extra_fields` (discovery)** | Optional snake_case keys when `--discover-extra-fields` is on (**schema mode**). **12 built-in keys only** — see § Default allowlist below. |
+| **Eval substitution** | `assets/evaluation/mdf_marker_sub_list.yaml` — equivalent markers for scoring (e.g. `gn`↔`dn`). |
+| **Planned `json_to_mdf()`** | Groups schema-mode JSON rows into Toolbox text (direct MDF already emits MDF). |
 
 MDF is **not** a single fixed schema: projects may define **custom markers**. Appendix A is the standard MDF set; FieldWorks and other tools may accept additional SFM markers.
 

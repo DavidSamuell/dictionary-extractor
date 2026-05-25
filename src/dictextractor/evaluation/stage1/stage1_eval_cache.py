@@ -17,7 +17,7 @@ from dictextractor.evaluation.stage1.stage1_metrics import (
 )
 
 CACHE_FILE_NAME = "stage1_eval_cache.json"
-CACHE_FORMAT_VERSION = 3  # v3: eval-flat page collapse for char/markup; line read order
+CACHE_FORMAT_VERSION = 12  # v12: eval-flat reports OmniDocBench ReadOrderEdit
 
 
 def _file_fingerprint(path: Path) -> Tuple[int, int]:
@@ -66,7 +66,7 @@ def stage1_metrics_from_cache_dict(d: dict) -> Stage1Metrics:
     """Restore Stage1Metrics from ``stage1_metrics_to_cache_dict`` output."""
     cq = d["character_quality"]
     mq = d["markup_quality"]
-    ro = d["read_order"]
+    ro = d.get("read_order", {})
     return Stage1Metrics(
         page_id=d["page_id"],
         character_quality=CharacterQualityMetrics(**cq),
@@ -74,7 +74,11 @@ def stage1_metrics_from_cache_dict(d: dict) -> Stage1Metrics:
             bold=TagMetrics(**mq["bold"]),
             italic=TagMetrics(**mq["italic"]),
         ),
-        read_order=ReadOrderMetrics(**ro),
+        read_order=ReadOrderMetrics(
+            read_order_edit=float(ro.get("read_order_edit", 0.0)),
+            edit_distance=int(ro.get("edit_distance", 0)),
+            max_length=int(ro.get("max_length", 0)),
+        ),
     )
 
 
@@ -83,7 +87,7 @@ class CachedEntry:
     pred_fp: Tuple[int, int]
     gold_fp: Tuple[int, int]
     alignment_threshold: float
-    alignment_max_span_rows: int
+    character_alignment: str
     format_version: int
     metrics: Stage1Metrics
 
@@ -138,7 +142,7 @@ class Stage1EvalCache:
                 pred_fp=pred_fp,
                 gold_fp=gold_fp,
                 alignment_threshold=float(blob["alignment_threshold"]),
-                alignment_max_span_rows=int(blob["alignment_max_span_rows"]),
+                character_alignment=str(blob.get("character_alignment", "quick_match")),
                 format_version=int(blob.get("format_version", 0)),
                 metrics=m,
             )
@@ -152,7 +156,7 @@ class Stage1EvalCache:
         pred_path: Path,
         gold_path: Path,
         alignment_threshold: float,
-        alignment_max_span_rows: int,
+        character_alignment: str,
     ) -> bool:
         e = self.get_entry(experiment, page_id)
         if e is None:
@@ -161,7 +165,7 @@ class Stage1EvalCache:
             return False
         if e.alignment_threshold != alignment_threshold:
             return False
-        if e.alignment_max_span_rows != alignment_max_span_rows:
+        if e.character_alignment != character_alignment:
             return False
         try:
             if e.pred_fp != _file_fingerprint(pred_path):
@@ -179,7 +183,7 @@ class Stage1EvalCache:
         pred_path: Path,
         gold_path: Path,
         alignment_threshold: float,
-        alignment_max_span_rows: int,
+        character_alignment: str,
         metrics: Stage1Metrics,
     ) -> None:
         self._data.setdefault(experiment, {})
@@ -187,12 +191,14 @@ class Stage1EvalCache:
             "pred_fp": list(_file_fingerprint(pred_path)),
             "gold_fp": list(_file_fingerprint(gold_path)),
             "alignment_threshold": alignment_threshold,
-            "alignment_max_span_rows": alignment_max_span_rows,
+            "character_alignment": character_alignment,
             "format_version": CACHE_FORMAT_VERSION,
             "metrics": stage1_metrics_to_cache_dict(metrics),
         }
 
-    def prune_stale_paths(self, samples_dir: Path) -> None:
+    def prune_stale_paths(
+        self, samples_dir: Path, *, stage1_output_subdir: str = "stage-1"
+    ) -> None:
         """Remove entries whose prediction or gold files no longer exist on disk."""
         for exp in list(self._data.keys()):
             pages = self._data[exp]
@@ -201,7 +207,9 @@ class Stage1EvalCache:
                 if not sep or not stem:
                     del pages[page_id]
                     continue
-                page_dir = samples_dir / lang / "outputs" / "stage-1" / exp / stem
+                page_dir = (
+                    samples_dir / lang / "outputs" / stage1_output_subdir / exp / stem
+                )
                 gold_dir = samples_dir / lang / "outputs" / "stage-1-gold" / stem
                 pred_flat = page_dir / f"{stem}_stage1_flat.txt"
                 pred_tsv = page_dir / f"{stem}_stage1.tsv"
@@ -219,7 +227,7 @@ class Stage1EvalCache:
         tasks: List[object],
         *,
         alignment_threshold: float,
-        alignment_max_span_rows: int,
+        character_alignment: str,
     ) -> OrderedDict[str, List[Stage1Metrics]]:
         """Group cached metrics by experiment for tasks with valid cache entries."""
         by_exp: OrderedDict[str, List[Stage1Metrics]] = OrderedDict()
@@ -230,7 +238,7 @@ class Stage1EvalCache:
                 task.pred_path,
                 task.gold_path,
                 alignment_threshold,
-                alignment_max_span_rows,
+                character_alignment,
             ):
                 continue
             entry = self.get_entry(task.experiment, task.page_id)

@@ -34,10 +34,13 @@ from common import (  # noqa: E402
 )
 from runners.glmocr import run_glmocr  # noqa: E402
 from runners.mineru import run_mineru  # noqa: E402
-from runners.ovis import run_ovis  # noqa: E402
+from runners.openrouter_vlm import (  # noqa: E402
+    DEFAULT_MODEL as QWEN3_VL_DEFAULT_MODEL,
+    run_openrouter_vlm,
+)
 from runners.paddleocr import run_paddleocr_vl  # noqa: E402
 
-ALL_MODELS = ("mineru", "paddleocr", "glm-ocr", "ovis")
+ALL_MODELS = ("mineru", "paddleocr", "glm-ocr", "qwen3-vl-235b")
 
 logging.basicConfig(
     level=logging.INFO,
@@ -68,10 +71,11 @@ def run_model_on_asset(
     use_full_pdf: bool,
     glm_prompt: str,
     glm_max_new_tokens: int,
-    ovis_prompt: str,
-    ovis_max_new_tokens: int,
-    ovis_thinking_budget: int,
-    ovis_enable_thinking: bool,
+    qwen3_vl_model: str,
+    qwen3_vl_prompt: str,
+    qwen3_vl_max_tokens: int,
+    qwen3_vl_temperature: float,
+    qwen3_vl_top_p: float | None,
 ) -> InferenceResult:
     """Run a single model on one asset."""
     model_output = asset_output_dir / model_name
@@ -104,14 +108,15 @@ def run_model_on_asset(
             max_new_tokens=glm_max_new_tokens,
             use_full_pdf=full_pdf,
         )
-    elif model_name == "ovis":
-        result = run_ovis(
+    elif model_name == "qwen3-vl-235b":
+        result = run_openrouter_vlm(
             model_output,
             page_images=page_images,
-            prompt=ovis_prompt,
-            max_new_tokens=ovis_max_new_tokens,
-            thinking_budget=ovis_thinking_budget,
-            enable_thinking=ovis_enable_thinking,
+            model=qwen3_vl_model,
+            prompt=qwen3_vl_prompt,
+            max_tokens=qwen3_vl_max_tokens,
+            temperature=qwen3_vl_temperature,
+            top_p=qwen3_vl_top_p,
         )
     else:
         raise ValueError(f"Unknown model: {model_name}")
@@ -140,10 +145,11 @@ def run_all(
     use_full_pdf: bool,
     glm_prompt: str,
     glm_max_new_tokens: int,
-    ovis_prompt: str,
-    ovis_max_new_tokens: int,
-    ovis_thinking_budget: int,
-    ovis_enable_thinking: bool,
+    qwen3_vl_model: str,
+    qwen3_vl_prompt: str,
+    qwen3_vl_max_tokens: int,
+    qwen3_vl_temperature: float,
+    qwen3_vl_top_p: float | None,
 ) -> list[dict]:
     """Run each model on every asset; return per-asset result records."""
     run_records: list[dict] = []
@@ -189,10 +195,11 @@ def run_all(
                 use_full_pdf=use_full_pdf,
                 glm_prompt=glm_prompt,
                 glm_max_new_tokens=glm_max_new_tokens,
-                ovis_prompt=ovis_prompt,
-                ovis_max_new_tokens=ovis_max_new_tokens,
-                ovis_thinking_budget=ovis_thinking_budget,
-                ovis_enable_thinking=ovis_enable_thinking,
+                qwen3_vl_model=qwen3_vl_model,
+                qwen3_vl_prompt=qwen3_vl_prompt,
+                qwen3_vl_max_tokens=qwen3_vl_max_tokens,
+                qwen3_vl_temperature=qwen3_vl_temperature,
+                qwen3_vl_top_p=qwen3_vl_top_p,
             )
             asset_record["results"].append(result.to_dict())
 
@@ -270,17 +277,27 @@ def main() -> int:
     )
 
     parser.add_argument(
-        "--ovis-prompt",
-        default=(
-            "Transcribe all visible text from this document page. "
-            "Preserve structure where possible. "
-            "End your response with 'Final answer: '."
-        ),
-        help="Prompt for Ovis2.6",
+        "--qwen3-vl-model",
+        default=QWEN3_VL_DEFAULT_MODEL,
+        help="OpenRouter litellm model id for Qwen3-VL-235B",
     )
-    parser.add_argument("--ovis-max-new-tokens", type=int, default=2048)
-    parser.add_argument("--ovis-thinking-budget", type=int, default=1024)
-    parser.add_argument("--ovis-no-thinking", action="store_true", help="Disable Ovis thinking mode")
+    parser.add_argument(
+        "--qwen3-vl-prompt",
+        default=(
+            "Transcribe all visible text from this dictionary page image. "
+            "Preserve line order and diacritics exactly. "
+            "Return plain text only, no commentary."
+        ),
+        help="Prompt for Qwen3-VL via OpenRouter",
+    )
+    parser.add_argument("--qwen3-vl-max-tokens", type=int, default=8192)
+    parser.add_argument("--qwen3-vl-temperature", type=float, default=0.1)
+    parser.add_argument(
+        "--qwen3-vl-top-p",
+        type=float,
+        default=None,
+        help="Optional top_p forwarded to OpenRouter (omit to use provider default)",
+    )
 
     args = parser.parse_args()
 
@@ -321,10 +338,11 @@ def main() -> int:
         use_full_pdf=args.all_pages,
         glm_prompt=args.glm_ocr_prompt,
         glm_max_new_tokens=args.glm_ocr_max_new_tokens,
-        ovis_prompt=args.ovis_prompt,
-        ovis_max_new_tokens=args.ovis_max_new_tokens,
-        ovis_thinking_budget=args.ovis_thinking_budget,
-        ovis_enable_thinking=not args.ovis_no_thinking,
+        qwen3_vl_model=args.qwen3_vl_model,
+        qwen3_vl_prompt=args.qwen3_vl_prompt,
+        qwen3_vl_max_tokens=args.qwen3_vl_max_tokens,
+        qwen3_vl_temperature=args.qwen3_vl_temperature,
+        qwen3_vl_top_p=args.qwen3_vl_top_p,
     )
 
     failures: list[str] = []

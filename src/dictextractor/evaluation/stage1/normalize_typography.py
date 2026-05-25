@@ -23,6 +23,7 @@ _MD_ITALIC_UNDER = re.compile(r"(?<!_)_(?!_)(.+?)(?<!_)_(?!_)")
 _HTML_TAG_RE = re.compile(r"</?([a-zA-Z][a-zA-Z0-9]*)>", re.IGNORECASE)
 _BOLD_HTML = frozenset({"b", "strong"})
 _ITALIC_HTML = frozenset({"i", "em"})
+_PRESERVED_HTML = frozenset({"n"})  # part-of-speech marker ``<N>``
 
 # LaTeX inline delimiters — keep inner text, drop markers.
 _LATEX_INLINE = re.compile(
@@ -33,8 +34,24 @@ _LATEX_INLINE = re.compile(
 # MinerU / VLM OCR artifacts — strip before tag conversion.
 _MINERU_XI_RUN = re.compile(r"(?:x<i>\{\d+\}</i>\s*)+", re.IGNORECASE)
 _MALFORMED_HTML = re.compile(r"<x\{[^>]*>", re.IGNORECASE)
-_LATEX_TEXT_CMD = re.compile(r"\\text\{([^{}]*)\}")
+_LATEX_TEXT_CMD = re.compile(r"\\text\s*\{([^{}]*)\}")
+_LATEX_MATHRM_CMD = re.compile(r"\\mathrm\{([^{}]*)\}")
+_LATEX_MATHBB_CMD = re.compile(r"\\mathbb\{([^{}]*)\}")
 _LATEX_OVERLINE_CMD = re.compile(r"\\overline\{([^{}]*)\}")
+_LATEX_DROP_BARE = re.compile(r"\\(?:complement|dashv|lrcorner|circledast|wedge)\b")
+_LATEX_TEXT_ARTIFACT = re.compile(r"[_^]\s*text\b", re.IGNORECASE)
+_LATEX_TEXT_BRACED = re.compile(r"(?<![A-Za-z])text\s*\{([^{}]*)\}", re.IGNORECASE)
+_LATEX_WEDGE_WORD = re.compile(r"(?<=[a-zA-Z])wedge(?=[-<])|\bwedge\b", re.IGNORECASE)
+_HTML_BR = re.compile(r"<br\s*/?>", re.IGNORECASE)
+_BARE_DOLLAR_SPAN = re.compile(r"\$(?!\$)(.{1,60}?)(?<!\$)\$(?!\$)")
+_LATEX_BOLD_CMD = re.compile(
+    r"\\(?:mathbf|boldsymbol|textbf|bm)\{([^{}]*)\}",
+    re.IGNORECASE,
+)
+_LATEX_ITALIC_CMD = re.compile(
+    r"\\(?:textit|mathit|emph|itshape)\{([^{}]*)\}",
+    re.IGNORECASE,
+)
 _LATEX_CMD = re.compile(
     r"\\([a-zA-Z]+)(?:\{([^{}]*)\})?(?:_\{([^{}]*)\})?(?:\^\{([^{}]*)\})?"
 )
@@ -47,18 +64,15 @@ _LATEX_ARRAY_BLOCK = re.compile(
 )
 _STRAY_BRACES = re.compile(r"[{}]")
 _STRAY_BACKSLASH = re.compile(r"\\+")
-_SWASTIKA_RUN = re.compile(r"卍{2,}")
+_SWASTIKA_RUN = re.compile(r"卍{3,}")
 _UNREADABLE_MARKER = re.compile(r"\[Unreadable\]", re.IGNORECASE)
 _CHECKBOX = re.compile(r"☐\s*")
 _MODIFIER_LETTERS = re.compile(r"[\u2070-\u209f\u02b0-\u02ff]+")
-_STRAY_ANGLE = re.compile(
-    r"<(?!(?:/?)(?:b|i)\b|/?N>)|(?<!(?:b|i|N)/)>(?![a-zA-Z/])",
-    re.IGNORECASE,
-)
+_ALLOWED_INLINE_TAG = re.compile(r"</?(?:b|i|N)>", re.IGNORECASE)
 
 # Residual HTML-like tags after conversion (preserve dictionary <b>/<i>).
 _RESIDUAL_TAG_RE = re.compile(r"</?([a-zA-Z][a-zA-Z0-9]*)>")
-_ALLOWED_INLINE_TAGS = frozenset({"b", "i"})
+_ALLOWED_INLINE_TAGS = frozenset({"b", "i", "n"})
 
 _JUNK_DIGIT_RATIO = 0.85
 _JUNK_MIN_DIGIT_LEN = 80
@@ -69,6 +83,42 @@ _JUNK_CJK_MIN_LEN = 80
 _JUNK_CJK_RATIO = 0.55
 _JUNK_CJK_MAX_LATIN_RATIO = 0.15
 _REPLACEMENT_CHAR = "\ufffd"
+
+_UNICODE_DASH_CHARS = "‐‑‒–—―−"
+_HEADER_EM_DASH = re.compile(
+    r"^\s*\S.*(?:"
+    + r"[\-"
+    + _UNICODE_DASH_CHARS
+    + r"])\s*\d+\s*(?:[\-"
+    + _UNICODE_DASH_CHARS
+    + r"])\s+\S"
+)
+
+_CURLY_APOSTROPHE = str.maketrans(
+    {
+        "\u2018": "'",
+        "\u2019": "'",
+        "\u201a": "'",
+        "\u201b": "'",
+        "\u2032": "'",
+        "\u2039": "'",
+        "\u203a": "'",
+    }
+)
+
+# Sumero-Akkadian cuneiform (U+12000–U+1247F).
+_CUNEIFORM_SPACE_CUNEIFORM = re.compile(
+    r"([\U00012000-\U0001247F])\s+(?=[\U00012000-\U0001247F])"
+)
+
+
+def normalize_cuneiform_spacing(text: str) -> str:
+    """Remove whitespace between consecutive cuneiform sign characters."""
+    prev = None
+    while prev != text:
+        prev = text
+        text = _CUNEIFORM_SPACE_CUNEIFORM.sub(r"\1", text)
+    return text
 
 
 def _strip_combining_marks(text: str) -> str:
@@ -140,6 +190,8 @@ def _html_to_dictionary_tags(text: str) -> str:
             return "</b>" if closing else "<b>"
         if name in _ITALIC_HTML:
             return "</i>" if closing else "<i>"
+        if name in _PRESERVED_HTML:
+            return "</N>" if closing else "<N>"
         return ""
 
     return _HTML_TAG_RE.sub(repl, text)
@@ -154,13 +206,42 @@ def _markdown_to_dictionary_tags(text: str) -> str:
     return text
 
 
+def _latex_typography_to_dictionary_tags(text: str) -> str:
+    """Map Mathpix-style LaTeX bold/italic commands to ``<b>`` / ``<i>``."""
+    prev = None
+    while prev != text:
+        prev = text
+        text = _LATEX_BOLD_CMD.sub(r"<b>\1</b>", text)
+        text = _LATEX_ITALIC_CMD.sub(r"<i>\1</i>", text)
+    return text
+
+
+def _strip_stray_angles(text: str) -> str:
+    """Remove orphan ``<``/``>`` while preserving dictionary inline tags."""
+    placeholders: dict[str, str] = {}
+
+    def shield(match: re.Match[str]) -> str:
+        key = f"\x00T{len(placeholders)}\x00"
+        placeholders[key] = match.group(0)
+        return key
+
+    protected = _ALLOWED_INLINE_TAG.sub(shield, text)
+    protected = protected.replace("<", "").replace(">", "")
+    for key, tag in placeholders.items():
+        protected = protected.replace(key, tag)
+    return protected
+
+
 def _unwrap_latex_commands(text: str) -> str:
     """Unwrap ``\\cmd{inner}`` / subscripts to braced content; drop bare ``\\cmd``."""
 
     def repl(match: re.Match[str]) -> str:
+        cmd = match.group(1) or ""
         for group in match.groups()[1:]:
             if group:
                 return group
+        if cmd.isalpha() and len(cmd) <= 6:
+            return cmd
         return ""
 
     prev = None
@@ -170,19 +251,49 @@ def _unwrap_latex_commands(text: str) -> str:
     return text
 
 
+def _normalize_dashes(text: str) -> str:
+    """Use em-dash in page-header lines; hyphen-minus elsewhere."""
+    if _HEADER_EM_DASH.search(text):
+        for ch in _UNICODE_DASH_CHARS:
+            text = text.replace(ch, "—")
+        return text.replace("-", "—")
+    for ch in _UNICODE_DASH_CHARS:
+        text = text.replace(ch, "-")
+    return text
+
+
+def _normalize_apostrophes(text: str) -> str:
+    """Map curly apostrophe variants to ASCII ``'``."""
+    return text.translate(_CURLY_APOSTROPHE)
+
+
 def _strip_ocr_garbage(text: str) -> str:
     """Remove known VLM OCR noise before markdown/HTML tag mapping."""
     text = html.unescape(text)
+    text = _HTML_BR.sub(" ", text)
     text = _MINERU_XI_RUN.sub("", text)
     text = _MALFORMED_HTML.sub("", text)
+    text = _latex_typography_to_dictionary_tags(text)
     text = _LATEX_TEXT_CMD.sub(r"\1", text)
+    text = _LATEX_MATHRM_CMD.sub(r"\1", text)
+    text = _LATEX_MATHBB_CMD.sub(r"\1", text)
     text = _LATEX_OVERLINE_CMD.sub(r"\1", text)
+    text = _LATEX_DROP_BARE.sub("", text)
+    prev = None
+    while prev != text:
+        prev = text
+        text = _BARE_DOLLAR_SPAN.sub(r"\1", text)
     text = _unwrap_latex_commands(text)
+    text = _LATEX_WEDGE_WORD.sub("", text)
     text = _BARE_LATEX_SCRIPT.sub(r"\1", text)
+    text = _LATEX_TEXT_ARTIFACT.sub("", text)
     prev = None
     while prev != text:
         prev = text
         text = _BRACED_SPAN.sub(r"\1", text)
+    text = _LATEX_TEXT_BRACED.sub(r"\1", text)
+    text = _BARE_LATEX_SCRIPT.sub(r"\1", text)
+    text = _LATEX_TEXT_ARTIFACT.sub("", text)
     text = _LATEX_DELIM.sub("", text)
     text = _SWASTIKA_RUN.sub(" ", text)
     text = _CHECKBOX.sub("", text)
@@ -195,7 +306,6 @@ def _strip_ocr_garbage(text: str) -> str:
         text = _LATEX_ARRAY_BLOCK.sub(" ", text)
     text = _STRAY_BACKSLASH.sub("", text)
     text = _STRAY_BRACES.sub("", text)
-    text = _STRAY_ANGLE.sub("", text)
     text = re.sub(r" {3,}", "  ", text)
     return text
 
@@ -216,7 +326,8 @@ def normalize_line(line: str) -> str:
     """
     Normalize one line of OCR or transcript text to dictionary tag conventions.
 
-    Order: OCR garbage → LaTeX delimiters → markdown → HTML mapping → strip unknown tags → NFC.
+    Order: OCR garbage → LaTeX delimiters → markdown → HTML mapping → strip unknown tags
+    → stray angles → NFC → cuneiform spacing.
     Returns empty string for known junk OCR lines (digit runs, symbol spam).
     """
     if not line:
@@ -228,11 +339,31 @@ def normalize_line(line: str) -> str:
     text = _markdown_to_dictionary_tags(text)
     text = _html_to_dictionary_tags(text)
     text = _strip_unknown_tags(text)
+    text = _strip_stray_angles(text)
     text = re.sub(r"<b></b>|<i></i>", "", text)
+    text = _normalize_dashes(text)
+    text = _normalize_apostrophes(text)
     text = normalize_unicode(text)
+    text = normalize_cuneiform_spacing(text)
     if is_junk_ocr_line(text):
         return ""
     return text
+
+
+def renormalize_flat_line(line: str) -> str:
+    """Re-run typography normalization on one existing flat line."""
+    normalized = normalize_line(line)
+    if normalized:
+        return normalized
+    stripped = line.strip()
+    if not stripped:
+        return ""
+    return normalize_cuneiform_spacing(normalize_unicode(stripped))
+
+
+def renormalize_flat_lines(lines: list[str]) -> list[str]:
+    """Re-normalize flat lines in place, preserving one output line per input line."""
+    return [renormalize_flat_line(line) for line in lines]
 
 
 def normalize_lines(lines: list[str]) -> list[str]:

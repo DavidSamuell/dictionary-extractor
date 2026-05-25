@@ -1,6 +1,15 @@
 # Stage 2 output — MDF / Toolbox mapping
 
-Stage 2 produces per-page JSON (`<stem>.json`) and a review TSV (`<stem>.tsv`) aligned with SIL Multi-Dictionary Formatter (MDF) field markers. A dedicated `json_to_mdf()` exporter is **planned**; today the JSON/TSV are the interchange format for Toolbox export.
+Stage 2 has two output paths:
+
+| Mode | CLI | Primary output |
+| --- | --- | --- |
+| **`direct_mdf`** (default) | `--stage2-mode direct_mdf` | `{stem}.mdf.txt` (Toolbox MDF text) |
+| **`schema`** (legacy) | `--stage2-mode schema` | `{stem}.json` + `{stem}.tsv` |
+
+**Direct MDF (primary):** Pass 1 discovers markers → `outputs/stage-2/<experiment>/field_cheatsheet.json`; Pass 2 writes blank-line-delimited `\marker value` records. Gold for evaluation: `outputs/stage-2-gold/<stem>/<stem>.mdf.txt`. See `docs/stage_2_methodology.md`.
+
+**Schema mode:** per-page JSON aligned with `DictionaryEntry`, exported to review TSV. A dedicated `json_to_mdf()` exporter is **planned** for this path; direct MDF bypasses JSON entirely.
 
 ## Design goals
 
@@ -22,10 +31,10 @@ uv run python scripts/generate_dictionary_languages_yaml.py --overwrite
 | `layout` | When | Stage 2 behaviour |
 | --- | --- | --- |
 | `bilingual` | One target language | Single `target_glosses` key (e.g. `en`) → MDF `\ge` |
-| `inline_trilingual` | Multiple targets in one entry block (e.g. Na–English–Chinese) | Split glosses into `target_glosses["en"]`, `target_glosses["zh"]` |
+| `inline_trilingual` | Multiple targets in one entry block (e.g. Na–English–Chinese–French) | Split glosses into separate MDF markers per target (`\ge`, `\gn`, `\gr`, …) |
 | `column_trilingual` | Targets in separate columns (e.g. Circassian–English–Turkish) | Align glosses to `column_id`; headword from source column |
 
-Target MDF markers (`ge`, `gn`, `gf`, …) and `column_id` hints are defined per target in the YAML. Batch Stage 2 loads this file automatically and injects a `<dictionary_languages>` block into the user prompt. The same config is copied into stage-2 `run_config.json` as `dictionary_languages`.
+Target language **roles** (English vs national vs regional) come from `dictionary_languages.yaml` and inform Pass 1 discovery. In **direct MDF**, actual `\marker` codes are assigned from **`field_cheatsheet.json`**, not from the YAML directly.
 
 Implementation: `src/dictextractor/schemas/dictionary_languages.py`, `src/dictextractor/utils/dictionary_languages.py`.
 
@@ -84,7 +93,8 @@ Toolbox (conceptual):
   "headword": "example_lemma",
   "target_glosses": {
     "en": "English gloss",
-    "zh": "中文释义"
+    "zh": "中文释义",
+    "fr": "glossaire français"
   },
   "gloss": "",
   "definition": ""
@@ -95,6 +105,7 @@ Toolbox (conceptual):
 \lx example_lemma
 \ge English gloss
 \gn 中文释义
+\gr glossaire français
 ```
 
 ### Subentry
@@ -159,10 +170,11 @@ Until that exporter exists, JSON + TSV are sufficient for human review and for b
 
 ## Manifest
 
-Stage-2 `run_config.json` includes:
+Stage-2 `run_config.json` includes (when batch mode loads config):
 
-- `"stage2_output_format": "mdf"` — prompts and schema expect the MDF contract.
-- `"dictionary_languages"` — snapshot of the loaded YAML (when batch mode loads it from the entry folder).
+- `"stage2_output_format"` — `"mdf"` for `direct_mdf`, `"schema"` for legacy JSON/TSV
+- `"dictionary_languages"` — snapshot of the loaded YAML
+- `"stage1_source"` — which Stage-1 experiment supplied transcripts
 
 See `docs/stage_2_methodology.md` for the full pipeline and CLI flags.  
 For the complete MDF marker inventory, see `docs/mdf_field_reference.md`.

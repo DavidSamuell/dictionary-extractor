@@ -27,6 +27,7 @@ export PATH="${HOME}/.local/bin:${PATH}"
 
 SAMPLES_DIR="${SAMPLES_DIR:-assets/dictionaries/samples}"
 INSTALL_SCRIPT="examples/helper/install_models_venv.sh"
+VLM_BACKEND="${VLM_BACKEND:-vllm}"
 
 # Subset of language subfolders (keep in sync with run_stage1_extraction.sh).
 LANGUAGES=(
@@ -52,7 +53,13 @@ EXTRACT_EXTRA_ARGS=("$@")
 
 venv_for_model() {
   case "$1" in
-    mineru2.5-pro) echo "${PROJECT_ROOT}/.venv-mineru" ;;
+    mineru2.5-pro)
+      if [[ "${VLM_BACKEND}" == "vllm" ]]; then
+        echo "${PROJECT_ROOT}/.venv-mineru-vllm"
+      else
+        echo "${PROJECT_ROOT}/.venv-mineru"
+      fi
+      ;;
     paddleocr-vl-1.5) echo "${PROJECT_ROOT}/.venv-paddleocr" ;;
     glm-ocr) echo "${PROJECT_ROOT}/.venv-glmocr" ;;
     *)
@@ -79,10 +86,21 @@ run_vlm() {
   local experiment="$2"
   local python
   python="$(require_model_venv "${key}")"
+  local -a vlm_extra=()
+  if [[ "${key}" == "mineru2.5-pro" && "${VLM_BACKEND}" == "vllm" ]]; then
+    vlm_extra+=(--vlm-backend vllm)
+  fi
+  if [[ "${key}" == "paddleocr-vl-1.5" && -n "${PADDLE_VL_REC_SERVER_URL:-}" ]]; then
+    vlm_extra+=(
+      --no-paddle-auto-vllm-server
+      --paddle-vl-rec-backend vllm-server
+      --paddle-vl-rec-server-url "${PADDLE_VL_REC_SERVER_URL}"
+    )
+  fi
 
   echo ""
   echo "============================================================"
-  echo " VLM OCR: ${experiment} (--vlm-model ${key})"
+  echo " VLM OCR: ${experiment} (--vlm-model ${key}, backend ${VLM_BACKEND})"
   echo " Python:  ${python}"
   echo "============================================================"
   "${python}" -m dictextractor.cli.extract \
@@ -92,6 +110,7 @@ run_vlm() {
     --stage 1 \
     --experiment-name "${experiment}" \
     "${LANG_ARGS[@]}" \
+    "${vlm_extra[@]}" \
     "${EXTRACT_EXTRA_ARGS[@]}" \
     || echo "FAILED: ${experiment}"
 }

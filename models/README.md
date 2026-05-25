@@ -36,8 +36,8 @@ python models/test_model_inference.py -i doc.pdf --models mineru --pages 0,1
 # Full-document pipelines (MinerU CLI, PaddleOCR-VL, GLM-OCR)
 python models/test_model_inference.py -i doc.pdf --models paddleocr glm-ocr --all-pages
 
-# Run all four models (heavy — run one at a time on smaller GPUs)
-python models/test_model_inference.py -i doc.pdf --models mineru paddleocr glm-ocr ovis
+# Run all three models (heavy — run one at a time on smaller GPUs)
+python models/test_model_inference.py -i doc.pdf --models mineru paddleocr glm-ocr
 ```
 
 ---
@@ -54,7 +54,6 @@ dictionary-extractor/
   .venv-mineru/           # MinerU2.5-Pro
   .venv-paddleocr/        # PaddleOCR-VL-1.5
   .venv-glmocr/           # GLM-OCR (+ vLLM server)
-  .venv-ovis/             # Ovis2.6-30B-A3B
 ```
 
 ---
@@ -191,44 +190,6 @@ Settings in `models/config.yaml`.
 
 ---
 
-### 4. Ovis2.6-30B-A3B
-
-**Model:** [AIDC-AI/Ovis2.6-30B-A3B](https://huggingface.co/AIDC-AI/Ovis2.6-30B-A3B)
-
-**GPU:** Large — plan for multi-GPU (`device_map="auto"`) or vLLM with `--tensor-parallel-size 4`. Not suitable for small 16 GB cards unless heavily quantized.
-
-```bash
-python -m venv .venv-ovis && source .venv-ovis/bin/activate
-pip install -U pip
-pip install torch==2.7.1 transformers==4.57.0 numpy pillow accelerate pymupdf
-pip install flash-attn==2.8.3 --no-build-isolation   # optional but recommended
-```
-
-Run:
-
-```bash
-python models/test_model_inference.py -i doc.pdf --models ovis --pages 0
-```
-
-Multi-page:
-
-```bash
-python models/test_model_inference.py -i doc.pdf --models ovis --pages all
-```
-
-#### Optional — vLLM (multi-GPU)
-
-```bash
-pip install -U vllm
-vllm serve AIDC-AI/Ovis2.6-30B-A3B --trust-remote-code --tensor-parallel-size 4
-```
-
-The test script uses **transformers** directly; use vLLM manually if you prefer an OpenAI-compatible server.
-
-**Outputs:** `.../ovis/page_0000/output.txt`
-
----
-
 ## GPU tips
 
 | Model | Typical VRAM | Notes |
@@ -236,12 +197,11 @@ The test script uses **transformers** directly; use vLLM manually if you prefer 
 | MinerU2.5-Pro | 8–16 GB | 1.2B VLM; vLLM is faster |
 | PaddleOCR-VL-1.5 | 8–16 GB | Paddle GPU stack |
 | GLM-OCR | 8–16 GB | Transformers (`transformers>=5.9`) |
-| Ovis2.6-30B-A3B | 40 GB+ | MoE 30B total, ~3B active; multi-GPU likely |
 
 Run **one model at a time** on limited VRAM:
 
 ```bash
-for m in mineru paddleocr glm-ocr ovis; do
+for m in mineru paddleocr glm-ocr; do
   python models/test_model_inference.py -i doc.pdf --models "$m" -o "models/outputs/$m"
 done
 ```
@@ -265,9 +225,6 @@ models/outputs/my_run/
   glm-ocr/
     page_0000/
       result.json
-  ovis/
-    page_0000/
-      output.txt
   run_summary.json
 ```
 
@@ -280,7 +237,6 @@ models/outputs/my_run/
 | `CUDA out of memory` | Run one model at a time; use `--pages 0`; use vLLM / smaller batch |
 | GLM-OCR `glm_ocr` not recognized | Upgrade: `pip install "transformers>=5.9.0"` |
 | Paddle import error | Install matching `paddlepaddle-gpu` for your CUDA version |
-| Ovis fails to load | Needs recent GPU + enough VRAM; try `--ovis-no-thinking` to reduce memory |
 | MinerU CLI not found | `pip install -U "mineru[core]"` and run `mineru-models-download` |
 
 ---
@@ -294,4 +250,3 @@ models/outputs/my_run/
 | `runners/mineru.py` | MinerU2.5-Pro |
 | `runners/paddleocr.py` | PaddleOCR-VL-1.5 |
 | `runners/glmocr.py` | GLM-OCR |
-| `runners/ovis.py` | Ovis2.6-30B-A3B |

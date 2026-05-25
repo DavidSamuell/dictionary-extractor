@@ -1,10 +1,10 @@
 """
 Stage1Metrics: dataclass for all Stage 1 OCR evaluation results.
 
-Three evaluation dimensions:
+Three evaluation dimensions (flat eval reports all three):
 1. Character recognition quality  (TextEdit, GCER, WER on aligned spans)
 2. Markup/typography preservation (bold/italic precision, recall, F1)
-3. Structure preservation         (ReadOrderEdit)
+3. Structure preservation (ReadOrderEdit) — OmniDocBench-style over gold line indices
 """
 
 from dataclasses import dataclass, field

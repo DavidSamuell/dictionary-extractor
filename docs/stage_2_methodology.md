@@ -2,29 +2,61 @@
 
 Stage 2 turns a **faithful page transcription** (Stage 1) into a **list of structured dictionary entries** with MDF-aligned typed fields. It is the lexicographic-parsing layer of the two-stage pipeline: Stage 1 answers “what characters appear, in what order?”; Stage 2 answers “which spans are entries, and what is each headword, POS, gloss per target language, example, etc.?”
 
-Evaluation for Stage 2 is **entry-level** (precision, recall, F1 against gold entry TSVs). That is intentionally separate from Stage 1 transcription metrics (`docs/stage1_evaluation_metrics.md`), so OCR fidelity and structuring quality can be reported on independent tracks.
+Evaluation for Stage 2 is measured on the **MDF track** (Record Accuracy, MDF Fields F1, ReadOrderEdit) or the legacy **TSV track** (entry-level headword/gloss matching for `--stage2-mode schema`). Both are separate from Stage 1 transcription metrics (`docs/stage_1_evaluation_metrics.md`).
 
-Field-to-Toolbox mapping: `docs/stage_2_outline.md`.
+Field-to-Toolbox mapping: `docs/stage_2_outline.md`. Evaluation overview: `docs/evaluation_metrics.md`.
+
+---
+
+## Stage 2 modes
+
+| Mode | CLI flag | Primary output | Status |
+| --- | --- | --- | --- |
+| **`direct_mdf`** | `--stage2-mode direct_mdf` (default) | `{stem}.mdf.txt` + per-experiment `field_cheatsheet.json` | **Primary** batch path |
+| **`schema`** | `--stage2-mode schema` | `{stem}.json` + `{stem}.tsv` | Legacy structured JSON export |
+
+Unless noted, **§1–§7 below describe `direct_mdf`**. Schema-mode details are kept in §5 (JSON fields) and §8 (legacy TSV eval).
+
+**Direct MDF pipeline:**
+
+```text
+Stage-1 transcript (flat or column) + page image + intro images
+        │
+        ▼
+Pass 1 (once per experiment) ──► outputs/stage-2/<experiment>/field_cheatsheet.json
+        │                          (markers + structure rules)
+        ▼
+Pass 2 (per page) ──► Toolbox MDF text ({stem}.mdf.txt)
+```
+
+Implementation: Pass 1 `src/dictextractor/llm/field_discovery.py`; Pass 2 `src/dictextractor/llm/stage2_direct_mdf.py`; orchestration `src/dictextractor/extraction/llm_two_stage.py`.
 
 ---
 
 ## 1. Role in the pipeline
 
 ```text
-Page image ──┬──► Stage 1 (transcription) ──► column TSV  ──┐
-             │                                              ├──► Stage 2 (structuring) ──► entry JSON + TSV
-Introduction ┴──► (text + optional images) ────────────────┘
-                      dictionary_languages.yaml ─────────────► (per entry folder, batch mode)
+Page image ──┬──► Stage 1 (transcription) ──► flat .txt or column TSV ──┐
+Introduction ┴──► (text + optional images) ─────────────────────────────┤
+                      dictionary_languages.yaml ──────────────────────────┤
+                                                                          ▼
+                                                    Stage 2 (structuring)
+                                                      direct_mdf (default):
+                                                        Pass 1 → field_cheatsheet.json
+                                                        Pass 2 → {stem}.mdf.txt
+                                                      schema (legacy):
+                                                        → entry JSON + review TSV
 ```
 
-| Stage | Task type | Typical reasoning | Structured output schema |
+| Stage | Task type | Typical reasoning | Default output (`direct_mdf`) |
 | --- | --- | --- | --- |
-| **1** | Faithful copy of visible text | `low` | `TranscriptionResponse` → column TSV |
-| **2** | Interpret layout + map to MDF-shaped entries | `low`–`high` | `EntriesResponse` → `DictionaryEntry` list |
+| **1** | Faithful copy of visible text | `low` | `*_stage1_flat.txt` or `*_stage1.tsv` |
+| **2 Pass 1** | Discover MDF markers + entry rules | `high` (batch script) | `field_cheatsheet.json` |
+| **2 Pass 2** | Map transcript → Toolbox MDF | `high` (batch script) | `{stem}.mdf.txt` |
 
-**Separation of concerns:** Stage 1 must not “fix” or normalize dictionary content; Stage 2 may use linguistic judgment to split subentries/senses, join hyphenated line breaks, and strip markup tags from field values.
+**Separation of concerns:** Stage 1 must not “fix” or normalize dictionary content; Stage 2 may apply linguistic judgment to split subentries/senses, join hyphenated line breaks, and assign MDF markers.
 
-Implementation: `src/dictextractor/extraction/llm_two_stage.py` (`TwoStageLLMExtraction._stage2_structure`). Prompts: `src/dictextractor/llm/prompts.py` (`STAGE_2_SYSTEM`, `STAGE_2_MDF_BLOCK`, `stage_2_user`).
+Orchestration: `src/dictextractor/extraction/llm_two_stage.py`. Legacy schema prompts: `src/dictextractor/llm/prompts.py` (`STAGE_2_SYSTEM`, `EntriesResponse`).
 
 ---
 
@@ -69,6 +101,17 @@ When `{entry}/introduction/` exists, the batch CLI loads it once per language:
 
 Introduction material explains abbreviations, entry layout, POS conventions, and semantic-domain markers. It is **not** re-sent to Stage 1.
 
+Pass `--no-intro` to skip `{entry}/introduction/` for Pass 1 discovery and Pass 2 extraction. Pass `--toolbox-pdf PATH` to attach the SIL Toolbox MDF Reference Manual during **Pass 2 only**. The batch wrapper `examples/stage-2/run_stage2_extraction.sh` runs a full intro × toolbox ablation by default:
+
+| Experiment suffix | Introduction | Toolbox PDF (Pass 2) |
+| --- | --- | --- |
+| `_intro_notoolbox` | yes | no |
+| `_intro_toolbox` | yes | yes |
+| `_nointro_notoolbox` | `--no-intro` | no |
+| `_nointro_toolbox` | `--no-intro` | yes |
+
+Example: `gemini31pro_high_mdf_intro_toolbox`.
+
 ### 2.4 Dictionary language config (batch mode)
 
 When running with `--samples-dir` and per-entry batching, the CLI loads:
@@ -88,7 +131,7 @@ Regenerate all sample YAMLs after metadata or folder renames:
 uv run python scripts/generate_dictionary_languages_yaml.py --overwrite
 ```
 
-The rendered `<dictionary_languages>` block is appended to the Stage 2 **user** prompt so the model knows which gloss keys to fill and how to read multi-column pages.
+The rendered `<dictionary_languages>` block is appended to the **schema-mode** Stage 2 user prompt. In **`direct_mdf`**, the same config is passed as a **Pass 1 discovery hint** (`languages_config` in `field_discovery.py`).
 
 ### 2.5 User-defined guidelines (optional)
 
@@ -105,46 +148,64 @@ The rendered `<dictionary_languages>` block is appended to the Stage 2 **user** 
 
 | Parameter | CLI flag | Default | Notes |
 | --- | --- | --- | --- |
-| Structure model | `--model` / `--structure-model` | (required) | `--structure-model` overrides `--model` for Stage 2 only |
-| Reasoning effort | `--stage2-reasoning` | `low` | `low` \| `medium` \| `high` — example batch script uses `high` |
-| Extra fields | `--discover-extra-fields` | off | Populates `extra_fields` from frozen allowlist only |
+| Stage 2 mode | `--stage2-mode` | `direct_mdf` | `direct_mdf` \| `schema` |
+| Structure model | `--model` / `--structure-model` | (required) | Used for Pass 1 + Pass 2 in `direct_mdf`; `--structure-model` overrides `--model` for Stage 2 only |
+| Reasoning effort | `--stage2-reasoning` | `low` | `low` \| `medium` \| `high` — `examples/stage-2/run_stage2_extraction.sh` uses `high` |
+| One page per entry | `--one-page-per-entry` | off | Stage 2 sweeps: prefer lowest stage-2-gold page, else lowest stage-1 gold snippet, else lowest page number |
+| Pass 1 refresh | `--overwrite` | off | Re-run Pass 1 discovery and Pass 2 for this experiment slot |
+| Toolbox PDF | `--toolbox-pdf` | — | Optional MDF manual attached in **Pass 2 only** |
+| Extra fields | `--discover-extra-fields` | off | **Schema mode only** — populates `extra_fields` from frozen allowlist |
 | Stage | `--stage 2` or `both` | — | `both` runs Stage 1 then Stage 2 on the same page |
 
-**API:** `llm.complete_structured` with `response_schema=EntriesResponse`, enforcing valid JSON matching the Pydantic schema (no heuristic JSON repair).
+**`direct_mdf`:** Pass 1 and Pass 2 use `llm.complete` (free-form MDF text / JSON cheat sheet). Pass 1 vocabulary comes from `src/dictextractor/llm/mdf_marker_reference.py` (curated marker list in the discovery system prompt).
 
-**Reasoning budget:** Structuring requires layout understanding, abbreviation decoding, and subentry/sense splitting. Higher reasoning can help on dense pages but has been observed to **leak chain-of-thought into JSON string fields** on some models. Default CLI is `low`; `examples/stage-2/run_stage2_extraction.sh` sets `--stage2-reasoning high` — validate outputs before large sweeps.
+**`schema` (legacy):** single Pass 2 call via `llm.complete_structured` with `response_schema=EntriesResponse`.
 
-Stage 1 and Stage 2 can use **different models** (e.g. Flash for transcription, Pro for structuring) via `--model` + `--structure-model`.
+**Reasoning budget:** Higher reasoning helps on dense pages but can **leak chain-of-thought into output** on some models. Validate before large sweeps.
+
+Stage 1 and Stage 2 can use **different models** via `--model` + `--structure-model`.
 
 ---
 
 ## 4. Prompt design
 
-### 4.1 System prompt (`STAGE_2_SYSTEM` + `STAGE_2_MDF_BLOCK`)
+### 4.1 Direct MDF — Pass 1 (field discovery)
 
-Fixed across runs. It defines:
+System prompt embeds the curated **`MDF_MARKER_REFERENCE`** (`src/dictextractor/llm/mdf_marker_reference.py`) plus instructions to output a JSON cheat sheet: markers used on this dictionary, one-line descriptions, and structure rules.
 
-1. **Inputs** — column TSV (or flat text if supported later), page image, optional intro images  
-2. **MDF export contract** — explicit `entry_type` (`main` / `subentry` / `sense`), field hygiene, no reasoning in JSON values  
-3. **Record boundaries** — decision tree for senses vs run-on subentries vs new headwords  
-4. **Target glosses** — use `target_glosses` map; leave legacy `gloss` empty  
-5. **Examples** — `examples` and `example_glosses` as parallel lists  
-6. **Phonetic / cross-refs** — `phonetic` and `cross_references`, not `extra_fields`  
-7. **Hyphen rejoining** — Stage 1 line-break hyphens joined in field values  
-8. **Phonetic fidelity** — preserve special characters (ŋ, ə, ь, …)
+User message includes:
 
-Schema field descriptions in `DictionaryEntry` match this contract.
+1. Introduction page images  
+2. Sample page image  
+3. Sample page **Stage-1 transcript** (gold flat or column, depending on `--stage1-input`)  
+4. Optional hint from `dictionary_languages.yaml` (source/target languages, layout)
 
-### 4.2 User prompt (`stage_2_user`)
+Output is cached as `{entry}/outputs/stage-2/<experiment>/field_cheatsheet.json`. Pass 1 does **not** attach the Toolbox PDF unless you add that separately in custom tooling.
 
-Built per page from dynamic blocks (order):
+### 4.2 Direct MDF — Pass 2 (page extraction)
 
-1. `<dictionary_languages>` — from `DictionaryLanguagesConfig.format_prompt_block()`, when batch config is loaded  
-2. `<dictionary_introduction>` — intro text, if any  
-3. `<transcription>` — full Stage-1 TSV body  
-4. `<extra_fields_discovery>` — only when `--discover-extra-fields` is set (see §5.3)  
-5. Closing instructions — parse entries; first image = page, further images = intro pages  
-6. `USER DEFINED GUIDELINES` — optional file from `--stage-2-guides`
+System prompt (`DIRECT_MDF_SYSTEM` in `stage2_direct_mdf.py`): copy transcript characters verbatim; use image/intro for boundaries and marker assignment only; emit blank-line-delimited MDF.
+
+User message includes:
+
+1. `<transcription>` — Stage-1 gold or pred transcript  
+2. Page image  
+3. Introduction images  
+4. **Field map block** — rendered from `field_cheatsheet.json` (`format_prompt_block()`)  
+5. Optional `--toolbox-pdf` (Pass 2 only)  
+6. Optional `--stage-2-guides`
+
+`dictionary_languages.yaml` informs Pass 1 discovery; **Pass 2 marker assignment follows the cheat sheet**, not the YAML directly.
+
+### 4.3 Schema mode (legacy)
+
+#### System prompt (`STAGE_2_SYSTEM` + `STAGE_2_MDF_BLOCK`)
+
+Fixed across runs. Defines JSON field contract, record boundaries, `target_glosses`, examples, hyphen rejoining, etc.
+
+#### User prompt (`stage_2_user`)
+
+Built per page: `<dictionary_languages>`, intro text, `<transcription>`, optional `<extra_fields_discovery>`, optional `--stage-2-guides`.
 
 ---
 
@@ -215,6 +276,28 @@ Discovered keys become additional TSV columns via `json_to_tsv` (only columns fo
 
 ### 5.4 On-disk artifacts (per page)
 
+#### Direct MDF (default)
+
+Under `{entry}/outputs/stage-2/<stage2-experiment>/<stem>/`:
+
+| File | Purpose |
+| --- | --- |
+| `<stem>.mdf.txt` | Toolbox MDF output |
+| `<stem>_stage2_raw.txt` | Raw LLM response (Pass 2) |
+| `<stem>_stage2_input.json` | Sanitised messages (images as placeholders) |
+| `<stem>_usage.json` | Token/cost: `field_discovery`, `stage2`, optional `stage1` |
+| `<stem>_gold_compare.json` | Optional dev compare when gold MDF exists under `stage-2-gold/` |
+
+Per experiment (once):
+
+| File | Purpose |
+| --- | --- |
+| `{entry}/outputs/stage-2/<experiment>/field_cheatsheet.json` | Pass 1 marker cheat sheet (cached per experiment; refresh with `--overwrite`) |
+
+Gold MDF for evaluation: `{entry}/outputs/stage-2-gold/<stem>/<stem>.mdf.txt`.
+
+#### Schema mode (legacy)
+
 Under `{entry}/outputs/stage-2/<stage2-experiment>/<stem>/`:
 
 | File | Purpose |
@@ -222,8 +305,8 @@ Under `{entry}/outputs/stage-2/<stage2-experiment>/<stem>/`:
 | `<stem>.json` | Raw structured entries array |
 | `<stem>.tsv` | Canonical + `Gloss_*` + optional extra columns |
 | `<stem>_stage2_raw.json` | API raw response |
-| `<stem>_stage2_input.json` | Sanitised messages (images replaced with placeholders) |
-| `<stem>_usage.json` | Token/cost summary for Stage 1+2 when both ran on the page |
+| `<stem>_stage2_input.json` | Sanitised messages |
+| `<stem>_usage.json` | Token/cost summary |
 
 Experiment-level `run_config.json` records model, reasoning, `discover_extra_fields`, `stage2_output_format`, `dictionary_languages` (YAML snapshot), intro paths, `stage1_source`, per-page Stage-1 TSV paths, stage-2 guides, and git SHA. On resume, the existing manifest is preserved unless `--overwrite` is passed.
 
@@ -237,9 +320,12 @@ Stage 1 and Stage 2 use **independent experiment namespaces**:
 
 ```text
 outputs/
-  stage-1/<stage1-experiment>/<stem>/<stem>_stage1.tsv
-  stage-2/<stage2-experiment>/<stem>/<stem>.json
-  stage-2/<stage2-experiment>/<stem>/<stem>.tsv
+  stage-1/<stage1-experiment>/<stem>/<stem>_stage1_flat.txt   (or *_stage1.tsv)
+  stage-1-gold/<stem>/<stem>_stage1_GOLD_flat.txt             (eval / Pass 2 input)
+  stage-2-gold/<stem>/<stem>.mdf.txt                          (MDF gold)
+  stage-2/<stage2-experiment>/field_cheatsheet.json            (Pass 1 cache)
+  stage-2/<stage2-experiment>/<stem>/<stem>.mdf.txt           (direct_mdf pred)
+  stage-2/<stage2-experiment>/<stem>/<stem>.json|.tsv         (schema pred)
 ```
 
 | Flag | Effect |
@@ -250,50 +336,81 @@ outputs/
 **Typical sweep:** Fix Stage 1 once (`gemini3flash_alpha_ocr`), then run multiple Stage-2 configs:
 
 ```bash
-export UV_CACHE_DIR="${HOME}/.cache/uv"   # if project quota is tight
-
 bash examples/stage-2/run_stage2_extraction.sh
+# intro ablation: RUN_INTRO=0 or RUN_NOINTRO=0 to run one arm only
 # or:
 uv run dictextractor-extract \
   --strategy two_stage --stage 2 \
+  --stage2-mode direct_mdf \
   --samples-dir assets/dictionaries/samples \
-  --languages Chepang-English \
+  --languages Chukchi-Russian \
   --model gemini/gemini-3.1-pro-preview \
-  --experiment-name gemini3flash_alpha_ocr \
-  --stage2-experiment-name pro_highreasoning_mdf \
+  --stage1-input flat \
+  --stage2-experiment-name gemini31pro_high_mdf_intro_notoolbox \
   --stage2-reasoning high
 ```
 
-Optional: `DISCOVER_EXTRA=1` or `--discover-extra-fields` on the same command.
+Optional: `DISCOVER_EXTRA=1` or `--discover-extra-fields` on **schema mode** runs.
 
-Resume behaviour: if `<stem>.tsv` already exists under the stage-2 experiment slot, the page is skipped unless `--overwrite` is set. Stage-2-only skips pages with no Stage-1 TSV at the expected path.
+Resume behaviour (`direct_mdf`): skip a page if `<stem>.mdf.txt` exists unless `--overwrite`. Stage-2-only skips pages with no Stage-1 transcript at the expected path (`--stage1-input` resolves gold under `stage-1-gold/` in batch mode).
 
 ---
 
 ## 7. Parsing procedure (logical steps)
 
+### Direct MDF (default)
+
+**Pass 1 (once per dictionary):**
+
+1. Ingest intro + sample page images and transcript.  
+2. Select MDF markers from `MDF_MARKER_REFERENCE` that appear on the sample page.  
+3. Write structure rules (homographs, senses, subentries, gloss-line conventions).  
+4. Cache as `outputs/stage-2/<experiment>/field_cheatsheet.json`.
+
+**Pass 2 (per page):**
+
+1. Load cached cheat sheet for this experiment (or run Pass 1 if missing; `--overwrite` forces refresh).  
+2. Copy vernacular and gloss **characters verbatim** from the Stage-1 transcript.  
+3. Use page image + intro for entry boundaries and marker roles.  
+4. Emit blank-line-delimited Toolbox MDF (`\marker value` lines).  
+5. Apply structural normalisations only (strip `<b>`/`<i>`, rejoin hyphens, normalise `\sn`/`\hm` digits).
+
+### Schema mode (legacy)
+
 For each page, the model is instructed to:
 
 1. **Ingest conventions** from introduction text/images (if provided).  
-2. **Apply language roles** from `<dictionary_languages>` (layout, gloss keys, column alignment).  
-3. **Scan the TSV** for reading order (`column_id`, `line_number`) and markup cues (`<b>`, `<i>`).  
-4. **Ignore** `header` / `footer` rows.  
-5. **Segment** the body into entry blocks using bold transitions and visual layout on the image.  
-6. **Classify** each row with `entry_type` and link subentries/senses via `parent_lexeme` / `sense_number`.  
-7. **Fill** only fields evidenced in the source; strip markup from values.  
-8. **Populate** `target_glosses` per configured language codes; leave `gloss` empty.  
-9. **Rejoin** hyphenated line-break artifacts from Stage 1 inside field strings.  
-10. **Emit** JSON matching `EntriesResponse` (no commentary in field values).
+2. **Apply language roles** from `<dictionary_languages>`.  
+3. **Scan the transcript** for reading order and markup cues.  
+4. **Segment** into entry blocks; classify with `entry_type`.  
+5. **Fill** canonical JSON fields; emit `EntriesResponse`.  
 
-Post-processing in the CLI: `save_to_json` → `json_to_tsv` for the final TSV.
+Post-processing: `save_to_json` → `json_to_tsv`.
 
 ---
 
 ## 8. Evaluation methodology
 
-Stage 2 quality is measured with **entry-level matching** (`src/dictextractor/evaluation/stage2/`).
+Stage 2 quality is measured on two tracks:
 
-### 8.1 Matching
+| Track | Format | CLI | Doc |
+| --- | --- | --- | --- |
+| **MDF (primary)** | `.mdf.txt` | `dictextractor-eval-stage2-mdf` | [`stage_2_evaluation_metrics.md`](stage_2_evaluation_metrics.md) |
+| **TSV (legacy)** | entry TSV | `dictextractor-evaluate` | §8.1–8.3 below |
+
+The MDF track evaluates record detection, marker assignment, and read order on blank-line-delimited Toolbox output. Use it for **`direct_mdf`** experiments and gold under `outputs/stage-2-gold/`.
+
+### 8.1 MDF evaluation (recommended)
+
+```bash
+bash examples/evaluation/run_stage2_eval_mdf.sh
+```
+
+Default thresholds: record **0.6**, line **0.7**. Marker substitutions: `assets/evaluation/mdf_marker_sub_list.yaml`.
+
+Metrics: **Record Accuracy**, **MDF Fields F1**, **ReadOrderEdit** (OmniDocBench-style gold record indices). Full definitions: **`docs/stage_2_evaluation_metrics.md`**.
+
+### 8.2 Legacy TSV matching
 
 `DictionaryEvaluator` loads extracted and gold TSVs, then greedily pairs rows:
 
@@ -303,7 +420,7 @@ Stage 2 quality is measured with **entry-level matching** (`src/dictextractor/ev
 
 Gold/eval TSVs in older Label Studio exports may use legacy headers (`Headword_Phrase`, `Translation_RU`, `Grammar_Notes`); the evaluator normalises via those column names. New MDF-shaped exports use `Headword`, `Gloss_*` or `Definition` — adapters may be needed for strict comparison until evaluators are updated.
 
-### 8.2 Metrics (`EvaluationMetrics`)
+### 8.3 Legacy TSV metrics (`EvaluationMetrics`)
 
 | Metric | Meaning |
 | --- | --- |
@@ -314,7 +431,7 @@ Gold/eval TSVs in older Label Studio exports may use legacy headers (`Headword_P
 
 Optional **character-level error analysis** (`DetailedErrorAnalyzer`) breaks down edit patterns on matched headwords and glosses.
 
-### 8.3 CLI
+### 8.4 Legacy TSV CLI
 
 ```bash
 uv run dictextractor-evaluate \
@@ -326,14 +443,13 @@ uv run dictextractor-evaluate \
 
 Corpus-level benchmarking (many pages, many languages) should aggregate per-page F1 with the same threshold and document which `stage2-experiment` and `stage1_source` produced the predictions.
 
-### 8.4 What Stage 2 evaluation does *not* measure
+### 8.5 What Stage 2 evaluation does *not* measure
 
-- Character-level OCR quality (Stage 1 / `eval-s1` / `eval-flat`)  
+- Character-level OCR quality (Stage 1 / `eval-flat`)  
 - Typography tag preservation (Stage 1 markup metrics)  
 - Layout reconstruction from non-VLM OCR backends  
-- Toolbox MDF file validity (until `json_to_mdf()` exists)
 
-Those belong on the **transcription track** or a future **export track**.
+Those belong on the **transcription track**. MDF validity beyond `\marker value` line syntax is covered indirectly by **MDF Fields F1**, not a separate Toolbox linter.
 
 ---
 
@@ -341,15 +457,13 @@ Those belong on the **transcription track** or a future **export track**.
 
 | Choice | Rationale |
 | --- | --- |
-| **Transcript + image** | TSV gives stable reading order; image resolves ambiguous characters and column boundaries. |
-| **MDF-shaped schema** | One interchange model for Toolbox export and cross-dictionary comparison. |
-| **`dictionary_languages.yaml`** | Per-dictionary gloss keys and trilingual layout without per-row ISO tags. |
-| **`target_glosses` map** | Supports bilingual and multi-target MDF markers (`\ge`, `\gn`, …). |
-| **Structured output API** | Eliminates brittle JSON parsing; schema enforces list-shaped examples and typed hierarchy. |
-| **Separate experiment slots** | Stage-1 ablations can be held fixed while sweeping Stage-2 model, reasoning, intro, or discovery mode. |
-| **Intro only in Stage 2** | Alphabet priming is a recognition concern; abbreviation keys are a parsing concern. |
-| **Conservative `semantic_domain`** | Reduces hallucinated domain labels; empty string when uncertain. |
-| **Optional `extra_fields`** | Keeps canonical columns stable; discovery is opt-in with a frozen allowlist. |
+| **Two-pass direct MDF** | Pass 1 locks marker vocabulary per dictionary; Pass 2 focuses on transcription-faithful digitization. |
+| **Transcript + image** | Transcript is authoritative for characters; image resolves boundaries and field roles. |
+| **`field_cheatsheet.json`** | Per-experiment marker map (under `outputs/stage-2/<experiment>/`) without hand-authoring prompts for every language. |
+| **`dictionary_languages.yaml`** | Source/target roles and layout for Pass 1 discovery and schema-mode export. |
+| **Separate experiment slots** | Stage-1 ablations fixed while sweeping Stage-2 model, reasoning, or guides. |
+| **Intro only in Stage 2** | Alphabet priming is recognition; abbreviation keys are parsing. |
+| **Schema mode retained** | Legacy JSON/TSV path and `dictextractor-evaluate` TSV matching. |
 
 ---
 
@@ -358,17 +472,15 @@ Those belong on the **transcription track** or a future **export track**.
 **Current limitations:**
 
 - Column-trilingual pages are harder from flat transcripts (no `column_id` in the file).  
-- No automatic `json_to_mdf()` / Toolbox file writer — JSON/TSV only.  
-- No automatic consumption of third-party OCR transcripts in the Stage 2 prompt (planned: transcript-only ablations in `PLAN.md`).  
-- Entry evaluator column names still reflect some legacy gold formats; MDF TSVs may need adapter columns for F1 runs.  
+- Schema mode still has no automatic `json_to_mdf()` exporter — JSON/TSV only there.  
+- Pass 1 marker vocabulary is prompt-guided, not code-validated against `MDF_MARKER_REFERENCE`.  
 - High reasoning effort may contaminate string fields on some models — validate before large sweeps.  
-- Default `--discover-extra-fields` is off — rare dictionary-specific markers are omitted unless enabled.
+- Default `--discover-extra-fields` is off — rare dictionary-specific markers omitted unless schema mode + flag.
 
 **Planned:**
 
-- `json_to_mdf()` grouping `main` / `subentry` / `sense` rows into Toolbox records.  
-- Feed a canonical flat `page_transcript.txt` into Stage 2 without requiring column TSV.  
-- Stage-2 evaluator alignment with `Gloss_*` and `Entry_Type` columns.  
+- `json_to_mdf()` for schema mode — group `main` / `subentry` / `sense` rows into Toolbox records.  
+- Richer Pass 1 validation and per-dictionary marker policy files.  
 - Fixed Stage-2 model + frozen transcript for fair comparison across Stage-1 backends.
 
 When implementation changes, update this document and `docs/stage_2_outline.md` in the same PR.
@@ -379,13 +491,16 @@ When implementation changes, update this document and `docs/stage_2_outline.md` 
 
 | Document | Topic |
 | --- | --- |
-| `docs/stage_2_outline.md` | JSON → MDF mapping, TSV columns, hierarchy examples |
-| `docs/mdf_field_reference.md` | Full MDF marker list (Appendix A) + allowlist mapping |
-| `docs/stage1_evaluation_metrics.md` | Transcription fidelity (Stage 1) |
-| `docs/architecture.md` | Module map and batch layout |
+| `docs/stage_2_outline.md` | JSON → MDF mapping, direct MDF outputs, TSV columns |
+| `docs/stage_2_evaluation_metrics.md` | Record Accuracy, MDF Fields F1, ReadOrderEdit |
+| `docs/evaluation_metrics.md` | Overview of Stage 1 + Stage 2 eval tracks |
+| `docs/mdf_field_reference.md` | Full MDF marker list + Pass 1 reference |
+| `docs/stage_1_evaluation_metrics.md` | Transcription fidelity (Stage 1) |
+| `README.md` | CLI reference and quick start |
 | `PLAN.md` | Benchmark tracks, ablations, dataset layout |
-| `examples/stage-2/run_stage2_extraction.sh` | Example Stage-2 batch command |
-| `scripts/generate_dictionary_languages_yaml.py` | Regenerate per-sample language YAML |
-| `src/dictextractor/llm/prompts.py` | Authoritative prompt text |
-| `src/dictextractor/schemas/entry.py` | `DictionaryEntry` schema |
-| `src/dictextractor/schemas/dictionary_languages.py` | Language config schema |
+| `examples/stage-2/run_stage2_extraction.sh` | Direct MDF batch command |
+| `examples/evaluation/run_stage2_eval_mdf.sh` | MDF evaluation batch |
+| `src/dictextractor/llm/field_discovery.py` | Pass 1 discovery |
+| `src/dictextractor/llm/stage2_direct_mdf.py` | Pass 2 direct MDF |
+| `src/dictextractor/llm/mdf_marker_reference.py` | Curated marker vocabulary for Pass 1 |
+| `assets/evaluation/mdf_marker_sub_list.yaml` | Eval-time marker substitution groups |

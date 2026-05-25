@@ -40,6 +40,10 @@ import json
 
 from dictextractor.evaluation.stage1.flatten import flat_transcription_to_text
 from dictextractor.extraction.base import ExtractionStrategy
+from dictextractor.llm.field_discovery import load_gold_cheatsheet, load_or_discover_cheatsheet
+from dictextractor.llm.stage2_direct_mdf import extract_direct_mdf
+from dictextractor.schemas.field_map import FieldMapPrompt
+from dictextractor.utils.stage1_input import read_stage1_transcript_text
 from dictextractor.schemas.dictionary_languages import DictionaryLanguagesConfig
 from dictextractor.schemas.entry import (
     DictionaryEntry,
@@ -167,10 +171,20 @@ class TwoStageLLMExtraction(ExtractionStrategy):
         stage1_guides: str = "",
         stage2_guides: str = "",
         stage1_mode: str = "column",
+        stage2_mode: str = "direct_mdf",
         dictionary_languages: Optional[DictionaryLanguagesConfig] = None,
+        entry_dir: Optional[str] = None,
+        stage2_experiment_dir: Optional[str] = None,
+        overwrite: bool = False,
+        stage2_toolbox_pdf: Optional[str] = None,
+        field_cheatsheet_gold: bool = False,
     ):
         if stage1_mode not in ("column", "flat"):
             raise ValueError(f"stage1_mode must be 'column' or 'flat', got {stage1_mode!r}")
+        if stage2_mode not in ("schema", "direct_mdf"):
+            raise ValueError(
+                f"stage2_mode must be 'schema' or 'direct_mdf', got {stage2_mode!r}"
+            )
         self.transcribe_model = transcribe_model
         self.structure_model = structure_model or transcribe_model
         self.alphabet_path = alphabet_path
@@ -182,7 +196,18 @@ class TwoStageLLMExtraction(ExtractionStrategy):
         self.stage1_guides = stage1_guides
         self.stage2_guides = stage2_guides
         self.stage1_mode = stage1_mode
+        self.stage2_mode = stage2_mode
         self.dictionary_languages = dictionary_languages
+        self.entry_dir = Path(entry_dir) if entry_dir else None
+        self.stage2_experiment_dir = (
+            Path(stage2_experiment_dir) if stage2_experiment_dir else None
+        )
+        self.overwrite = overwrite
+        self.stage2_toolbox_pdf = (
+            Path(stage2_toolbox_pdf) if stage2_toolbox_pdf else None
+        )
+        self.field_cheatsheet_gold = field_cheatsheet_gold
+        self._field_map: Optional[FieldMapPrompt] = None
 
     @property
     def name(self) -> str:
@@ -228,6 +253,8 @@ class TwoStageLLMExtraction(ExtractionStrategy):
         stage1_usage: Dict[str, Any] = {}
         stage2_usage: Dict[str, Any] = {}
         entries: List[DictionaryEntry] = []
+        mdf_text = ""
+        discovery_usage: Dict[str, Any] = {}
 
         # ── Stage 1: transcription ─────────────────────────────────────────────
         if run_stage in ("1", "both"):
@@ -257,7 +284,7 @@ class TwoStageLLMExtraction(ExtractionStrategy):
                 raise FileNotFoundError(
                     f"Stage-2-only requires existing stage 1 transcript: {stage1_output_path}"
                 )
-            transcribed_text = Path(stage1_output_path).read_text(encoding="utf-8")
+            transcribed_text = read_stage1_transcript_text(Path(stage1_output_path))
             print("=" * 60)
             print(
                 f"Stage 2 only: loaded existing transcription from {stage1_output_path} "
@@ -280,14 +307,28 @@ class TwoStageLLMExtraction(ExtractionStrategy):
                 )
 
             print("Stage 2: Structuring transcribed text …")
-            entries, stage2_raw, stage2_usage, stage2_msgs = self._stage2_structure(
-                transcribed_text, image_path, effective_intro, self.intro_image_paths
-            )
-            print(f"Extracted {len(entries)} entries.")
+            if self.stage2_mode == "direct_mdf":
+                field_map = self._ensure_field_map(transcribed_text, image_path)
+                mdf_text, stage2_raw, stage2_usage, stage2_msgs = self._stage2_direct_mdf(
+                    transcribed_text,
+                    image_path,
+                    effective_intro,
+                    self.intro_image_paths,
+                    field_map,
+                )
+                print(f"Direct MDF ({len(mdf_text)} chars).")
+            else:
+                entries, stage2_raw, stage2_usage, stage2_msgs = self._stage2_structure(
+                    transcribed_text, image_path, effective_intro, self.intro_image_paths
+                )
+                print(f"Extracted {len(entries)} entries.")
 
             if stage2_base:
                 stage2_base.parent.mkdir(parents=True, exist_ok=True)
-                raw2_path = stage2_base.with_name(stage2_base.stem + "_stage2_raw.json")
+                raw_ext = "txt" if self.stage2_mode == "direct_mdf" else "json"
+                raw2_path = stage2_base.with_name(
+                    stage2_base.stem + f"_stage2_raw.{raw_ext}"
+                )
                 raw2_path.write_text(stage2_raw, encoding="utf-8")
                 input2_path = stage2_base.with_name(stage2_base.stem + "_stage2_input.json")
                 input2_path.write_text(
@@ -305,12 +346,14 @@ class TwoStageLLMExtraction(ExtractionStrategy):
             stem_base = s1.stem.replace("_stage1_flat", "").replace("_stage1", "")
             usage_path = s1.parent / f"{stem_base}_usage.json"
 
-        if usage_path and (stage1_usage or stage2_usage):
+        if usage_path and (stage1_usage or stage2_usage or discovery_usage):
             total_cost = _sum_costs(
-                stage1_usage.get("cost_usd"), stage2_usage.get("cost_usd")
+                _sum_costs(stage1_usage.get("cost_usd"), stage2_usage.get("cost_usd")),
+                discovery_usage.get("cost_usd"),
             )
             page_usage = {
                 "stage1": stage1_usage or None,
+                "field_discovery": discovery_usage or None,
                 "stage2": stage2_usage or None,
                 "total_cost_usd": total_cost,
             }
@@ -323,7 +366,10 @@ class TwoStageLLMExtraction(ExtractionStrategy):
                 _print_usage_summary(stage1_usage, stage2_usage, total_cost)
 
         return DictionaryPage(
-            entries=entries, page_number=page_number, source_file=image_path
+            entries=entries,
+            page_number=page_number,
+            source_file=image_path,
+            mdf_text=mdf_text,
         )
 
     # ------------------------------------------------------------------
@@ -437,6 +483,78 @@ class TwoStageLLMExtraction(ExtractionStrategy):
             reasoning_effort=self.stage2_reasoning_effort,
         )
         return result.entries, raw, usage, _sanitize_messages(messages)
+
+    def _ensure_field_map(
+        self,
+        transcribed_text: str,
+        image_path: str,
+    ) -> FieldMapPrompt:
+        """Pass 1: load or discover field map once per dictionary."""
+        if self._field_map is not None:
+            return self._field_map
+
+        if not self.stage2_experiment_dir:
+            raise ValueError(
+                "direct_mdf stage2_mode requires stage2_experiment_dir for field map cache."
+            )
+
+        cache_path = self.stage2_experiment_dir / "field_cheatsheet.json"
+        if self.field_cheatsheet_gold:
+            if self.entry_dir is None:
+                raise ValueError(
+                    "field_cheatsheet_gold requires entry_dir to locate outputs/stage-2-gold/"
+                )
+            print(
+                "Pass 1: using gold marker cheat sheet "
+                f"(outputs/stage-2-gold/field_cheatsheet.json) …"
+            )
+            self._field_map = load_gold_cheatsheet(self.entry_dir)
+            if self.overwrite or not cache_path.is_file():
+                cache_path.parent.mkdir(parents=True, exist_ok=True)
+                cache_path.write_text(
+                    json.dumps(self._field_map.model_dump(), ensure_ascii=False, indent=2),
+                    encoding="utf-8",
+                )
+        else:
+            intro_paths = [Path(p) for p in self.intro_image_paths]
+            dictionary_name = self.entry_dir.name if self.entry_dir else ""
+            discover_kwargs = dict(
+                force_refresh=self.overwrite,
+                transcription=transcribed_text,
+                sample_image=Path(image_path),
+                intro_images=intro_paths,
+                model=self.structure_model,
+                reasoning_effort=self.stage2_reasoning_effort,
+                languages_config=self.dictionary_languages,
+                dictionary_name=dictionary_name,
+            )
+            print(f"Pass 1: marker cheat sheet discovery (cache → {cache_path}) …")
+            self._field_map = load_or_discover_cheatsheet(cache_path, **discover_kwargs)
+
+        print(self._field_map.format_prompt_block())
+        return self._field_map
+
+    def _stage2_direct_mdf(
+        self,
+        transcribed_text: str,
+        image_path: str,
+        intro_text: str,
+        intro_image_paths: Optional[List[str]],
+        field_map: FieldMapPrompt,
+    ) -> tuple[str, str, dict, list]:
+        """Pass 2: direct MDF extraction using a field map."""
+        del intro_text  # intro images carry layout context; text unused here
+        mdf_text, raw, usage, messages = extract_direct_mdf(
+            transcription=transcribed_text,
+            image_path=image_path,
+            intro_image_paths=intro_image_paths or [],
+            field_map=field_map,
+            model=self.structure_model,
+            reasoning_effort=self.stage2_reasoning_effort,
+            guides=self.stage2_guides,
+            toolbox_pdf=self.stage2_toolbox_pdf,
+        )
+        return mdf_text, raw, usage, _sanitize_messages(messages)
 
     # ------------------------------------------------------------------
     # Helpers

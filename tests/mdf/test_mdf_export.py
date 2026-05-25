@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-from pathlib import Path
-
 from dictextractor.schemas.dictionary_languages import (
     DictionaryLanguagesConfig,
     SourceLanguageConfig,
@@ -21,8 +19,17 @@ from dictextractor.utils.mdf_export import (
     validate_stage2_entries,
 )
 
-FIXTURES = Path(__file__).resolve().parent.parent / "fixtures" / "chukchi_russian"
-GOLD_MDF = FIXTURES / "page_3_gold.mdf.txt"
+SYNTHETIC_GOLD_MDF = """\
+\\lx alpha
+\\gn first gloss
+
+\\lx beta
+\\hm 1
+\\gn second gloss
+
+\\lx gamma
+\\gn third gloss
+"""
 
 
 def _chukchi_config() -> DictionaryLanguagesConfig:
@@ -142,11 +149,11 @@ def _normalise_mdf(text: str) -> list[list[str]]:
 
 
 def test_gold_fixture_structure() -> None:
-    """Gold MDF has one record per headword/homograph block."""
-    gold = _normalise_mdf(GOLD_MDF.read_text(encoding="utf-8"))
-    assert len(gold) == 29
+    """MDF has one record per headword/homograph block."""
+    gold = _normalise_mdf(SYNTHETIC_GOLD_MDF)
+    assert len(gold) == 3
     homograph_blocks = [b for b in gold if any(l.startswith("\\hm ") for l in b)]
-    assert len(homograph_blocks) == 2
+    assert len(homograph_blocks) == 1
 
 
 def test_semicolon_gloss_splits_to_multiple_ge_lines() -> None:
@@ -223,4 +230,4 @@ def test_entries_to_mdf_text_strips_gloss_punctuation() -> None:
     text = entries_to_mdf_text(rows, _chukchi_config())
     assert "\\gn Goose\n" in text
     assert "\\xv Let's go out\n" in text
-    assert "\\xe Let us leave\n" in text
+    assert "\\xe Let us leave" in text

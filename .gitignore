@@ -44,6 +44,11 @@ archive/
 assets/
 models/outputs/
 **.workspace
+*.pdf
+*.zip
+*.tar
+*.tar.gz
+*.tgz
 
 # OS
 .DS_Store

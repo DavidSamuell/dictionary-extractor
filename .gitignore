@@ -1,10 +1,13 @@
 # Environment and secrets
 **/.env
 .env
+.env.*
+!.env.example
 .venv/
 .venv-*/
 venv/
 .venv-paddleocr
+models/
 
 # Python
 __pycache__/
@@ -31,6 +34,7 @@ CLAUDE.md
 # Hidden dotfiles (keep .gitignore itself)
 .*
 !.gitignore
+!.env.example
 
 # Label Studio local renders (regenerate locally)
 .label-studio-renders/
@@ -47,3 +51,8 @@ Thumbs.db
 
 # Generated LaTeX tables (regenerate via examples/evaluation/generate_*.py)
 examples/evaluation/*.tex
+
+# Regeneratable eval caches and one-off audit artifacts
+*eval_cache.json
+evaluations/*prototype*
+evaluations/audit_*.csv

@@ -44,3 +44,6 @@ models/outputs/
 # OS
 .DS_Store
 Thumbs.db
+
+# Generated LaTeX tables (regenerate via examples/evaluation/generate_*.py)
+examples/evaluation/*.tex

@@ -1,6 +1,0 @@
-# GLM-OCR (transformers) — https://huggingface.co/zai-org/GLM-OCR
-glm_ocr:
-  model_id: zai-org/GLM-OCR
-  # Document parsing prompts: "Text Recognition:", "Formula Recognition:", "Table Recognition:"
-  prompt: "Text Recognition:"
-  max_new_tokens: 8192

@@ -22,7 +22,7 @@ if [[ -f .env ]]; then
 fi
 
 # ── Configuration ────────────────────────────────────────────────────────────
-VM_HOST="216.158.235.114"               # e.g. 172.26.134.174 or Tailscale IP
+VM_HOST="216.158.235.114" 
 VM_REPO_ROOT="/var/www/app/dictionary-extractor"   # where the repo is cloned on the VM
 
 LS_URL="http://${VM_HOST}:8080"

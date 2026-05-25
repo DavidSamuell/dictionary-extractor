@@ -1,0 +1,95 @@
+========================================================================
+STAGE 1 OCR EVALUATION REPORT
+========================================================================
+
+--- Assyrian-English/page_352 ---
+
+  Character Recognition Quality:
+    TextEdit: 0.5055
+    GCER: 0.4317  (43.17%)
+    WER:  0.4712  (47.12%)
+    Spans: 23 matched, 13 missing, 9 extra
+
+  Markup / Typography Preservation:
+    Typography (bold+italic pooled) — F1: 0.0000  (TP=0 FP=0 FN=153)
+    Bold   — P: 0.0000  R: 0.0000  F1: 0.0000  (TP=0 FP=0 FN=69)
+    Italic — P: 0.0000  R: 0.0000  F1: 0.0000  (TP=0 FP=0 FN=84)
+
+--- Assyrian-English/page_39 ---
+
+  Character Recognition Quality:
+    TextEdit: 0.5803
+    GCER: 0.7081  (70.81%)
+    WER:  0.8593  (85.93%)
+    Spans: 20 matched, 11 missing, 11 extra
+
+  Markup / Typography Preservation:
+    Typography (bold+italic pooled) — F1: 0.0000  (TP=0 FP=0 FN=87)
+    Bold   — P: 0.0000  R: 0.0000  F1: 0.0000  (TP=0 FP=0 FN=46)
+    Italic — P: 0.0000  R: 0.0000  F1: 0.0000  (TP=0 FP=0 FN=41)
+
+--- Assyrian-English/page_842 ---
+
+  Character Recognition Quality:
+    TextEdit: 0.4583
+    GCER: 0.4518  (45.18%)
+    WER:  0.5090  (50.90%)
+    Spans: 24 matched, 12 missing, 7 extra
+
+  Markup / Typography Preservation:
+    Typography (bold+italic pooled) — F1: 0.0000  (TP=0 FP=0 FN=142)
+    Bold   — P: 0.0000  R: 0.0000  F1: 0.0000  (TP=0 FP=0 FN=55)
+    Italic — P: 0.0000  R: 0.0000  F1: 0.0000  (TP=0 FP=0 FN=87)
+
+--- Yiddish-English/page_1 ---
+
+  Character Recognition Quality:
+    TextEdit: 0.6860
+    GCER: 0.7199  (71.99%)
+    WER:  0.8013  (80.13%)
+    Spans: 33 matched, 35 missing, 9 extra
+
+  Markup / Typography Preservation:
+    Typography (bold+italic pooled) — F1: 0.0000  (TP=0 FP=0 FN=175)
+    Bold   — P: 0.0000  R: 0.0000  F1: 0.0000  (TP=0 FP=0 FN=94)
+    Italic — P: 0.0000  R: 0.0000  F1: 0.0000  (TP=0 FP=0 FN=81)
+
+--- Yiddish-English/page_2 ---
+
+  Character Recognition Quality:
+    TextEdit: 0.8062
+    GCER: 1.1329  (113.29%)
+    WER:  1.2246  (122.46%)
+    Spans: 24 matched, 63 missing, 5 extra
+
+  Markup / Typography Preservation:
+    Typography (bold+italic pooled) — F1: 0.0000  (TP=0 FP=0 FN=436)
+    Bold   — P: 0.0000  R: 0.0000  F1: 0.0000  (TP=0 FP=0 FN=378)
+    Italic — P: 0.0000  R: 0.0000  F1: 0.0000  (TP=0 FP=0 FN=58)
+
+--- Yiddish-English/page_41 ---
+
+  Character Recognition Quality:
+    TextEdit: 0.7455
+    GCER: 1.2443  (124.43%)
+    WER:  1.2656  (126.56%)
+    Spans: 65 matched, 64 missing, 59 extra
+
+  Markup / Typography Preservation:
+    Typography (bold+italic pooled) — F1: 0.0000  (TP=0 FP=0 FN=147)
+    Bold   — P: 0.0000  R: 0.0000  F1: 0.0000  (TP=0 FP=0 FN=146)
+    Italic — P: 0.0000  R: 0.0000  F1: 0.0000  (TP=0 FP=0 FN=1)
+
+========================================================================
+AGGREGATE (6 pages)
+========================================================================
+
+  Character Recognition Quality:
+    TextEdit: 0.6858
+    GCER: 0.8122
+    WER:  0.8753
+
+  Markup / Typography Preservation:
+    Typography (bold+italic pooled) — F1: 0.0000
+    Bold   — P: 0.0000  R: 0.0000  F1: 0.0000
+    Italic — P: 0.0000  R: 0.0000  F1: 0.0000

@@ -1,0 +1,56 @@
+========================================================================
+STAGE 1 OCR EVALUATION REPORT
+========================================================================
+
+--- Yiddish-English/page_1 ---
+
+  Character Recognition Quality:
+    TextEdit: 0.2414
+    GCER: 0.2853  (28.53%)
+    WER:  0.3683  (36.83%)
+    Spans: 76 matched, 9 missing, 8 extra
+
+  Markup / Typography Preservation:
+    Typography (bold+italic pooled) — F1: 0.7011  (TP=122 FP=51 FN=53)
+    Bold   — P: 0.6264  R: 0.6064  F1: 0.6162  (TP=57 FP=34 FN=37)
+    Italic — P: 0.7927  R: 0.8025  F1: 0.7975  (TP=65 FP=17 FN=16)
+
+--- Yiddish-English/page_2 ---
+
+  Character Recognition Quality:
+    TextEdit: 0.5591
+    GCER: 0.6649  (66.49%)
+    WER:  0.6660  (66.60%)
+    Spans: 65 matched, 38 missing, 30 extra
+
+  Markup / Typography Preservation:
+    Typography (bold+italic pooled) — F1: 0.1925  (TP=49 FP=24 FN=387)
+    Bold   — P: 0.7344  R: 0.1243  F1: 0.2127  (TP=47 FP=17 FN=331)
+    Italic — P: 0.2222  R: 0.0345  F1: 0.0597  (TP=2 FP=7 FN=56)
+
+--- Yiddish-English/page_41 ---
+
+  Character Recognition Quality:
+    TextEdit: 0.6613
+    GCER: 1.1024  (110.24%)
+    WER:  1.1579  (115.79%)
+    Spans: 67 matched, 56 missing, 30 extra
+
+  Markup / Typography Preservation:
+    Typography (bold+italic pooled) — F1: 0.1426  (TP=39 FP=361 FN=108)
+    Bold   — P: 0.1162  R: 0.2603  F1: 0.1607  (TP=38 FP=289 FN=108)
+    Italic — P: 0.0137  R: 1.0000  F1: 0.0270  (TP=1 FP=72 FN=0)
+
+========================================================================
+AGGREGATE (3 pages)
+========================================================================
+
+  Character Recognition Quality:
+    TextEdit: 0.5224
+    GCER: 0.7040
+    WER:  0.7184
+
+  Markup / Typography Preservation:
+    Typography (bold+italic pooled) — F1: 0.2991
+    Bold   — P: 0.2946  R: 0.2298  F1: 0.2582
+    Italic — P: 0.4146  R: 0.4857  F1: 0.4474

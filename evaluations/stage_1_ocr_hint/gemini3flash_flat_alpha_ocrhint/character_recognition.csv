@@ -1,0 +1,24 @@
+page_id,TextEdit,GCER,WER
+Chukchi-Russian/page_26,0.02281,0.021615,0.111111
+Chukchi-Russian/page_3,0.000722,0.001174,0.00885
+Chukchi-Russian/page_48,0.012967,0.016782,0.122302
+Circassian-English-Turkish/page_1,0.48975,0.582075,0.916201
+Circassian-English-Turkish/page_2,0.135472,0.150943,0.395833
+Circassian-English-Turkish/page_3,0.122303,0.12619,0.341772
+Efik-English/page_13,0.001995,0.002374,0.012295
+Efik-English/page_25,0.006294,0.007505,0.035639
+Efik-English/page_32,0.004241,0.004736,0.026846
+Georgian-Russian/page_116,0.053947,0.048924,0.369231
+Greek-English/page_302,0.005358,0.005245,0.028146
+Greek-English/page_38,0.004993,0.005612,0.033028
+Greek-English/page_451,0.001824,0.001835,0.013462
+Nahuatl-French/page_244,0.002562,0.00288,0.01791
+Nahuatl-French/page_74,0.000711,0.000675,0.004261
+Nahuatl-French/page_75,0.000618,0.000719,0.003367
+Thai-Russian/page_591,0.058631,0.08638,0.290196
+Thai-Russian/page_67,0.112743,0.119373,0.435424
+Thai-Russian/page_756,0.10274,0.108404,0.558935
+Vernacular Syriac-Kurdish_Turkish-English/page_228,0.115487,0.091643,0.18542
+Vernacular Syriac-Kurdish_Turkish-English/page_26,0.114621,0.099324,0.25222
+Vernacular Syriac-Kurdish_Turkish-English/page_41,0.147695,0.145036,0.260223
+__aggregate__,0.053615,0.050369,0.140422

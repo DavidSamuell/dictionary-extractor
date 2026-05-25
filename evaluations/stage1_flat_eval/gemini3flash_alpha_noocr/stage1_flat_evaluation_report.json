@@ -1,0 +1,156 @@
+[
+  {
+    "page_id": "Yiddish-English/page_1",
+    "character_quality": {
+      "TextEdit": 0.258482,
+      "GCER": 0.368889,
+      "WER": 0.477679,
+      "total_graphemes_gold": 2250,
+      "total_graphemes_pred": 2207,
+      "total_grapheme_edits": 830,
+      "total_words_gold": 448,
+      "total_word_edits": 214,
+      "matched_spans": 74,
+      "missing_spans": 11,
+      "extra_spans": 10
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.7381,
+        "recall": 0.6596,
+        "f1": 0.6966,
+        "tp": 62,
+        "fp": 22,
+        "fn": 32
+      },
+      "italic": {
+        "precision": 0.8608,
+        "recall": 0.8395,
+        "f1": 0.85,
+        "tp": 68,
+        "fp": 11,
+        "fn": 13
+      },
+      "typography": {
+        "precision": 0.7975,
+        "recall": 0.7429,
+        "f1": 0.7692,
+        "tp": 130,
+        "fp": 33,
+        "fn": 45
+      }
+    }
+  },
+  {
+    "page_id": "Yiddish-English/page_2",
+    "character_quality": {
+      "TextEdit": 0.486102,
+      "GCER": 0.649262,
+      "WER": 0.642578,
+      "total_graphemes_gold": 2777,
+      "total_graphemes_pred": 2777,
+      "total_grapheme_edits": 1803,
+      "total_words_gold": 512,
+      "total_word_edits": 329,
+      "matched_spans": 71,
+      "missing_spans": 30,
+      "extra_spans": 29
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.6111,
+        "recall": 0.1746,
+        "f1": 0.2716,
+        "tp": 66,
+        "fp": 42,
+        "fn": 312
+      },
+      "italic": {
+        "precision": 0.4068,
+        "recall": 0.4138,
+        "f1": 0.4103,
+        "tp": 24,
+        "fp": 35,
+        "fn": 34
+      },
+      "typography": {
+        "precision": 0.5389,
+        "recall": 0.2064,
+        "f1": 0.2985,
+        "tp": 90,
+        "fp": 77,
+        "fn": 346
+      }
+    }
+  },
+  {
+    "page_id": "Yiddish-English/page_41",
+    "character_quality": {
+      "TextEdit": 0.326058,
+      "GCER": 0.389747,
+      "WER": 0.456938,
+      "total_graphemes_gold": 2653,
+      "total_graphemes_pred": 2598,
+      "total_grapheme_edits": 1034,
+      "total_words_gold": 418,
+      "total_word_edits": 191,
+      "matched_spans": 94,
+      "missing_spans": 14,
+      "extra_spans": 7
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.6375,
+        "recall": 0.3493,
+        "f1": 0.4513,
+        "tp": 51,
+        "fp": 29,
+        "fn": 95
+      },
+      "italic": {
+        "precision": 0.0137,
+        "recall": 1.0,
+        "f1": 0.027,
+        "tp": 1,
+        "fp": 72,
+        "fn": 0
+      },
+      "typography": {
+        "precision": 0.3399,
+        "recall": 0.3537,
+        "f1": 0.3467,
+        "tp": 52,
+        "fp": 101,
+        "fn": 95
+      }
+    }
+  },
+  {
+    "page_id": "__aggregate__",
+    "character_quality": {
+      "TextEdit": 0.36837,
+      "GCER": 0.477474,
+      "WER": 0.532656
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.6581,
+        "recall": 0.2896,
+        "f1": 0.4022
+      },
+      "italic": {
+        "precision": 0.4408,
+        "recall": 0.6643,
+        "f1": 0.5299
+      },
+      "typography": {
+        "precision": 0.5631,
+        "recall": 0.3588,
+        "f1": 0.4384
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.0
+    }
+  }
+]

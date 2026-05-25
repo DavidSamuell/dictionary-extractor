@@ -1,0 +1,11 @@
+page_id,TextEdit,GCER,WER
+Assyrian-English/page_352,0.301361,0.256297,0.461153
+Assyrian-English/page_39,0.392386,0.355255,0.488889
+Assyrian-English/page_842,0.297598,0.301364,0.355499
+Gujarati-English/page_50,0.025405,0.028409,0.237805
+Gujarati-English/page_500,0.002478,0.002831,0.023729
+Gujarati-English/page_866,0.001063,0.001197,0.010067
+Telugu-English/page_151,0.048547,0.034834,0.100372
+Telugu-English/page_646,0.005553,0.006682,0.031519
+Telugu-English/page_80,0.016502,0.016726,0.072289
+__aggregate__,0.077413,0.119293,0.206414

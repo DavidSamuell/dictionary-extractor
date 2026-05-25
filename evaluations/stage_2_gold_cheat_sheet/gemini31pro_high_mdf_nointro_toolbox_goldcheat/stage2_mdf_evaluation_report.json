@@ -1,0 +1,150 @@
+{
+  "settings": {
+    "record_threshold": 0.6,
+    "line_threshold": 0.7,
+    "marker_sub_list_path": "assets/evaluation/mdf_marker_sub_list.yaml"
+  },
+  "pages": [
+    {
+      "page_id": "Na-English-Chinese-French/page_19",
+      "gold_path": "assets/dictionaries/samples/Na-English-Chinese-French/outputs/stage-2-gold/page_19/page_19.mdf.txt",
+      "pred_path": "assets/dictionaries/samples/Na-English-Chinese-French/outputs/stage-2/gemini31pro_high_mdf_nointro_toolbox_goldcheat/page_19/page_19.mdf.txt",
+      "n_pred_records": 7,
+      "Record_Accuracy": 1.0,
+      "MDF_Fields_F1": 1.0,
+      "record_counts": {
+        "tp": 7,
+        "fp": 0,
+        "fn": 0
+      },
+      "marker_counts": {
+        "tp": 116,
+        "fp": 0,
+        "fn": 0
+      },
+      "read_order": {
+        "ReadOrderEdit": 0.0,
+        "edit_distance": 0,
+        "max_length": 7
+      },
+      "marker_confusion": {},
+      "record_samples": [],
+      "marker_error_samples": [],
+      "missing_record_samples": [],
+      "extra_record_samples": []
+    },
+    {
+      "page_id": "Tiri-English/page_15",
+      "gold_path": "assets/dictionaries/samples/Tiri-English/outputs/stage-2-gold/page_15/page_15.mdf.txt",
+      "pred_path": "assets/dictionaries/samples/Tiri-English/outputs/stage-2/gemini31pro_high_mdf_nointro_toolbox_goldcheat/page_15/page_15.mdf.txt",
+      "n_pred_records": 38,
+      "Record_Accuracy": 1.0,
+      "MDF_Fields_F1": 0.945813,
+      "record_counts": {
+        "tp": 36,
+        "fp": 2,
+        "fn": 0
+      },
+      "marker_counts": {
+        "tp": 96,
+        "fp": 5,
+        "fn": 6
+      },
+      "read_order": {
+        "ReadOrderEdit": 0.0,
+        "edit_distance": 0,
+        "max_length": 36
+      },
+      "marker_confusion": {
+        "xv": {
+          "se": 1
+        },
+        "se": {
+          "lx": 1
+        }
+      },
+      "record_samples": [
+        {
+          "gold_index": 7,
+          "pred_index": 8,
+          "similarity": 0.923,
+          "headword_gold": "bʷařa",
+          "headword_pred": "bʷařa",
+          "gold_lines": 3,
+          "pred_lines": 4,
+          "line_pairs": 3,
+          "missing_lines": 0,
+          "extra_lines": 1
+        },
+        {
+          "gold_index": 10,
+          "pred_index": 11,
+          "similarity": 0.718,
+          "headword_gold": "bʷara",
+          "headword_pred": "bʷara",
+          "gold_lines": 5,
+          "pred_lines": 3,
+          "line_pairs": 3,
+          "missing_lines": 2,
+          "extra_lines": 0
+        },
+        {
+          "gold_index": 0,
+          "pred_index": 1,
+          "similarity": 0.667,
+          "headword_gold": "bʷaði",
+          "headword_pred": "bʷaðirɔ",
+          "gold_lines": 4,
+          "pred_lines": 2,
+          "line_pairs": 2,
+          "missing_lines": 2,
+          "extra_lines": 0
+        }
+      ],
+      "marker_error_samples": [
+        {
+          "headword": "bʷaro",
+          "gold": "\\xv bʷaro meɔ",
+          "pred": "\\se bʷaro meɔ",
+          "value_sim": 1.0
+        },
+        {
+          "headword": "bʷaði",
+          "gold": "\\se bʷaðirɔ",
+          "pred": "\\lx bʷaðirɔ",
+          "value_sim": 1.0
+        }
+      ],
+      "missing_record_samples": [],
+      "extra_record_samples": [
+        {
+          "index": 0,
+          "headword": "bʷaði",
+          "fingerprint_preview": "bʷaði the gums"
+        },
+        {
+          "index": 12,
+          "headword": "bʷaraanĩ",
+          "fingerprint_preview": "bʷaraanĩ his forehead"
+        }
+      ]
+    }
+  ],
+  "aggregate": {
+    "Record_Accuracy": 1.0,
+    "MDF_Fields_F1": 0.974713,
+    "record_counts": {
+      "tp": 43,
+      "fp": 2,
+      "fn": 0
+    },
+    "marker_counts": {
+      "tp": 212,
+      "fp": 5,
+      "fn": 6
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.0
+    }
+  }
+}

@@ -1,0 +1,15 @@
+page_id,TextEdit,GCER,WER
+Punjabi-English/page_114,0.043807,0.043672,0.120261
+Punjabi-English/page_28,0.037824,0.038965,0.139082
+Punjabi-English/page_300,0.028178,0.02274,0.090129
+Reel-English/page_17,0.0,0.0,0.0
+Reel-English/page_47,0.00304,0.0,0.0
+Reel-English/page_89,0.00075,0.000914,0.005587
+Sanskrit-English/page_559,0.017451,0.016386,0.070175
+Sanskrit-English/page_880,0.01665,0.01951,0.06383
+Sanskrit-English/page_9,0.059281,0.050223,0.197279
+Syriac-English/page_33,0.130383,0.130289,0.231076
+Syriac-English/page_55,0.161545,0.171315,0.281369
+Syriac-English/page_75,0.119366,0.126954,0.203846
+Yiddish-English/page_1,0.45744,0.491811,0.517857
+__aggregate__,0.08077,0.08705,0.155821

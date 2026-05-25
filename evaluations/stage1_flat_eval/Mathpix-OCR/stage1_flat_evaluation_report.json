@@ -1,0 +1,4166 @@
+[
+  {
+    "page_id": "Assyrian-English/page_352",
+    "character_quality": {
+      "TextEdit": 0.661054,
+      "GCER": 0.44967,
+      "WER": 0.491228,
+      "total_graphemes_gold": 2275,
+      "total_graphemes_pred": 1533,
+      "total_grapheme_edits": 1023,
+      "total_words_gold": 399,
+      "total_word_edits": 196,
+      "matched_spans": 9,
+      "missing_spans": 15,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 69
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 84
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 153
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.388889,
+      "edit_distance": 14,
+      "max_length": 36
+    }
+  },
+  {
+    "page_id": "Assyrian-English/page_39",
+    "character_quality": {
+      "TextEdit": 0.835659,
+      "GCER": 0.837224,
+      "WER": 0.881481,
+      "total_graphemes_gold": 1628,
+      "total_graphemes_pred": 463,
+      "total_grapheme_edits": 1363,
+      "total_words_gold": 270,
+      "total_word_edits": 238,
+      "matched_spans": 10,
+      "missing_spans": 20,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 46
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 41
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 87
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.741935,
+      "edit_distance": 23,
+      "max_length": 31
+    }
+  },
+  {
+    "page_id": "Assyrian-English/page_842",
+    "character_quality": {
+      "TextEdit": 0.615575,
+      "GCER": 0.34055,
+      "WER": 0.41688,
+      "total_graphemes_gold": 2217,
+      "total_graphemes_pred": 1611,
+      "total_grapheme_edits": 755,
+      "total_words_gold": 391,
+      "total_word_edits": 163,
+      "matched_spans": 9,
+      "missing_spans": 10,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 55
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 87
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 142
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.305556,
+      "edit_distance": 11,
+      "max_length": 36
+    }
+  },
+  {
+    "page_id": "Bengalese-English/page_105",
+    "character_quality": {
+      "TextEdit": 0.061708,
+      "GCER": 0.060813,
+      "WER": 0.16141,
+      "total_graphemes_gold": 3371,
+      "total_graphemes_pred": 3328,
+      "total_grapheme_edits": 205,
+      "total_words_gold": 539,
+      "total_word_edits": 87,
+      "matched_spans": 88,
+      "missing_spans": 0,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 1,
+        "fn": 95
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 96
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 1,
+        "fn": 191
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.020202,
+      "edit_distance": 2,
+      "max_length": 99
+    }
+  },
+  {
+    "page_id": "Bengalese-English/page_217",
+    "character_quality": {
+      "TextEdit": 0.091159,
+      "GCER": 0.079281,
+      "WER": 0.132013,
+      "total_graphemes_gold": 3393,
+      "total_graphemes_pred": 3343,
+      "total_grapheme_edits": 269,
+      "total_words_gold": 606,
+      "total_word_edits": 80,
+      "matched_spans": 59,
+      "missing_spans": 1,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 64
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 67
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 131
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.067308,
+      "edit_distance": 7,
+      "max_length": 104
+    }
+  },
+  {
+    "page_id": "Bengalese-English/page_54",
+    "character_quality": {
+      "TextEdit": 0.075422,
+      "GCER": 0.072648,
+      "WER": 0.186567,
+      "total_graphemes_gold": 3455,
+      "total_graphemes_pred": 3402,
+      "total_grapheme_edits": 251,
+      "total_words_gold": 536,
+      "total_word_edits": 100,
+      "matched_spans": 72,
+      "missing_spans": 1,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 91
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 89
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 180
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.505051,
+      "edit_distance": 100,
+      "max_length": 198
+    }
+  },
+  {
+    "page_id": "Canala-English/page_12",
+    "character_quality": {
+      "TextEdit": 0.115946,
+      "GCER": 0.099894,
+      "WER": 0.184466,
+      "total_graphemes_gold": 1892,
+      "total_graphemes_pred": 1898,
+      "total_grapheme_edits": 189,
+      "total_words_gold": 309,
+      "total_word_edits": 57,
+      "matched_spans": 47,
+      "missing_spans": 2,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.410072,
+      "edit_distance": 57,
+      "max_length": 139
+    }
+  },
+  {
+    "page_id": "Canala-English/page_30",
+    "character_quality": {
+      "TextEdit": 0.097097,
+      "GCER": 0.099878,
+      "WER": 0.195876,
+      "total_graphemes_gold": 1642,
+      "total_graphemes_pred": 1625,
+      "total_grapheme_edits": 164,
+      "total_words_gold": 291,
+      "total_word_edits": 57,
+      "matched_spans": 62,
+      "missing_spans": 2,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.301724,
+      "edit_distance": 35,
+      "max_length": 116
+    }
+  },
+  {
+    "page_id": "Canala-English/page_64",
+    "character_quality": {
+      "TextEdit": 0.074968,
+      "GCER": 0.055172,
+      "WER": 0.212698,
+      "total_graphemes_gold": 1885,
+      "total_graphemes_pred": 1892,
+      "total_grapheme_edits": 104,
+      "total_words_gold": 315,
+      "total_word_edits": 67,
+      "matched_spans": 63,
+      "missing_spans": 1,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.454545,
+      "edit_distance": 70,
+      "max_length": 154
+    }
+  },
+  {
+    "page_id": "Chepang-English/page_103",
+    "character_quality": {
+      "TextEdit": 0.076519,
+      "GCER": 0.060392,
+      "WER": 0.245098,
+      "total_graphemes_gold": 2550,
+      "total_graphemes_pred": 2544,
+      "total_grapheme_edits": 154,
+      "total_words_gold": 408,
+      "total_word_edits": 100,
+      "matched_spans": 68,
+      "missing_spans": 1,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 109
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 60
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 169
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.056818,
+      "edit_distance": 5,
+      "max_length": 88
+    }
+  },
+  {
+    "page_id": "Chepang-English/page_304",
+    "character_quality": {
+      "TextEdit": 0.168071,
+      "GCER": 0.144954,
+      "WER": 0.243119,
+      "total_graphemes_gold": 2725,
+      "total_graphemes_pred": 2703,
+      "total_grapheme_edits": 395,
+      "total_words_gold": 436,
+      "total_word_edits": 106,
+      "matched_spans": 21,
+      "missing_spans": 1,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 109
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 60
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 169
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.701068,
+      "edit_distance": 197,
+      "max_length": 281
+    }
+  },
+  {
+    "page_id": "Chepang-English/page_37",
+    "character_quality": {
+      "TextEdit": 0.103598,
+      "GCER": 0.091683,
+      "WER": 0.283951,
+      "total_graphemes_gold": 2585,
+      "total_graphemes_pred": 2602,
+      "total_grapheme_edits": 237,
+      "total_words_gold": 405,
+      "total_word_edits": 115,
+      "matched_spans": 48,
+      "missing_spans": 1,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 115
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 42
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 157
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.134021,
+      "edit_distance": 13,
+      "max_length": 97
+    }
+  },
+  {
+    "page_id": "Chukchi-Russian/page_26",
+    "character_quality": {
+      "TextEdit": 0.052218,
+      "GCER": 0.049605,
+      "WER": 0.214286,
+      "total_graphemes_gold": 887,
+      "total_graphemes_pred": 883,
+      "total_grapheme_edits": 44,
+      "total_words_gold": 126,
+      "total_word_edits": 27,
+      "matched_spans": 25,
+      "missing_spans": 0,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 29
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 12
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 41
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.0,
+      "edit_distance": 0,
+      "max_length": 33
+    }
+  },
+  {
+    "page_id": "Chukchi-Russian/page_3",
+    "character_quality": {
+      "TextEdit": 0.025624,
+      "GCER": 0.030374,
+      "WER": 0.19469,
+      "total_graphemes_gold": 856,
+      "total_graphemes_pred": 853,
+      "total_grapheme_edits": 26,
+      "total_words_gold": 113,
+      "total_word_edits": 22,
+      "matched_spans": 29,
+      "missing_spans": 0,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 39
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 17
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 56
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.0,
+      "edit_distance": 0,
+      "max_length": 33
+    }
+  },
+  {
+    "page_id": "Chukchi-Russian/page_48",
+    "character_quality": {
+      "TextEdit": 0.046598,
+      "GCER": 0.055773,
+      "WER": 0.374101,
+      "total_graphemes_gold": 1022,
+      "total_graphemes_pred": 1015,
+      "total_grapheme_edits": 57,
+      "total_words_gold": 139,
+      "total_word_edits": 52,
+      "matched_spans": 25,
+      "missing_spans": 0,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 38
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 20
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 58
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.0,
+      "edit_distance": 0,
+      "max_length": 34
+    }
+  },
+  {
+    "page_id": "Chung-English/page_121",
+    "character_quality": {
+      "TextEdit": 0.10257,
+      "GCER": 0.107868,
+      "WER": 0.442308,
+      "total_graphemes_gold": 788,
+      "total_graphemes_pred": 800,
+      "total_grapheme_edits": 85,
+      "total_words_gold": 156,
+      "total_word_edits": 69,
+      "matched_spans": 46,
+      "missing_spans": 0,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 99
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 54
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 153
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.108696,
+      "edit_distance": 5,
+      "max_length": 46
+    }
+  },
+  {
+    "page_id": "Chung-English/page_169",
+    "character_quality": {
+      "TextEdit": 0.100571,
+      "GCER": 0.107006,
+      "WER": 0.430233,
+      "total_graphemes_gold": 785,
+      "total_graphemes_pred": 795,
+      "total_grapheme_edits": 84,
+      "total_words_gold": 172,
+      "total_word_edits": 74,
+      "matched_spans": 49,
+      "missing_spans": 0,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 112
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 58
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 170
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.142857,
+      "edit_distance": 7,
+      "max_length": 49
+    }
+  },
+  {
+    "page_id": "Chung-English/page_3",
+    "character_quality": {
+      "TextEdit": 0.034663,
+      "GCER": 0.038898,
+      "WER": 0.195745,
+      "total_graphemes_gold": 1234,
+      "total_graphemes_pred": 1256,
+      "total_grapheme_edits": 48,
+      "total_words_gold": 235,
+      "total_word_edits": 46,
+      "matched_spans": 52,
+      "missing_spans": 0,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 86
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 27
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 113
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.096154,
+      "edit_distance": 5,
+      "max_length": 52
+    }
+  },
+  {
+    "page_id": "Circassian-English-Turkish/page_1",
+    "character_quality": {
+      "TextEdit": 0.328432,
+      "GCER": 0.370479,
+      "WER": 0.644068,
+      "total_graphemes_gold": 1023,
+      "total_graphemes_pred": 878,
+      "total_grapheme_edits": 379,
+      "total_words_gold": 177,
+      "total_word_edits": 114,
+      "matched_spans": 58,
+      "missing_spans": 11,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 63
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 21
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 84
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.337209,
+      "edit_distance": 29,
+      "max_length": 86
+    }
+  },
+  {
+    "page_id": "Circassian-English-Turkish/page_2",
+    "character_quality": {
+      "TextEdit": 0.30568,
+      "GCER": 0.378141,
+      "WER": 0.608392,
+      "total_graphemes_gold": 796,
+      "total_graphemes_pred": 661,
+      "total_grapheme_edits": 301,
+      "total_words_gold": 143,
+      "total_word_edits": 87,
+      "matched_spans": 58,
+      "missing_spans": 11,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 3
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 17
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 20
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.492958,
+      "edit_distance": 35,
+      "max_length": 71
+    }
+  },
+  {
+    "page_id": "Circassian-English-Turkish/page_3",
+    "character_quality": {
+      "TextEdit": 0.456183,
+      "GCER": 0.487425,
+      "WER": 0.880503,
+      "total_graphemes_gold": 835,
+      "total_graphemes_pred": 738,
+      "total_grapheme_edits": 407,
+      "total_words_gold": 159,
+      "total_word_edits": 140,
+      "matched_spans": 52,
+      "missing_spans": 9,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 2,
+        "fn": 3
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 17
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 2,
+        "fn": 20
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.609467,
+      "edit_distance": 103,
+      "max_length": 169
+    }
+  },
+  {
+    "page_id": "Efik-English/page_13",
+    "character_quality": {
+      "TextEdit": 0.10633,
+      "GCER": 0.072559,
+      "WER": 0.104508,
+      "total_graphemes_gold": 2591,
+      "total_graphemes_pred": 2527,
+      "total_grapheme_edits": 188,
+      "total_words_gold": 488,
+      "total_word_edits": 51,
+      "matched_spans": 29,
+      "missing_spans": 1,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 26
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 183
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 209
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.632,
+      "edit_distance": 158,
+      "max_length": 250
+    }
+  },
+  {
+    "page_id": "Efik-English/page_25",
+    "character_quality": {
+      "TextEdit": 0.089317,
+      "GCER": 0.063198,
+      "WER": 0.157233,
+      "total_graphemes_gold": 2864,
+      "total_graphemes_pred": 2830,
+      "total_grapheme_edits": 181,
+      "total_words_gold": 477,
+      "total_word_edits": 75,
+      "matched_spans": 37,
+      "missing_spans": 1,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 53
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 169
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 222
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.552632,
+      "edit_distance": 126,
+      "max_length": 228
+    }
+  },
+  {
+    "page_id": "Efik-English/page_32",
+    "character_quality": {
+      "TextEdit": 0.095227,
+      "GCER": 0.044452,
+      "WER": 0.116331,
+      "total_graphemes_gold": 2812,
+      "total_graphemes_pred": 2734,
+      "total_grapheme_edits": 125,
+      "total_words_gold": 447,
+      "total_word_edits": 52,
+      "matched_spans": 35,
+      "missing_spans": 2,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 32
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 122
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 154
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.337748,
+      "edit_distance": 51,
+      "max_length": 151
+    }
+  },
+  {
+    "page_id": "Evenki-Russian/page_1",
+    "character_quality": {
+      "TextEdit": 0.26363,
+      "GCER": 0.365171,
+      "WER": 0.646396,
+      "total_graphemes_gold": 2607,
+      "total_graphemes_pred": 2578,
+      "total_grapheme_edits": 952,
+      "total_words_gold": 444,
+      "total_word_edits": 287,
+      "matched_spans": 33,
+      "missing_spans": 0,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 107
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 211
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 318
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.803403,
+      "edit_distance": 425,
+      "max_length": 529
+    }
+  },
+  {
+    "page_id": "Evenki-Russian/page_2",
+    "character_quality": {
+      "TextEdit": 0.169498,
+      "GCER": 0.172762,
+      "WER": 0.433225,
+      "total_graphemes_gold": 2078,
+      "total_graphemes_pred": 2057,
+      "total_grapheme_edits": 359,
+      "total_words_gold": 307,
+      "total_word_edits": 133,
+      "matched_spans": 38,
+      "missing_spans": 0,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 106
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 114
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 220
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.493902,
+      "edit_distance": 81,
+      "max_length": 164
+    }
+  },
+  {
+    "page_id": "Evenki-Russian/page_3",
+    "character_quality": {
+      "TextEdit": 0.249717,
+      "GCER": 0.325563,
+      "WER": 0.577295,
+      "total_graphemes_gold": 2531,
+      "total_graphemes_pred": 2516,
+      "total_grapheme_edits": 824,
+      "total_words_gold": 414,
+      "total_word_edits": 239,
+      "matched_spans": 43,
+      "missing_spans": 0,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 83
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 207
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 290
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.767857,
+      "edit_distance": 344,
+      "max_length": 448
+    }
+  },
+  {
+    "page_id": "Georgian-Russian/page_116",
+    "character_quality": {
+      "TextEdit": 0.36066,
+      "GCER": 0.414148,
+      "WER": 0.910053,
+      "total_graphemes_gold": 1555,
+      "total_graphemes_pred": 1489,
+      "total_grapheme_edits": 644,
+      "total_words_gold": 189,
+      "total_word_edits": 172,
+      "matched_spans": 51,
+      "missing_spans": 6,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 55
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 15
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 70
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.502994,
+      "edit_distance": 84,
+      "max_length": 167
+    }
+  },
+  {
+    "page_id": "Gojri-English-Hindi/page_275",
+    "character_quality": {
+      "TextEdit": 0.153929,
+      "GCER": 0.003829,
+      "WER": 0.022556,
+      "total_graphemes_gold": 1567,
+      "total_graphemes_pred": 1563,
+      "total_grapheme_edits": 6,
+      "total_words_gold": 133,
+      "total_word_edits": 3,
+      "matched_spans": 6,
+      "missing_spans": 1,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 31
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 31
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.032258,
+      "edit_distance": 1,
+      "max_length": 31
+    }
+  },
+  {
+    "page_id": "Gojri-English-Hindi/page_32",
+    "character_quality": {
+      "TextEdit": 0.509811,
+      "GCER": 0.002795,
+      "WER": 0.009434,
+      "total_graphemes_gold": 1431,
+      "total_graphemes_pred": 1427,
+      "total_grapheme_edits": 4,
+      "total_words_gold": 106,
+      "total_word_edits": 1,
+      "matched_spans": 1,
+      "missing_spans": 1,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 29
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 29
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.033333,
+      "edit_distance": 1,
+      "max_length": 30
+    }
+  },
+  {
+    "page_id": "Gojri-English-Hindi/page_76",
+    "character_quality": {
+      "TextEdit": 0.344333,
+      "GCER": 0.006854,
+      "WER": 0.042857,
+      "total_graphemes_gold": 1459,
+      "total_graphemes_pred": 1456,
+      "total_grapheme_edits": 10,
+      "total_words_gold": 140,
+      "total_word_edits": 6,
+      "matched_spans": 2,
+      "missing_spans": 1,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 24
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 24
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.033333,
+      "edit_distance": 1,
+      "max_length": 30
+    }
+  },
+  {
+    "page_id": "Greek-English/page_302",
+    "character_quality": {
+      "TextEdit": 0.082485,
+      "GCER": 0.071346,
+      "WER": 0.222591,
+      "total_graphemes_gold": 3476,
+      "total_graphemes_pred": 3409,
+      "total_grapheme_edits": 248,
+      "total_words_gold": 602,
+      "total_word_edits": 134,
+      "matched_spans": 63,
+      "missing_spans": 2,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 96
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 75
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 171
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.593156,
+      "edit_distance": 156,
+      "max_length": 263
+    }
+  },
+  {
+    "page_id": "Greek-English/page_38",
+    "character_quality": {
+      "TextEdit": 0.120829,
+      "GCER": 0.122195,
+      "WER": 0.326568,
+      "total_graphemes_gold": 3609,
+      "total_graphemes_pred": 3533,
+      "total_grapheme_edits": 441,
+      "total_words_gold": 542,
+      "total_word_edits": 177,
+      "matched_spans": 61,
+      "missing_spans": 2,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 2,
+        "fn": 85
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 15
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 2,
+        "fn": 100
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.52193,
+      "edit_distance": 119,
+      "max_length": 228
+    }
+  },
+  {
+    "page_id": "Greek-English/page_451",
+    "character_quality": {
+      "TextEdit": 0.216463,
+      "GCER": 0.226358,
+      "WER": 0.415385,
+      "total_graphemes_gold": 3331,
+      "total_graphemes_pred": 3262,
+      "total_grapheme_edits": 754,
+      "total_words_gold": 520,
+      "total_word_edits": 216,
+      "matched_spans": 47,
+      "missing_spans": 3,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 50
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 16
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 66
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.743529,
+      "edit_distance": 316,
+      "max_length": 425
+    }
+  },
+  {
+    "page_id": "Gujarati-English/page_50",
+    "character_quality": {
+      "TextEdit": 0.107391,
+      "GCER": 0.070752,
+      "WER": 0.335366,
+      "total_graphemes_gold": 1795,
+      "total_graphemes_pred": 1738,
+      "total_grapheme_edits": 127,
+      "total_words_gold": 328,
+      "total_word_edits": 110,
+      "matched_spans": 35,
+      "missing_spans": 1,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 47
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 66
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 113
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.014085,
+      "edit_distance": 1,
+      "max_length": 71
+    }
+  },
+  {
+    "page_id": "Gujarati-English/page_500",
+    "character_quality": {
+      "TextEdit": 0.079621,
+      "GCER": 0.071508,
+      "WER": 0.210884,
+      "total_graphemes_gold": 1804,
+      "total_graphemes_pred": 1761,
+      "total_grapheme_edits": 129,
+      "total_words_gold": 294,
+      "total_word_edits": 62,
+      "matched_spans": 31,
+      "missing_spans": 1,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 38
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 45
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 83
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.456693,
+      "edit_distance": 58,
+      "max_length": 127
+    }
+  },
+  {
+    "page_id": "Gujarati-English/page_866",
+    "character_quality": {
+      "TextEdit": 0.105655,
+      "GCER": 0.092462,
+      "WER": 0.164983,
+      "total_graphemes_gold": 1698,
+      "total_graphemes_pred": 1681,
+      "total_grapheme_edits": 157,
+      "total_words_gold": 297,
+      "total_word_edits": 49,
+      "matched_spans": 42,
+      "missing_spans": 1,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 48
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 40
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 88
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.30303,
+      "edit_distance": 30,
+      "max_length": 99
+    }
+  },
+  {
+    "page_id": "Iñupiatun Eskimo-English/page_201",
+    "character_quality": {
+      "TextEdit": 0.05412,
+      "GCER": 0.045432,
+      "WER": 0.083467,
+      "total_graphemes_gold": 3962,
+      "total_graphemes_pred": 3946,
+      "total_grapheme_edits": 180,
+      "total_words_gold": 623,
+      "total_word_edits": 52,
+      "matched_spans": 70,
+      "missing_spans": 1,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 118
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 93
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 211
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.52193,
+      "edit_distance": 119,
+      "max_length": 228
+    }
+  },
+  {
+    "page_id": "Iñupiatun Eskimo-English/page_206",
+    "character_quality": {
+      "TextEdit": 0.114158,
+      "GCER": 0.119097,
+      "WER": 0.104882,
+      "total_graphemes_gold": 3896,
+      "total_graphemes_pred": 3872,
+      "total_grapheme_edits": 464,
+      "total_words_gold": 553,
+      "total_word_edits": 58,
+      "matched_spans": 65,
+      "missing_spans": 1,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 96
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 77
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 173
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.719072,
+      "edit_distance": 279,
+      "max_length": 388
+    }
+  },
+  {
+    "page_id": "Iñupiatun Eskimo-English/page_42",
+    "character_quality": {
+      "TextEdit": 0.151321,
+      "GCER": 0.204589,
+      "WER": 0.218153,
+      "total_graphemes_gold": 4184,
+      "total_graphemes_pred": 4153,
+      "total_grapheme_edits": 856,
+      "total_words_gold": 628,
+      "total_word_edits": 137,
+      "matched_spans": 59,
+      "missing_spans": 1,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 144
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 117
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 261
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.771967,
+      "edit_distance": 369,
+      "max_length": 478
+    }
+  },
+  {
+    "page_id": "Japanese-English/page_137",
+    "character_quality": {
+      "TextEdit": 0.286663,
+      "GCER": 0.228416,
+      "WER": 0.649057,
+      "total_graphemes_gold": 4054,
+      "total_graphemes_pred": 3898,
+      "total_grapheme_edits": 926,
+      "total_words_gold": 795,
+      "total_word_edits": 516,
+      "matched_spans": 59,
+      "missing_spans": 4,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 1,
+        "fn": 139
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 104
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 1,
+        "fn": 243
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.553691,
+      "edit_distance": 165,
+      "max_length": 298
+    }
+  },
+  {
+    "page_id": "Japanese-English/page_351",
+    "character_quality": {
+      "TextEdit": 0.314763,
+      "GCER": 0.213488,
+      "WER": 0.69145,
+      "total_graphemes_gold": 4478,
+      "total_graphemes_pred": 4269,
+      "total_grapheme_edits": 956,
+      "total_words_gold": 807,
+      "total_word_edits": 558,
+      "matched_spans": 56,
+      "missing_spans": 7,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 134
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 107
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 241
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.376884,
+      "edit_distance": 75,
+      "max_length": 199
+    }
+  },
+  {
+    "page_id": "Kashmiri-English/page_14",
+    "character_quality": {
+      "TextEdit": 0.433262,
+      "GCER": 0.455882,
+      "WER": 0.59276,
+      "total_graphemes_gold": 1428,
+      "total_graphemes_pred": 1189,
+      "total_grapheme_edits": 651,
+      "total_words_gold": 221,
+      "total_word_edits": 131,
+      "matched_spans": 61,
+      "missing_spans": 0,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.898551,
+      "edit_distance": 62,
+      "max_length": 69
+    }
+  },
+  {
+    "page_id": "Kashmiri-English/page_39",
+    "character_quality": {
+      "TextEdit": 0.548831,
+      "GCER": 0.688525,
+      "WER": 0.84492,
+      "total_graphemes_gold": 1464,
+      "total_graphemes_pred": 1243,
+      "total_grapheme_edits": 1008,
+      "total_words_gold": 187,
+      "total_word_edits": 158,
+      "matched_spans": 58,
+      "missing_spans": 4,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 71
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 20
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 91
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.470085,
+      "edit_distance": 55,
+      "max_length": 117
+    }
+  },
+  {
+    "page_id": "Kashmiri-English/page_71",
+    "character_quality": {
+      "TextEdit": 0.617638,
+      "GCER": 0.609687,
+      "WER": 0.938889,
+      "total_graphemes_gold": 1404,
+      "total_graphemes_pred": 1042,
+      "total_grapheme_edits": 856,
+      "total_words_gold": 180,
+      "total_word_edits": 169,
+      "matched_spans": 62,
+      "missing_spans": 1,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 47
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 17
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 64
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.888889,
+      "edit_distance": 56,
+      "max_length": 63
+    }
+  },
+  {
+    "page_id": "Khmer-English/page_116",
+    "character_quality": {
+      "TextEdit": 1.0,
+      "GCER": 1.0,
+      "WER": 1.0,
+      "total_graphemes_gold": 1785,
+      "total_graphemes_pred": 0,
+      "total_grapheme_edits": 1785,
+      "total_words_gold": 310,
+      "total_word_edits": 310,
+      "matched_spans": 0,
+      "missing_spans": 91,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 62
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 62
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 1.0,
+      "edit_distance": 91,
+      "max_length": 91
+    }
+  },
+  {
+    "page_id": "Khmer-English/page_143",
+    "character_quality": {
+      "TextEdit": 0.516898,
+      "GCER": 0.482326,
+      "WER": 0.68125,
+      "total_graphemes_gold": 1754,
+      "total_graphemes_pred": 1513,
+      "total_grapheme_edits": 846,
+      "total_words_gold": 320,
+      "total_word_edits": 218,
+      "matched_spans": 69,
+      "missing_spans": 0,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 57
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 57
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.640394,
+      "edit_distance": 130,
+      "max_length": 203
+    }
+  },
+  {
+    "page_id": "Khmer-English/page_8",
+    "character_quality": {
+      "TextEdit": 0.645427,
+      "GCER": 0.587558,
+      "WER": 0.745174,
+      "total_graphemes_gold": 1302,
+      "total_graphemes_pred": 1115,
+      "total_grapheme_edits": 765,
+      "total_words_gold": 259,
+      "total_word_edits": 193,
+      "matched_spans": 58,
+      "missing_spans": 2,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.806452,
+      "edit_distance": 75,
+      "max_length": 93
+    }
+  },
+  {
+    "page_id": "Malay-English/page_250",
+    "character_quality": {
+      "TextEdit": 0.335748,
+      "GCER": 0.319363,
+      "WER": 0.507042,
+      "total_graphemes_gold": 1885,
+      "total_graphemes_pred": 1557,
+      "total_grapheme_edits": 602,
+      "total_words_gold": 355,
+      "total_word_edits": 180,
+      "matched_spans": 42,
+      "missing_spans": 9,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 73
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 73
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.366337,
+      "edit_distance": 37,
+      "max_length": 101
+    }
+  },
+  {
+    "page_id": "Malay-English/page_315",
+    "character_quality": {
+      "TextEdit": 0.431247,
+      "GCER": 0.425579,
+      "WER": 0.578313,
+      "total_graphemes_gold": 1814,
+      "total_graphemes_pred": 1455,
+      "total_grapheme_edits": 772,
+      "total_words_gold": 332,
+      "total_word_edits": 192,
+      "matched_spans": 47,
+      "missing_spans": 12,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 61
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 61
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.222222,
+      "edit_distance": 16,
+      "max_length": 72
+    }
+  },
+  {
+    "page_id": "Malay-English/page_404",
+    "character_quality": {
+      "TextEdit": 0.412899,
+      "GCER": 0.38088,
+      "WER": 0.525862,
+      "total_graphemes_gold": 1977,
+      "total_graphemes_pred": 1824,
+      "total_grapheme_edits": 753,
+      "total_words_gold": 348,
+      "total_word_edits": 183,
+      "matched_spans": 36,
+      "missing_spans": 7,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 48
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 48
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.569697,
+      "edit_distance": 94,
+      "max_length": 165
+    }
+  },
+  {
+    "page_id": "Na-English-Chinese-French/page_186",
+    "character_quality": {
+      "TextEdit": 0.763859,
+      "GCER": 0.470051,
+      "WER": 0.746781,
+      "total_graphemes_gold": 2738,
+      "total_graphemes_pred": 2627,
+      "total_grapheme_edits": 1287,
+      "total_words_gold": 466,
+      "total_word_edits": 348,
+      "matched_spans": 16,
+      "missing_spans": 18,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 6,
+        "fn": 22
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 6,
+        "fn": 22
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.16092,
+      "edit_distance": 14,
+      "max_length": 87
+    }
+  },
+  {
+    "page_id": "Na-English-Chinese-French/page_19",
+    "character_quality": {
+      "TextEdit": 0.587246,
+      "GCER": 0.448757,
+      "WER": 0.738095,
+      "total_graphemes_gold": 2937,
+      "total_graphemes_pred": 3014,
+      "total_grapheme_edits": 1318,
+      "total_words_gold": 504,
+      "total_word_edits": 372,
+      "matched_spans": 26,
+      "missing_spans": 9,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 23,
+        "fn": 8
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 23,
+        "fn": 8
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.581731,
+      "edit_distance": 121,
+      "max_length": 208
+    }
+  },
+  {
+    "page_id": "Na-English-Chinese-French/page_321",
+    "character_quality": {
+      "TextEdit": 0.693062,
+      "GCER": 0.606545,
+      "WER": 0.874214,
+      "total_graphemes_gold": 2750,
+      "total_graphemes_pred": 2679,
+      "total_grapheme_edits": 1668,
+      "total_words_gold": 477,
+      "total_word_edits": 417,
+      "matched_spans": 24,
+      "missing_spans": 20,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 18,
+        "fn": 14
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 18,
+        "fn": 14
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.280899,
+      "edit_distance": 25,
+      "max_length": 89
+    }
+  },
+  {
+    "page_id": "Nahuatl-French/page_244",
+    "character_quality": {
+      "TextEdit": 0.200427,
+      "GCER": 0.159503,
+      "WER": 0.246269,
+      "total_graphemes_gold": 4583,
+      "total_graphemes_pred": 4504,
+      "total_grapheme_edits": 731,
+      "total_words_gold": 670,
+      "total_word_edits": 165,
+      "matched_spans": 31,
+      "missing_spans": 2,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 32
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 159
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 191
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.367742,
+      "edit_distance": 57,
+      "max_length": 155
+    }
+  },
+  {
+    "page_id": "Nahuatl-French/page_74",
+    "character_quality": {
+      "TextEdit": 0.220817,
+      "GCER": 0.149125,
+      "WER": 0.267425,
+      "total_graphemes_gold": 4513,
+      "total_graphemes_pred": 4435,
+      "total_grapheme_edits": 673,
+      "total_words_gold": 703,
+      "total_word_edits": 188,
+      "matched_spans": 31,
+      "missing_spans": 2,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 32
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 128
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 160
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.697531,
+      "edit_distance": 226,
+      "max_length": 324
+    }
+  },
+  {
+    "page_id": "Nahuatl-French/page_75",
+    "character_quality": {
+      "TextEdit": 0.295981,
+      "GCER": 0.255189,
+      "WER": 0.3367,
+      "total_graphemes_gold": 4240,
+      "total_graphemes_pred": 4159,
+      "total_grapheme_edits": 1082,
+      "total_words_gold": 594,
+      "total_word_edits": 200,
+      "matched_spans": 34,
+      "missing_spans": 2,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 39
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 123
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 162
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.815094,
+      "edit_distance": 432,
+      "max_length": 530
+    }
+  },
+  {
+    "page_id": "Punjabi-English/page_114",
+    "character_quality": {
+      "TextEdit": 0.401484,
+      "GCER": 0.399508,
+      "WER": 0.605229,
+      "total_graphemes_gold": 3657,
+      "total_graphemes_pred": 3678,
+      "total_grapheme_edits": 1461,
+      "total_words_gold": 765,
+      "total_word_edits": 463,
+      "matched_spans": 70,
+      "missing_spans": 12,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 108
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 128
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 236
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.679907,
+      "edit_distance": 291,
+      "max_length": 428
+    }
+  },
+  {
+    "page_id": "Punjabi-English/page_28",
+    "character_quality": {
+      "TextEdit": 0.774285,
+      "GCER": 0.839346,
+      "WER": 0.961057,
+      "total_graphemes_gold": 3548,
+      "total_graphemes_pred": 3390,
+      "total_grapheme_edits": 2978,
+      "total_words_gold": 719,
+      "total_word_edits": 691,
+      "matched_spans": 60,
+      "missing_spans": 53,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 111
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 101
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 212
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.636612,
+      "edit_distance": 233,
+      "max_length": 366
+    }
+  },
+  {
+    "page_id": "Punjabi-English/page_300",
+    "character_quality": {
+      "TextEdit": 0.332727,
+      "GCER": 0.23354,
+      "WER": 0.441727,
+      "total_graphemes_gold": 3554,
+      "total_graphemes_pred": 3466,
+      "total_grapheme_edits": 830,
+      "total_words_gold": 695,
+      "total_word_edits": 307,
+      "matched_spans": 52,
+      "missing_spans": 8,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 72
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 114
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 186
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.657216,
+      "edit_distance": 255,
+      "max_length": 388
+    }
+  },
+  {
+    "page_id": "Reel-English/page_17",
+    "character_quality": {
+      "TextEdit": 0.176349,
+      "GCER": 0.139918,
+      "WER": 0.31875,
+      "total_graphemes_gold": 972,
+      "total_graphemes_pred": 969,
+      "total_grapheme_edits": 136,
+      "total_words_gold": 160,
+      "total_word_edits": 51,
+      "matched_spans": 28,
+      "missing_spans": 2,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 10,
+        "fn": 63
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 15
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 10,
+        "fn": 78
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.494505,
+      "edit_distance": 45,
+      "max_length": 91
+    }
+  },
+  {
+    "page_id": "Reel-English/page_47",
+    "character_quality": {
+      "TextEdit": 0.330983,
+      "GCER": 0.194667,
+      "WER": 0.35122,
+      "total_graphemes_gold": 1125,
+      "total_graphemes_pred": 1142,
+      "total_grapheme_edits": 219,
+      "total_words_gold": 205,
+      "total_word_edits": 72,
+      "matched_spans": 14,
+      "missing_spans": 3,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 17,
+        "fn": 92
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 10
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 17,
+        "fn": 102
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.266667,
+      "edit_distance": 16,
+      "max_length": 60
+    }
+  },
+  {
+    "page_id": "Reel-English/page_89",
+    "character_quality": {
+      "TextEdit": 0.436901,
+      "GCER": 0.447038,
+      "WER": 0.808989,
+      "total_graphemes_gold": 1114,
+      "total_graphemes_pred": 1222,
+      "total_grapheme_edits": 498,
+      "total_words_gold": 178,
+      "total_word_edits": 144,
+      "matched_spans": 21,
+      "missing_spans": 4,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 36,
+        "fn": 67
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 13
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 36,
+        "fn": 80
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.733333,
+      "edit_distance": 121,
+      "max_length": 165
+    }
+  },
+  {
+    "page_id": "Ritharngu-English/page_185",
+    "character_quality": {
+      "TextEdit": 0.075096,
+      "GCER": 0.049595,
+      "WER": 0.13871,
+      "total_graphemes_gold": 1976,
+      "total_graphemes_pred": 1969,
+      "total_grapheme_edits": 98,
+      "total_words_gold": 310,
+      "total_word_edits": 43,
+      "matched_spans": 40,
+      "missing_spans": 1,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 65
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 66
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 131
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.396947,
+      "edit_distance": 52,
+      "max_length": 131
+    }
+  },
+  {
+    "page_id": "Ritharngu-English/page_205",
+    "character_quality": {
+      "TextEdit": 0.08825,
+      "GCER": 0.05702,
+      "WER": 0.237342,
+      "total_graphemes_gold": 2087,
+      "total_graphemes_pred": 2087,
+      "total_grapheme_edits": 119,
+      "total_words_gold": 316,
+      "total_word_edits": 75,
+      "matched_spans": 41,
+      "missing_spans": 1,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 87
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 69
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 156
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.293103,
+      "edit_distance": 34,
+      "max_length": 116
+    }
+  },
+  {
+    "page_id": "Ritharngu-English/page_232",
+    "character_quality": {
+      "TextEdit": 0.095746,
+      "GCER": 0.069482,
+      "WER": 0.16129,
+      "total_graphemes_gold": 2202,
+      "total_graphemes_pred": 2199,
+      "total_grapheme_edits": 153,
+      "total_words_gold": 341,
+      "total_word_edits": 55,
+      "matched_spans": 40,
+      "missing_spans": 1,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 70
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 50
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 120
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.638298,
+      "edit_distance": 150,
+      "max_length": 235
+    }
+  },
+  {
+    "page_id": "Sanskrit-English/page_559",
+    "character_quality": {
+      "TextEdit": 0.120159,
+      "GCER": 0.103612,
+      "WER": 0.323308,
+      "total_graphemes_gold": 2104,
+      "total_graphemes_pred": 2072,
+      "total_grapheme_edits": 218,
+      "total_words_gold": 399,
+      "total_word_edits": 129,
+      "matched_spans": 47,
+      "missing_spans": 1,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 56
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 68
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 124
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.292453,
+      "edit_distance": 31,
+      "max_length": 106
+    }
+  },
+  {
+    "page_id": "Sanskrit-English/page_880",
+    "character_quality": {
+      "TextEdit": 0.220715,
+      "GCER": 0.199108,
+      "WER": 0.361702,
+      "total_graphemes_gold": 2019,
+      "total_graphemes_pred": 1930,
+      "total_grapheme_edits": 402,
+      "total_words_gold": 376,
+      "total_word_edits": 136,
+      "matched_spans": 54,
+      "missing_spans": 3,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 149
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 68
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 217
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.47482,
+      "edit_distance": 66,
+      "max_length": 139
+    }
+  },
+  {
+    "page_id": "Sanskrit-English/page_9",
+    "character_quality": {
+      "TextEdit": 0.261024,
+      "GCER": 0.217822,
+      "WER": 0.421769,
+      "total_graphemes_gold": 1818,
+      "total_graphemes_pred": 1835,
+      "total_grapheme_edits": 396,
+      "total_words_gold": 294,
+      "total_word_edits": 124,
+      "matched_spans": 49,
+      "missing_spans": 2,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 104
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 56
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 160
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.120482,
+      "edit_distance": 10,
+      "max_length": 83
+    }
+  },
+  {
+    "page_id": "Shilluk-English/page_28",
+    "character_quality": {
+      "TextEdit": 0.103889,
+      "GCER": 0.04266,
+      "WER": 0.103704,
+      "total_graphemes_gold": 3774,
+      "total_graphemes_pred": 3661,
+      "total_grapheme_edits": 161,
+      "total_words_gold": 540,
+      "total_word_edits": 56,
+      "matched_spans": 30,
+      "missing_spans": 3,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 65
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 33
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 98
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.054545,
+      "edit_distance": 3,
+      "max_length": 55
+    }
+  },
+  {
+    "page_id": "Shilluk-English/page_3",
+    "character_quality": {
+      "TextEdit": 0.095756,
+      "GCER": 0.054874,
+      "WER": 0.144963,
+      "total_graphemes_gold": 2934,
+      "total_graphemes_pred": 2834,
+      "total_grapheme_edits": 161,
+      "total_words_gold": 407,
+      "total_word_edits": 59,
+      "matched_spans": 39,
+      "missing_spans": 3,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 22,
+        "fn": 65
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 14
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 22,
+        "fn": 79
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.06,
+      "edit_distance": 3,
+      "max_length": 50
+    }
+  },
+  {
+    "page_id": "Shilluk-English/page_7",
+    "character_quality": {
+      "TextEdit": 0.207829,
+      "GCER": 0.200985,
+      "WER": 0.319149,
+      "total_graphemes_gold": 3453,
+      "total_graphemes_pred": 3360,
+      "total_grapheme_edits": 694,
+      "total_words_gold": 470,
+      "total_word_edits": 150,
+      "matched_spans": 34,
+      "missing_spans": 4,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 1,
+        "fn": 56
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 55
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 1,
+        "fn": 111
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.534653,
+      "edit_distance": 54,
+      "max_length": 101
+    }
+  },
+  {
+    "page_id": "Syriac-English/page_33",
+    "character_quality": {
+      "TextEdit": 0.571872,
+      "GCER": 0.547762,
+      "WER": 0.590361,
+      "total_graphemes_gold": 1497,
+      "total_graphemes_pred": 879,
+      "total_grapheme_edits": 820,
+      "total_words_gold": 249,
+      "total_word_edits": 147,
+      "matched_spans": 23,
+      "missing_spans": 24,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 37
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 23
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 60
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.421053,
+      "edit_distance": 24,
+      "max_length": 57
+    }
+  },
+  {
+    "page_id": "Syriac-English/page_55",
+    "character_quality": {
+      "TextEdit": 0.616262,
+      "GCER": 0.544254,
+      "WER": 0.597701,
+      "total_graphemes_gold": 1514,
+      "total_graphemes_pred": 825,
+      "total_grapheme_edits": 824,
+      "total_words_gold": 261,
+      "total_word_edits": 156,
+      "matched_spans": 24,
+      "missing_spans": 23,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 68
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 32
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 100
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.413793,
+      "edit_distance": 24,
+      "max_length": 58
+    }
+  },
+  {
+    "page_id": "Syriac-English/page_75",
+    "character_quality": {
+      "TextEdit": 0.680721,
+      "GCER": 0.782147,
+      "WER": 0.896154,
+      "total_graphemes_gold": 1602,
+      "total_graphemes_pred": 917,
+      "total_grapheme_edits": 1253,
+      "total_words_gold": 260,
+      "total_word_edits": 233,
+      "matched_spans": 26,
+      "missing_spans": 28,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 64
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 32
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 96
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.508772,
+      "edit_distance": 29,
+      "max_length": 57
+    }
+  },
+  {
+    "page_id": "Telugu-English/page_151",
+    "character_quality": {
+      "TextEdit": 0.27065,
+      "GCER": 0.382011,
+      "WER": 0.572491,
+      "total_graphemes_gold": 1890,
+      "total_graphemes_pred": 2331,
+      "total_grapheme_edits": 722,
+      "total_words_gold": 269,
+      "total_word_edits": 154,
+      "matched_spans": 48,
+      "missing_spans": 2,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 43
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 41
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 84
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.977273,
+      "edit_distance": 86,
+      "max_length": 88
+    }
+  },
+  {
+    "page_id": "Telugu-English/page_646",
+    "character_quality": {
+      "TextEdit": 0.185092,
+      "GCER": 0.126915,
+      "WER": 0.272989,
+      "total_graphemes_gold": 1828,
+      "total_graphemes_pred": 1804,
+      "total_grapheme_edits": 232,
+      "total_words_gold": 348,
+      "total_word_edits": 95,
+      "matched_spans": 35,
+      "missing_spans": 3,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 45
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 47
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 92
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.185185,
+      "edit_distance": 15,
+      "max_length": 81
+    }
+  },
+  {
+    "page_id": "Telugu-English/page_80",
+    "character_quality": {
+      "TextEdit": 0.227986,
+      "GCER": 0.207892,
+      "WER": 0.334337,
+      "total_graphemes_gold": 1698,
+      "total_graphemes_pred": 1624,
+      "total_grapheme_edits": 353,
+      "total_words_gold": 332,
+      "total_word_edits": 111,
+      "matched_spans": 38,
+      "missing_spans": 5,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 42
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 47
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 89
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.191781,
+      "edit_distance": 14,
+      "max_length": 73
+    }
+  },
+  {
+    "page_id": "Thai-Russian/page_591",
+    "character_quality": {
+      "TextEdit": 0.194789,
+      "GCER": 0.172088,
+      "WER": 0.476378,
+      "total_graphemes_gold": 1906,
+      "total_graphemes_pred": 1869,
+      "total_grapheme_edits": 328,
+      "total_words_gold": 254,
+      "total_word_edits": 121,
+      "matched_spans": 28,
+      "missing_spans": 2,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 16,
+        "fn": 77
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 65
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 16,
+        "fn": 142
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.059701,
+      "edit_distance": 4,
+      "max_length": 67
+    }
+  },
+  {
+    "page_id": "Thai-Russian/page_67",
+    "character_quality": {
+      "TextEdit": 0.209106,
+      "GCER": 0.182182,
+      "WER": 0.69145,
+      "total_graphemes_gold": 1998,
+      "total_graphemes_pred": 2015,
+      "total_grapheme_edits": 364,
+      "total_words_gold": 269,
+      "total_word_edits": 186,
+      "matched_spans": 41,
+      "missing_spans": 2,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 21,
+        "fn": 77
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 42
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 21,
+        "fn": 119
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.074627,
+      "edit_distance": 5,
+      "max_length": 67
+    }
+  },
+  {
+    "page_id": "Thai-Russian/page_756",
+    "character_quality": {
+      "TextEdit": 0.413412,
+      "GCER": 0.391879,
+      "WER": 1.079848,
+      "total_graphemes_gold": 2044,
+      "total_graphemes_pred": 2023,
+      "total_grapheme_edits": 801,
+      "total_words_gold": 263,
+      "total_word_edits": 284,
+      "matched_spans": 27,
+      "missing_spans": 5,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 96,
+        "fn": 90
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 30
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 96,
+        "fn": 120
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.306818,
+      "edit_distance": 27,
+      "max_length": 88
+    }
+  },
+  {
+    "page_id": "Tiri-English/page_15",
+    "character_quality": {
+      "TextEdit": 0.129829,
+      "GCER": 0.139224,
+      "WER": 0.269531,
+      "total_graphemes_gold": 1494,
+      "total_graphemes_pred": 1489,
+      "total_grapheme_edits": 208,
+      "total_words_gold": 256,
+      "total_word_edits": 69,
+      "matched_spans": 47,
+      "missing_spans": 1,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 46
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 46
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.510067,
+      "edit_distance": 76,
+      "max_length": 149
+    }
+  },
+  {
+    "page_id": "Tiri-English/page_56",
+    "character_quality": {
+      "TextEdit": 0.173572,
+      "GCER": 0.164926,
+      "WER": 0.274924,
+      "total_graphemes_gold": 1819,
+      "total_graphemes_pred": 1812,
+      "total_grapheme_edits": 300,
+      "total_words_gold": 331,
+      "total_word_edits": 91,
+      "matched_spans": 48,
+      "missing_spans": 2,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 54
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 54
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.696429,
+      "edit_distance": 195,
+      "max_length": 280
+    }
+  },
+  {
+    "page_id": "Tiri-English/page_66",
+    "character_quality": {
+      "TextEdit": 0.195808,
+      "GCER": 0.233051,
+      "WER": 0.332362,
+      "total_graphemes_gold": 1888,
+      "total_graphemes_pred": 1884,
+      "total_grapheme_edits": 440,
+      "total_words_gold": 343,
+      "total_word_edits": 114,
+      "matched_spans": 44,
+      "missing_spans": 1,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 68
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 68
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.760807,
+      "edit_distance": 264,
+      "max_length": 347
+    }
+  },
+  {
+    "page_id": "Vernacular Syriac-Kurdish_Turkish-English/page_228",
+    "character_quality": {
+      "TextEdit": 0.552824,
+      "GCER": 0.400554,
+      "WER": 0.446032,
+      "total_graphemes_gold": 3248,
+      "total_graphemes_pred": 2388,
+      "total_grapheme_edits": 1301,
+      "total_words_gold": 630,
+      "total_word_edits": 281,
+      "matched_spans": 34,
+      "missing_spans": 27,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 153
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 223
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 376
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.318681,
+      "edit_distance": 29,
+      "max_length": 91
+    }
+  },
+  {
+    "page_id": "Vernacular Syriac-Kurdish_Turkish-English/page_26",
+    "character_quality": {
+      "TextEdit": 0.509719,
+      "GCER": 0.480376,
+      "WER": 0.552398,
+      "total_graphemes_gold": 2981,
+      "total_graphemes_pred": 2139,
+      "total_grapheme_edits": 1432,
+      "total_words_gold": 563,
+      "total_word_edits": 311,
+      "matched_spans": 47,
+      "missing_spans": 25,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 103
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 93
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 196
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.615023,
+      "edit_distance": 131,
+      "max_length": 213
+    }
+  },
+  {
+    "page_id": "Vernacular Syriac-Kurdish_Turkish-English/page_41",
+    "character_quality": {
+      "TextEdit": 0.68631,
+      "GCER": 0.760054,
+      "WER": 0.920074,
+      "total_graphemes_gold": 2959,
+      "total_graphemes_pred": 1686,
+      "total_grapheme_edits": 2249,
+      "total_words_gold": 538,
+      "total_word_edits": 495,
+      "matched_spans": 46,
+      "missing_spans": 36,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 104
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 93
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 197
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.422222,
+      "edit_distance": 38,
+      "max_length": 90
+    }
+  },
+  {
+    "page_id": "Yiddish-English/page_1",
+    "character_quality": {
+      "TextEdit": 0.315079,
+      "GCER": 0.306149,
+      "WER": 0.404018,
+      "total_graphemes_gold": 2293,
+      "total_graphemes_pred": 1982,
+      "total_grapheme_edits": 702,
+      "total_words_gold": 448,
+      "total_word_edits": 181,
+      "matched_spans": 45,
+      "missing_spans": 6,
+      "extra_spans": 0
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 89
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 77
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 166
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.673152,
+      "edit_distance": 173,
+      "max_length": 257
+    }
+  },
+  {
+    "page_id": "__aggregate__",
+    "character_quality": {
+      "TextEdit": 0.30853,
+      "GCER": 0.252097,
+      "WER": 0.424821
+    },
+    "markup_quality": {
+      "bold": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "italic": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      },
+      "typography": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0
+      }
+    },
+    "read_order": {
+      "ReadOrderEdit": 0.430403
+    }
+  }
+]

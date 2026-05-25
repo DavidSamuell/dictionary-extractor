@@ -1,0 +1,23 @@
+========================================================================
+STAGE 2 MDF EVALUATION REPORT
+========================================================================
+record_threshold=0.6  line_threshold=0.7
+
+--- Na-English-Chinese-French/page_19 ---
+  Records: matched=7 missing=0 extra=0 (pred=7)
+  Record Accuracy: 1.0000
+  MDF Fields F1:   1.0000
+  ReadOrderEdit:   0.0000
+
+--- Tiri-English/page_15 ---
+  Records: matched=36 missing=0 extra=2 (pred=38)
+  Record Accuracy: 1.0000
+  MDF Fields F1:   0.9458
+  ReadOrderEdit:   0.0000
+
+========================================================================
+AGGREGATE (2 pages)
+========================================================================
+  Record Accuracy: 1.0000
+  MDF Fields F1:   0.9747
+  ReadOrderEdit:   0.0000

@@ -1,0 +1,9 @@
+experiment,page_id,Record_Accuracy,MDF_Fields_F1,ReadOrderEdit
+claudeopus47_high_mdf_nointro_toolbox_goldcheat,Evenki-Russian/page_1,1.0,0.888337,0.0
+gemini31pro_high_mdf_intro_notoolbox_goldcheat,Iñupiatun Eskimo-English/page_42,1.0,0.996324,0.0
+gemini31pro_high_mdf_intro_notoolbox_goldcheat,Kashmiri-English/page_14,1.0,0.942529,0.0
+gemini31pro_high_mdf_intro_notoolbox_goldcheat,__aggregate__,1.0,0.975336,0.0
+gemini31pro_high_mdf_nointro_toolbox_goldcheat,Na-English-Chinese-French/page_19,1.0,1.0,0.0
+gemini31pro_high_mdf_nointro_toolbox_goldcheat,Tiri-English/page_15,1.0,0.945813,0.0
+gemini31pro_high_mdf_nointro_toolbox_goldcheat,__aggregate__,1.0,0.974713,0.0
+gpt55_high_mdf_intro_toolbox_goldcheat,Nahuatl-French/page_74,0.967742,0.870056,0.032258

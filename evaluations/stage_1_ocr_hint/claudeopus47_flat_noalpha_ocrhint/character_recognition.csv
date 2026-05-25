@@ -1,0 +1,20 @@
+page_id,TextEdit,GCER,WER
+Bengalese-English/page_105,0.005364,0.003571,0.016698
+Bengalese-English/page_217,0.01246,0.017591,0.021452
+Bengalese-English/page_54,0.001243,0.001459,0.011194
+Canala-English/page_12,0.003528,0.002687,0.009524
+Canala-English/page_30,0.012887,0.012315,0.030612
+Canala-English/page_64,0.009087,0.006431,0.025157
+Gojri-English-Hindi/page_275,0.0,0.0,0.0
+Gojri-English-Hindi/page_32,0.000813,0.000713,0.009434
+Gojri-English-Hindi/page_76,0.003276,0.003492,0.021429
+Iñupiatun Eskimo-English/page_201,0.032803,0.033291,0.030498
+Iñupiatun Eskimo-English/page_206,0.001498,0.001295,0.003565
+Iñupiatun Eskimo-English/page_42,0.00357,0.003387,0.019108
+Malay-English/page_250,0.029477,0.057403,0.109859
+Malay-English/page_315,0.030701,0.058301,0.123494
+Malay-English/page_404,0.125078,0.126385,0.287356
+Ritharngu-English/page_185,0.042207,0.036943,0.064516
+Ritharngu-English/page_205,0.009063,0.009273,0.05
+Ritharngu-English/page_232,0.006048,0.005556,0.028986
+__aggregate__,0.014051,0.019169,0.045675
